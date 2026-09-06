@@ -1,0 +1,6 @@
+{
+  "name": "SD Qur'an Unggulan Al I'tisham Playen",
+  "description": "Website Resmi SD Qur'an Unggulan Al I'tisham Playen Gunungkidul - Mencetak Generasi Qur'ani, Berakhlak Mulia & Unggul Prestasi. Dilengkapi Portal SPMB Online dan Admin CMS Terintegrasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

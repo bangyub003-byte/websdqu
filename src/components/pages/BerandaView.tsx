@@ -1,0 +1,708 @@
+import React, { useState } from 'react';
+import { ActivePage, SchoolSettings, Announcement, NewsItem } from '../../types';
+import { INITIAL_TESTIMONIALS } from '../../data/initialData';
+import {
+  ArrowRight,
+  Play,
+  Award,
+  Users,
+  CheckCircle2,
+  BookOpen,
+  FlaskConical,
+  Languages,
+  HeartHandshake,
+  Laptop,
+  GraduationCap,
+  Sparkles,
+  MessageCircle,
+  Star,
+  Quote,
+  Megaphone,
+  Calendar,
+  X
+} from 'lucide-react';
+
+interface BerandaViewProps {
+  setActivePage: (page: ActivePage) => void;
+  settings: SchoolSettings;
+  announcements: Announcement[];
+  news: NewsItem[];
+}
+
+export const BerandaView: React.FC<BerandaViewProps> = ({
+  setActivePage,
+  settings,
+  announcements,
+  news
+}) => {
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const activeAnnouncements = announcements.filter(a => a.isActive);
+
+  return (
+    <div className="space-y-16 sm:space-y-24 pb-12">
+      {/* Running / Top Announcement Bar if active */}
+      {activeAnnouncements.length > 0 && (
+        <div className="bg-emerald-950 text-emerald-100 py-2.5 px-4 text-xs font-medium border-b border-emerald-800/60">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="bg-amber-500 text-emerald-950 font-extrabold px-2 py-0.5 rounded-full text-[10px] tracking-wide shrink-0">
+                PENGUMUMAN
+              </span>
+              <span className="truncate">
+                {activeAnnouncements[0].title}
+              </span>
+            </div>
+            <button
+              onClick={() => setActivePage('spmb')}
+              className="text-amber-400 hover:text-amber-300 font-bold shrink-0 flex items-center gap-1 text-xs"
+            >
+              <span>Pelajari</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* HERO SECTION */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[480px] sm:min-h-[540px] lg:min-h-[600px] flex items-center p-5 sm:p-10 lg:p-14 shadow-2xl">
+          {/* Background image overlay with soft focus */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity"
+            style={{
+              backgroundImage: `url('${settings.heroImageUrl || "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80"}')`
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/80 to-transparent pointer-events-none" />
+
+          {/* Hero Content Grid */}
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center w-full">
+            
+            {/* Left Headline (7 cols) */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-emerald-800/80 border border-emerald-600/50 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>{settings.heroBadge}</span>
+              </div>
+
+              {/* Title - Responsive & Balanced on Mobile */}
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.2] font-['Plus_Jakarta_Sans',sans-serif]">
+                {settings.heroHeadline || (
+                  <>
+                    Mencetak Generasi <span className="text-amber-400">Qur'ani</span>, Berakhlak Mulia &amp; <span className="text-emerald-300">Unggul Prestasi</span>.
+                  </>
+                )}
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-200 text-xs sm:text-sm lg:text-base leading-relaxed max-w-2xl font-normal">
+                {settings.heroSubtitle}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-4">
+                <button
+                  onClick={() => setActivePage('spmb')}
+                  className="bg-[#d97706] hover:bg-[#b45309] text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 transform hover:-translate-y-0.5"
+                >
+                  <span>Daftar SPMB Online</span>
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+
+                <button
+                  onClick={() => setShowVideoModal(true)}
+                  className="bg-white/15 hover:bg-white/25 text-white border border-white/25 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-md transition-all flex items-center gap-2"
+                >
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white text-white" />
+                  <span>Tonton Profil Singkat</span>
+                </button>
+              </div>
+
+              {/* Bottom Social Proof Badge - Editable & Hideable by Admin */}
+              {settings.heroAlumniStat && settings.heroAlumniStat.trim().length > 0 && (
+                <div className="pt-2 sm:pt-4 flex items-center gap-2.5 sm:gap-3 text-[11px] sm:text-xs text-slate-300">
+                  <div className="flex -space-x-1.5 sm:-space-x-2 shrink-0">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-700 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                      30J
+                    </div>
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-600 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                      ★A
+                    </div>
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-teal-600 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                      1:12
+                    </div>
+                  </div>
+                  <span className="font-medium text-slate-300 leading-snug">
+                    {settings.heroAlumniStat}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Right Floating Card (5 cols) - Fully Editable by Admin */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <div className="bg-white text-slate-900 rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 max-w-md w-full space-y-4 sm:space-y-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-300">
+                
+                {/* Accreditation Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    <span className="text-[11px] sm:text-xs font-bold tracking-wider text-emerald-900 uppercase">
+                      {settings.heroCardBadge || "AKREDITASI A UNGGUL"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-amber-500 text-xs font-extrabold bg-amber-50 px-2 py-0.5 rounded-md">
+                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                    <span>{settings.heroCardRating || "4.9 / 5.0"}</span>
+                  </div>
+                </div>
+
+                {/* Big Number */}
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-emerald-950 tracking-tight">
+                      {settings.heroCardStatNumber || "15+"}
+                    </span>
+                    <span className="text-sm sm:text-base font-bold text-slate-700">
+                      {settings.heroCardStatLabel || "Tahun Pengabdian"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                    {settings.heroCardDescription || "Membangun peradaban mulia dari Playen, menyemaikan tahfidz & hafizhah mutqin berintelektual sains modern sejak tahun 2010."}
+                  </p>
+                </div>
+
+                {/* Curriculums Integrated Box */}
+                <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-emerald-950">
+                      {settings.heroCardCurriculumTitle || "Kurikulum Terintegrasi"}
+                    </div>
+                    <div className="text-[11px] text-emerald-800 font-medium">
+                      {settings.heroCardCurriculumSubtitle || "Kemendikbud • Kemenag • Pesantren"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Direct Action Link */}
+                <button
+                  onClick={() => setActivePage('profil')}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>{settings.heroCardButtonText || "Kenali Lebih Dekat Sekolah Kami"}</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-emerald-800" />
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* STATS RIBBON (Dark Forest Green #064e3b) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-emerald-950 rounded-2xl sm:rounded-3xl text-white p-6 sm:p-8 shadow-xl">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/80">
+            
+            {/* Stat 1 */}
+            <div className="flex items-center gap-3 sm:gap-4 pt-4 first:pt-0 lg:pt-0 lg:px-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+                  1.200+
+                </div>
+                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
+                  Santri Aktif &amp; Alumni
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+                  100%
+                </div>
+                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
+                  Target Tahfidz Mutqin
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
+                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+                  45+
+                </div>
+                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
+                  Asatidz Bersanad
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 4 */}
+            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+                  25+
+                </div>
+                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
+                  Prestasi Tingkat DIY &amp; Nas
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* PROGRAM UNGGULAN SECTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 text-xs font-extrabold text-amber-700 uppercase tracking-wider">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>KURIKULUM BERBASIS ADAB &amp; PRESTASI</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
+              Program Unggulan yang Mengasah Potensi Fitrah Santri
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">
+            Dirancang sistematis untuk melahirkan lulusan berakhlak Qur'ani yang siap berkompetisi pada era digital abad 21 tanpa kehilangan identitas keislaman.
+          </p>
+        </div>
+
+        {/* BENTO GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          {/* Featured Large Card (Dark Green) */}
+          <div className="md:col-span-2 lg:col-span-1 lg:row-span-2 bg-emerald-950 text-white rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden shadow-xl border border-emerald-800">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <BookOpen className="w-64 h-64 text-white" />
+            </div>
+
+            <div className="space-y-5 relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-amber-400 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-extrabold tracking-wider bg-emerald-800/80 text-emerald-200 uppercase px-3 py-1 rounded-full border border-emerald-700">
+                  PILAR UTAMA UNGGULAN
+                </span>
+              </div>
+
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                Tahfidz Bersanad &amp; Metode Mutqin
+              </h3>
+
+              <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+                Bimbingan talaqqi langsung dengan muhaffizh bersanad, target hafalan 3–5 juz mutqin dengan tajwid makharijul huruf berstandar internasional. Dilengkapi dengan Ujian tasmi' 1 kali duduk di hadapan dewan penguji.
+              </p>
+            </div>
+
+            <div className="pt-8 relative z-10 border-t border-emerald-900 mt-6">
+              <button
+                onClick={() => setActivePage('kegiatan')}
+                className="inline-flex items-center gap-2 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                <span>Ujian Tasmi' Berkala &amp; Sertifikasi Sanad</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Card 2: Sains & Kurikulum Merdeka */}
+          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
+                  <FlaskConical className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded-full">
+                  AKADEMIK TERPADU
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900">
+                Sains &amp; Kurikulum Merdeka
+              </h3>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Pembelajaran kontekstual berbasis eksperimen dan nalar kritis yang mengaitkan fenomena alam dengan ayat-ayat kauniyah Al-Qur'an.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setActivePage('kegiatan')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 hover:text-emerald-700 transition-colors pt-2"
+            >
+              <span>Laboratorium Mini &amp; Alam</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Card 3: Bilingual Arabic & English */}
+          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-800 flex items-center justify-center">
+                  <Languages className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-full">
+                  KOMUNIKASI GLOBAL
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900">
+                Bilingual Daily Arabic &amp; English
+              </h3>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Pembiasaan kosakata harian dan percakapan tematik yang santun, mempersiapkan siswa cakap berinteraksi di kancah nasional maupun global.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setActivePage('kegiatan')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 transition-colors pt-2"
+            >
+              <span>Morning Muhadatsah</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Card 4: Pembinaan Adab & Karakter Nabawiyah */}
+          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-800 flex items-center justify-center">
+                  <HeartHandshake className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-teal-900 bg-teal-50 px-2.5 py-1 rounded-full">
+                  ADAB SEBELUM ILMU
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900">
+                Pembinaan Adab &amp; Karakter Nabawiyah
+              </h3>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Pendidikan nilai adab kepada orang tua, guru, sesama teman, serta lingkungan melalui keteladanan harian, shalat dhuha/dzuhur berjamaah, dan sedekah shubuh.
+              </p>
+            </div>
+
+            <div className="text-xs font-semibold text-teal-800 pt-2 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+              <span>100% Pembiasaan Terpantau</span>
+            </div>
+          </div>
+
+          {/* Card 5: Robotik & Literasi Digital Sehat */}
+          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-800 flex items-center justify-center">
+                  <Laptop className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-full">
+                  KETERAMPILAN MASA DEPAN
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900">
+                Robotik &amp; Literasi Digital Sehat
+              </h3>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Pengenalan logika algoritma, coding ramah anak, dan etika berteknologi yang aman, bijak, serta bertanggung jawab.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setActivePage('kegiatan')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-800 hover:text-indigo-900 transition-colors pt-2"
+            >
+              <span>Klub Robotika &amp; Coding</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* WHY CHOOSE US (MENGAPA MEMPERCAYAKAN) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Photo & Badges (5 cols) */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
+              <img
+                src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80"
+                alt="Pendampingan Santri SDQU Al I'tisham"
+                className="w-full h-[440px] sm:h-[480px] object-cover"
+              />
+              
+              {/* Floating Top Badge */}
+              <div className="absolute top-4 right-4 bg-amber-600 text-white text-[11px] font-extrabold px-3 py-1.5 rounded-xl shadow-md uppercase tracking-wider">
+                100% Pendampingan Personal
+              </div>
+
+              {/* Floating Bottom Pill */}
+              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-slate-200/80 shadow-lg flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-extrabold text-emerald-950">
+                    Kampus Asri &amp; Hijau
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    Playen, Kabupaten Gunungkidul
+                  </div>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Text & 4 Checkpoints (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-amber-700 tracking-wider uppercase">
+                NILAI OTENTIK PENDIDIKAN KAMI
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
+                Mengapa Ayah &amp; Bunda Mempercayakan Putra–Putrinya di SDQU Al I'tisham?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
+                Kami memandang setiap anak sebagai amanah mulia yang memiliki keunikan fitrah. Lingkungan belajar dirancang agar ananda merasa aman, disayangi, dan bersemangat menuntut ilmu.
+              </p>
+            </div>
+
+            {/* 4 Feature Points */}
+            <div className="space-y-3.5 pt-2">
+              
+              {/* Point 1 */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Guru Tahfidz Bersanad &amp; Berpengalaman
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar.
+                  </p>
+                </div>
+              </div>
+
+              {/* Point 2 */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Mutaba'ah Digital Santri Terkoneksi Real–time
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali.
+                  </p>
+                </div>
+              </div>
+
+              {/* Point 3 */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Rasio Ideal 1:12 untuk Perhatian Optimal
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif.
+                  </p>
+                </div>
+              </div>
+
+              {/* Point 4 */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Lingkungan Ramah Anak, Nyaman &amp; Sehat
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* TESTIMONIALS SECTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-2 mb-12 max-w-2xl mx-auto">
+          <div className="text-xs font-bold text-amber-700 tracking-wider uppercase">
+            AMANAH &amp; KESAN ORANG TUA
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
+            Apa Kata Para Wali Santri SDQU Al I'tisham
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600">
+            Bukti nyata transformasi adab, kecintaan pada Al-Qur'an, dan prestasi akademik yang membanggakan keluarga.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {INITIAL_TESTIMONIALS.map(item => (
+            <div
+              key={item.id}
+              className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-6"
+            >
+              <div className="space-y-4">
+                {/* 5 Stars & Quote Icon */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-amber-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    ))}
+                  </div>
+                  <Quote className="w-6 h-6 text-slate-300" />
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+                  "{item.content}"
+                </p>
+              </div>
+
+              {/* Author */}
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                <div className={`w-10 h-10 rounded-full ${item.avatarColor} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
+                  {item.avatar}
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">
+                    {item.name}
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    {item.role}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CALL TO ACTION BANNER (Dark Green Box) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 lg:p-14 shadow-2xl relative overflow-hidden border border-emerald-800">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 bg-emerald-900 border border-emerald-700 text-amber-300 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>GELOMBANG 1 DITUTUP SEGERA</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                Mari Bergabung Bersama Keluarga Besar SDQU Al I'tisham Playen
+              </h2>
+
+              <p className="text-xs sm:text-sm text-emerald-200/90 max-w-xl leading-relaxed">
+                Kuota penerimaan santri baru dibatasi demi menjaga rasio pembinaan halaqah yang optimal. Daftarkan putra-putri tercinta hari ini dan amankan kursi belajar mereka.
+              </p>
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center">
+              <button
+                onClick={() => setActivePage('spmb')}
+                className="bg-[#d97706] hover:bg-[#b45309] text-white py-3.5 px-6 rounded-full text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <span>Daftar SPMB Online 2025/2026</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <a
+                href={`https://wa.me/${settings.whatsappSpmb}?text=Assalamu'alaikum%20Panitia%20SPMB%20SDQU%20Al%20I'tisham,%20saya%20ingin%20konsultasi%20pendaftaran.`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-emerald-900/80 hover:bg-emerald-900 text-emerald-100 border border-emerald-700/80 py-3.5 px-6 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-300" />
+                <span>Konsultasi WhatsApp Panitia</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Video Modal Popup */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="bg-slate-900 rounded-3xl p-4 max-w-3xl w-full text-white space-y-4 border border-slate-700 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-amber-400" />
+                <span>Video Profil SDQU Al I'tisham Playen</span>
+              </h3>
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black flex items-center justify-center relative">
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0"
+                title="Profil SDQU Al I'tisham Playen"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
