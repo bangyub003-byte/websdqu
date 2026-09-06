@@ -54,6 +54,7 @@ function doGet(e) {
     const action = (e && e.parameter && e.parameter.action) || 'getAll';
     const sheetName = (e && e.parameter && e.parameter.sheet) || 'PPDB';
 
+    // 1. Ambil Semua Data (Termasuk CMS, PPDB, dan Infaq)
     if (action === 'getAll') {
       const result = {};
       const sheets = ss.getSheets();
@@ -72,6 +73,18 @@ function doGet(e) {
         }
       });
       return createJsonResponse({ success: true, data: result });
+    }
+
+    // 2. Ambil Khusus Data CMS State
+    if (action === 'getCMS') {
+      const sheet = ss.getSheetByName('CMS_Data');
+      if (sheet && sheet.getLastRow() > 1) {
+        const val = sheet.getRange(2, 2).getValue();
+        if (val) {
+          return createJsonResponse({ success: true, data: JSON.parse(val) });
+        }
+      }
+      return createJsonResponse({ success: false, message: 'Belum ada data CMS tersimpan di Spreadsheet' });
     }
 
     const sheet = ss.getSheetByName(sheetName);
@@ -100,7 +113,51 @@ function doPost(e) {
     const action = contents.action;
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    // 1. Simpan Pendaftaran Santri Baru (PPDB)
+    // 1. Unggah Gambar / Logo Langsung ke Google Drive Sekolah (Publik CDN)
+    if (action === 'upload_image') {
+      if (!contents.fileData || !contents.fileName) {
+        return createJsonResponse({ success: false, error: 'fileData dan fileName diperlukan' });
+      }
+      try {
+        const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+        const rawBase64 = contents.fileData.split(',')[1] || contents.fileData;
+        const decoded = Utilities.base64Decode(rawBase64);
+        const mime = contents.fileMime || 'image/jpeg';
+        const blob = Utilities.newBlob(decoded, mime, contents.fileName);
+        const file = folder.createFile(blob);
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        const fileId = file.getId();
+        const driveUrl = file.getUrl();
+        const directUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
+        return createJsonResponse({
+          success: true,
+          fileId: fileId,
+          driveUrl: driveUrl,
+          directUrl: directUrl,
+          message: 'Gambar berhasil diunggah ke Google Drive'
+        });
+      } catch (uploadErr) {
+        return createJsonResponse({ success: false, error: uploadErr.toString() });
+      }
+    }
+
+    // 2. Simpan Perubahan CMS (Pengaturan, Logo, Guru, Fasilitas, Berita, dll)
+    if (action === 'save_cms') {
+      let sheet = ss.getSheetByName('CMS_Data');
+      if (!sheet) {
+        sheet = ss.insertSheet('CMS_Data');
+        sheet.appendRow(['key', 'value', 'updatedAt']);
+      }
+      const payloadStr = JSON.stringify(contents.data);
+      const lastRow = sheet.getLastRow();
+      if (lastRow > 1) {
+        sheet.getRange(2, 1, lastRow - 1, 3).clearContent();
+      }
+      sheet.getRange(2, 1, 1, 3).setValues([['FULL_CMS_STATE', payloadStr, new Date().toISOString()]]);
+      return createJsonResponse({ success: true, message: 'Data CMS berhasil disimpan ke Google Spreadsheet' });
+    }
+
+    // 3. Simpan Pendaftaran Santri Baru (PPDB)
     if (action === 'save_ppdb') {
       let sheet = ss.getSheetByName('PPDB');
       if (!sheet) {
@@ -152,7 +209,7 @@ function doPost(e) {
       return createJsonResponse({ success: true, message: 'Data PPDB berhasil disimpan', driveUrl: driveUrl });
     }
 
-    // 2. Simpan Konfirmasi Infaq & Donasi
+    // 4. Simpan Konfirmasi Infaq & Donasi
     if (action === 'save_infaq') {
       let sheet = ss.getSheetByName('Infaq');
       if (!sheet) {

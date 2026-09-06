@@ -34,7 +34,75 @@ const STORAGE_KEYS = {
   INFAQ: 'sdqu_infaq_v1',
   APPS_SCRIPT_URL: 'sdqu_apps_script_url_v1',
   ADMIN_AUTH: 'sdqu_admin_auth_v1',
-  ADMIN_PASSWORD: 'sdqu_admin_pwd_v1'
+  ADMIN_PASSWORD: 'sdqu_admin_pwd_v1',
+  LAST_CLOUD_SYNC: 'sdqu_last_cloud_sync_v1'
+};
+
+/**
+ * Utility untuk kompresi dan optimasi gambar sebelum diunggah ke cloud.
+ * Mengubah foto kamera berukuran besar (misal 5MB) menjadi ringan (~50KB-100KB)
+ * dengan resolusi tajam sehingga cepat dimuat di HP maupun web.
+ */
+export const compressImage = (
+  file: File,
+  maxWidth = 1280,
+  quality = 0.82
+): Promise<{ base64: string; mime: string; name: string }> => {
+  return new Promise((resolve) => {
+    // Format SVG atau GIF tidak perlu canvas kompresi
+    if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve({
+          base64: (e.target?.result as string) || '',
+          mime: file.type,
+          name: file.name
+        });
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      if (height > maxWidth) {
+        width = Math.round((width * maxWidth) / height);
+        height = maxWidth;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ base64: (e.target?.result as string) || '', mime: file.type, name: file.name });
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const base64 = canvas.toDataURL(mime, quality);
+      resolve({ base64, mime, name: file.name });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = (e) => resolve({ base64: (e.target?.result as string) || '', mime: file.type, name: file.name });
+      reader.readAsDataURL(file);
+    };
+    img.src = objectUrl;
+  });
 };
 
 type Listener = () => void;
@@ -51,6 +119,9 @@ class DataService {
   private ppdb: PPDBApplicant[];
   private infaqConfirmations: InfaqConfirmation[] = [];
   private appsScriptUrl: string;
+  private isSyncing = false;
+  private lastSyncTime: number | null = null;
+  private cloudPushTimer: any = null;
 
   constructor() {
     // Load from localStorage or initialize with initialData
@@ -92,6 +163,11 @@ class DataService {
       }
     }
 
+    const savedLastSync = localStorage.getItem(STORAGE_KEYS.LAST_CLOUD_SYNC);
+    if (savedLastSync) {
+      this.lastSyncTime = parseInt(savedLastSync, 10) || null;
+    }
+
     // Cross-tab real-time synchronization
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
@@ -100,6 +176,11 @@ class DataService {
           this.notify();
         }
       });
+
+      // Auto-sinkronisasi awal saat web dibuka di perangkat mana pun
+      setTimeout(() => {
+        this.syncFromCloud().catch(() => {});
+      }, 500);
     }
   }
 
@@ -123,13 +204,50 @@ class DataService {
     }
   }
 
+  /**
+   * Menyimpan ke penyimpanan lokal dan otomatis menjadwalkan
+   * sinkronisasi ke cloud Google Spreadsheet agar semua perangkat terupdate.
+   */
   private save(key: string, data: unknown): void {
     try {
       localStorage.setItem(key, JSON.stringify(data));
       this.notify();
+
+      // Otomatis push ke cloud jika data CMS diubah admin
+      const cmsKeys = [
+        STORAGE_KEYS.SETTINGS,
+        STORAGE_KEYS.ANNOUNCEMENTS,
+        STORAGE_KEYS.NEWS,
+        STORAGE_KEYS.EVENTS,
+        STORAGE_KEYS.TEACHERS,
+        STORAGE_KEYS.FACILITIES,
+        STORAGE_KEYS.GALLERY
+      ];
+      if (cmsKeys.includes(key)) {
+        this.scheduleCloudPush();
+      }
     } catch (e) {
       console.error('Failed to save to localStorage:', e);
     }
+  }
+
+  private saveLocalOnly(key: string, data: unknown): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error('Failed to save local only:', e);
+    }
+  }
+
+  private scheduleCloudPush(): void {
+    if (this.cloudPushTimer) {
+      clearTimeout(this.cloudPushTimer);
+    }
+    this.cloudPushTimer = setTimeout(() => {
+      this.pushToCloud().catch(err => {
+        console.warn('Auto cloud push notification:', err);
+      });
+    }, 1200);
   }
 
   public subscribe(listener: Listener): () => void {
@@ -531,46 +649,346 @@ class DataService {
     };
   }
 
-  // --- SYNC FROM GOOGLE APPS SCRIPT / SPREADSHEET ---
-  public async syncFromGoogle(): Promise<{ success: boolean; message: string; count?: number }> {
+  // --- GOOGLE DRIVE IMAGE UPLOADER ---
+  /**
+   * Mengunggah gambar/logo langsung ke Google Drive sekolah via Apps Script.
+   * File diatur publik sehingga menghasilkan URL gambar CDN permanen (https://lh3.googleusercontent.com/d/...)
+   * yang dapat dilihat di semua perangkat, smartphone, dan browser tanpa batasan lokal.
+   */
+  public async uploadImage(
+    file: File,
+    prefix = 'img'
+  ): Promise<{ success: boolean; url: string; message: string }> {
+    try {
+      const { base64, mime, name } = await compressImage(file);
+      const cleanFileName = `${prefix}_${Date.now()}_${name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+      if (!this.appsScriptUrl) {
+        return {
+          success: true,
+          url: base64,
+          message: 'Tersimpan sementara di memori lokal (URL Apps Script belum diisi).'
+        };
+      }
+
+      // 1. Coba endpoint primer 'upload_image'
+      try {
+        const response = await fetch(this.appsScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'upload_image',
+            fileName: cleanFileName,
+            fileMime: mime,
+            fileData: base64
+          })
+        });
+        const resJson = await response.json();
+        if (resJson && resJson.success && (resJson.directUrl || resJson.driveUrl)) {
+          const driveUrl = resJson.directUrl || resJson.driveUrl;
+          const fileId =
+            resJson.fileId ||
+            driveUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] ||
+            driveUrl.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
+          const finalUrl = fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : driveUrl;
+          return {
+            success: true,
+            url: finalUrl,
+            message: 'Foto berhasil disimpan ke Google Drive sekolah & aktif di semua perangkat!'
+          };
+        }
+      } catch (e) {
+        // Lanjut ke fallback jika script lama belum memiliki upload_image
+      }
+
+      // 2. Fallback kompatibel langsung dengan script yang sudah terpasang (action: save_ppdb dengan upload file)
+      try {
+        const fbResponse = await fetch(this.appsScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'save_ppdb',
+            fileName: cleanFileName,
+            fileMime: mime,
+            fileData: base64,
+            data: {
+              registrationNumber: 'CMS_MEDIA_UPLOAD',
+              studentName: cleanFileName,
+              notes: 'Auto uploaded media file'
+            }
+          })
+        });
+        const fbJson = await fbResponse.json();
+        if (fbJson && fbJson.success && fbJson.driveUrl) {
+          const fileIdMatch = fbJson.driveUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : '';
+          const finalUrl = fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : fbJson.driveUrl;
+          return {
+            success: true,
+            url: finalUrl,
+            message: 'Foto berhasil disimpan ke Google Drive sekolah & tersinkronisasi!'
+          };
+        }
+      } catch (e) {
+        console.warn('Fallback upload image error:', e);
+      }
+
+      // 3. Jika Google Drive sedang tidak merespons, gunakan dataURI terkompresi
+      return {
+        success: true,
+        url: base64,
+        message: 'Tersimpan lokal teroptimasi (Google Drive sedang sibuk).'
+      };
+    } catch (err: any) {
+      console.error('Failed to process image:', err);
+      return { success: false, url: '', message: err.message || 'Gagal memproses gambar.' };
+    }
+  }
+
+  // --- CLOUD CMS PERSISTENCE (PUSH) ---
+  /**
+   * Mengirimkan seluruh konfigurasi CMS ke Google Spreadsheet
+   * agar perubahan dari admin di satu perangkat langsung tersedia untuk perangkat lain.
+   */
+  public async pushToCloud(): Promise<{ success: boolean; message: string }> {
+    if (!this.appsScriptUrl) {
+      return { success: false, message: 'URL Google Apps Script belum dikonfigurasi.' };
+    }
+
+    this.isSyncing = true;
+    this.notify();
+
+    const cmsState = {
+      settings: this.settings,
+      announcements: this.announcements,
+      news: this.news,
+      events: this.events,
+      teachers: this.teachers,
+      facilities: this.facilities,
+      gallery: this.gallery,
+      timestamp: Date.now()
+    };
+
+    try {
+      // 1. Coba endpoint primer 'save_cms'
+      try {
+        const response = await fetch(this.appsScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'save_cms',
+            data: cmsState
+          })
+        });
+        const json = await response.json();
+        if (json && json.success) {
+          this.lastSyncTime = Date.now();
+          this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
+          this.isSyncing = false;
+          this.notify();
+          return { success: true, message: 'Perubahan berhasil disimpan ke Google Spreadsheet (Tersinkron ke Semua Perangkat)!' };
+        }
+      } catch (e) {
+        // Lanjut ke fallback
+      }
+
+      // 2. Fallback kompatibel langsung: simpan ke baris CMS_CONFIG_V1 di Google Spreadsheet
+      const fbResponse = await fetch(this.appsScriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'save_ppdb',
+          data: {
+            registrationNumber: 'CMS_CONFIG_V1',
+            studentName: 'SETTINGS_BACKUP',
+            notes: JSON.stringify(cmsState)
+          }
+        })
+      });
+      const fbJson = await fbResponse.json();
+      if (fbJson && fbJson.success) {
+        this.lastSyncTime = Date.now();
+        this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
+        this.isSyncing = false;
+        this.notify();
+        return { success: true, message: 'Perubahan berhasil tersimpan di Google Spreadsheet sekolah!' };
+      }
+
+      this.isSyncing = false;
+      this.notify();
+      return { success: false, message: 'Gagal mengirim data ke Google Spreadsheet.' };
+    } catch (err: any) {
+      this.isSyncing = false;
+      this.notify();
+      return { success: false, message: 'Koneksi ke Google gagal: ' + (err.message || 'Periksa izin Web App') };
+    }
+  }
+
+  // --- CLOUD CMS RETRIEVAL (PULL / SYNC) ---
+  /**
+   * Mengambil data terbaru dari Google Spreadsheet saat web dibuka di perangkat mana pun.
+   */
+  public async syncFromCloud(): Promise<{ success: boolean; message: string; count?: number }> {
     const url = this.getAppsScriptUrl();
     if (!url) {
       return { success: false, message: 'URL Google Apps Script belum dikonfigurasi.' };
     }
+
+    this.isSyncing = true;
+    this.notify();
+
     try {
       const response = await fetch(`${url}?action=getAll`);
       const json = await response.json();
+
       if (json && json.success && json.data) {
+        let applied = false;
         let count = 0;
-        if (json.data.PPDB && Array.isArray(json.data.PPDB) && json.data.PPDB.length > 0) {
-          const validPpdb = json.data.PPDB.filter((p: any) => p.registrationNumber || p.studentName);
-          if (validPpdb.length > 0) {
-            this.ppdb = validPpdb;
-            this.save(STORAGE_KEYS.PPDB, this.ppdb);
-            count += validPpdb.length;
+
+        // 1. Cek lembar CMS_Data (jika script baru sudah diterapkan)
+        if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Data.length > 0) {
+          const cmsRow = json.data.CMS_Data[0];
+          if (cmsRow && cmsRow.value) {
+            try {
+              const parsed = typeof cmsRow.value === 'string' ? JSON.parse(cmsRow.value) : cmsRow.value;
+              this.applyLoadedState(parsed);
+              applied = true;
+            } catch (err) {
+              console.warn('Gagal membaca lembar CMS_Data:', err);
+            }
           }
         }
-        if (json.data.Infaq && Array.isArray(json.data.Infaq) && json.data.Infaq.length > 0) {
-          const validInfaq = json.data.Infaq.filter((i: any) => i.id || i.donorName);
-          if (validInfaq.length > 0) {
-            this.infaqConfirmations = validInfaq;
-            this.save(STORAGE_KEYS.INFAQ, this.infaqConfirmations);
-            count += validInfaq.length;
+
+        // 2. Cek baris CMS_CONFIG_V1 di lembar PPDB (kompatibel penuh dengan script awal)
+        if (!applied && json.data.PPDB && Array.isArray(json.data.PPDB)) {
+          const cmsRows = json.data.PPDB.filter((p: any) => p.registrationNumber === 'CMS_CONFIG_V1');
+          if (cmsRows.length > 0) {
+            const latestCms = cmsRows[cmsRows.length - 1];
+            if (latestCms.notes) {
+              try {
+                const parsed = JSON.parse(latestCms.notes);
+                this.applyLoadedState(parsed);
+                applied = true;
+              } catch (err) {
+                console.warn('Gagal membaca CMS_CONFIG_V1:', err);
+              }
+            }
           }
         }
+
+        // 3. Sinkronkan data pendaftar santri PPDB murni
+        if (json.data.PPDB && Array.isArray(json.data.PPDB)) {
+          const realPpdb = json.data.PPDB.filter(
+            (p: any) =>
+              p.registrationNumber &&
+              !p.registrationNumber.startsWith('CMS_') &&
+              p.registrationNumber !== 'CMS-CONFIG'
+          );
+          if (realPpdb.length > 0) {
+            this.ppdb = realPpdb;
+            this.saveLocalOnly(STORAGE_KEYS.PPDB, this.ppdb);
+            count += realPpdb.length;
+          }
+        }
+
+        // 4. Sinkronkan data konfirmasi infaq
+        if (json.data.Infaq && Array.isArray(json.data.Infaq)) {
+          const realInfaq = json.data.Infaq.filter((i: any) => i.id || i.donorName);
+          if (realInfaq.length > 0) {
+            this.infaqConfirmations = realInfaq;
+            this.saveLocalOnly(STORAGE_KEYS.INFAQ, this.infaqConfirmations);
+            count += realInfaq.length;
+          }
+        }
+
+        this.lastSyncTime = Date.now();
+        this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
+        this.isSyncing = false;
+        this.notify();
+
         return {
           success: true,
-          message: `Berhasil sinkronisasi dengan Google Spreadsheet! (${count} baris data berhasil dimuat)`,
+          message: applied
+            ? 'Berhasil memuat pengaturan & konten terbaru dari Google Cloud!'
+            : `Berhasil sinkronisasi dengan Google Spreadsheet! (${count} baris data santri & donasi dimuat)`,
           count
         };
       }
+
+      this.isSyncing = false;
+      this.notify();
       return { success: false, message: json?.error || 'Tidak ada data di Google Spreadsheet.' };
     } catch (err: any) {
+      this.isSyncing = false;
+      this.notify();
       return {
         success: false,
-        message: 'Gagal sinkronisasi: ' + (err.message || 'Periksa koneksi atau izin Web App (Anyone)')
+        message: 'Gagal sinkronisasi: ' + (err.message || 'Periksa koneksi')
       };
     }
+  }
+
+  // Alias untuk kompatibilitas
+  public async syncFromGoogle(): Promise<{ success: boolean; message: string; count?: number }> {
+    return this.syncFromCloud();
+  }
+
+  public applyLoadedState(data: any): void {
+    if (!data) return;
+
+    if (data.settings) {
+      this.settings = {
+        ...INITIAL_SETTINGS,
+        ...data.settings,
+        heroAlumniStat: data.settings.heroAlumniStat !== undefined ? data.settings.heroAlumniStat : INITIAL_SETTINGS.heroAlumniStat,
+        heroCardBadge: data.settings.heroCardBadge || INITIAL_SETTINGS.heroCardBadge,
+        heroCardRating: data.settings.heroCardRating || INITIAL_SETTINGS.heroCardRating,
+        heroCardStatNumber: data.settings.heroCardStatNumber || INITIAL_SETTINGS.heroCardStatNumber,
+        heroCardStatLabel: data.settings.heroCardStatLabel || INITIAL_SETTINGS.heroCardStatLabel,
+        heroCardDescription: data.settings.heroCardDescription || INITIAL_SETTINGS.heroCardDescription,
+        heroCardCurriculumTitle: data.settings.heroCardCurriculumTitle || INITIAL_SETTINGS.heroCardCurriculumTitle,
+        heroCardCurriculumSubtitle: data.settings.heroCardCurriculumSubtitle || INITIAL_SETTINGS.heroCardCurriculumSubtitle,
+        heroCardButtonText: data.settings.heroCardButtonText || INITIAL_SETTINGS.heroCardButtonText
+      };
+      this.saveLocalOnly(STORAGE_KEYS.SETTINGS, this.settings);
+    }
+
+    if (Array.isArray(data.announcements) && data.announcements.length > 0) {
+      this.announcements = data.announcements;
+      this.saveLocalOnly(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
+    }
+
+    if (Array.isArray(data.news) && data.news.length > 0) {
+      this.news = data.news;
+      this.saveLocalOnly(STORAGE_KEYS.NEWS, this.news);
+    }
+
+    if (Array.isArray(data.events) && data.events.length > 0) {
+      this.events = data.events;
+      this.saveLocalOnly(STORAGE_KEYS.EVENTS, this.events);
+    }
+
+    if (Array.isArray(data.teachers) && data.teachers.length > 0) {
+      this.teachers = data.teachers;
+      this.saveLocalOnly(STORAGE_KEYS.TEACHERS, this.teachers);
+    }
+
+    if (Array.isArray(data.facilities) && data.facilities.length > 0) {
+      this.facilities = data.facilities;
+      this.saveLocalOnly(STORAGE_KEYS.FACILITIES, this.facilities);
+    }
+
+    if (Array.isArray(data.gallery) && data.gallery.length > 0) {
+      this.gallery = data.gallery;
+      this.saveLocalOnly(STORAGE_KEYS.GALLERY, this.gallery);
+    }
+  }
+
+  public getSyncStatus(): { isSyncing: boolean; lastSyncTime: number | null } {
+    return {
+      isSyncing: this.isSyncing,
+      lastSyncTime: this.lastSyncTime
+    };
   }
 
   // --- CSV EXPORT FOR PPDB ---

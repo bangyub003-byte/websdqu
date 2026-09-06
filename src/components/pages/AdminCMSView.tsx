@@ -192,15 +192,31 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
-  // Helper to convert an uploaded image file into a Data URL
-  const handleFileUpload = (file: File, onLoaded: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        onLoaded(e.target.result as string);
+  // Status unggah gambar ke Google Drive & sinkronisasi cloud
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [cloudSyncMsg, setCloudSyncMsg] = useState<{ text: string; isError?: boolean } | null>(null);
+
+  // Helper cerdas: mengompresi gambar dan mengunggahnya ke Google Drive sekolah
+  // sehingga gambar memiliki tautan publik permanen yang aktif di semua perangkat
+  const handleFileUpload = async (file: File, onLoaded: (url: string) => void, label = 'Foto') => {
+    setUploadingImage(`Mengompresi & mengunggah ${label} ke Google Drive sekolah...`);
+    try {
+      const res = await dataService.uploadImage(file, label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'));
+      if (res.url) {
+        onLoaded(res.url);
+        setCloudSyncMsg({ text: res.message, isError: !res.success });
+        setTimeout(() => setCloudSyncMsg(null), 5000);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('File upload error:', err);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) onLoaded(e.target.result as string);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingImage(null);
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -219,11 +235,26 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     setPassword('');
   };
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     dataService.updateSettings(editSettings);
     setSettingsSaved(true);
-    setTimeout(() => setSettingsSaved(false), 3000);
+    setCloudSyncMsg({ text: 'Menyimpan perubahan & menyinkronkan ke Google Cloud...' });
+    const cloudRes = await dataService.pushToCloud();
+    setCloudSyncMsg({ text: cloudRes.message, isError: !cloudRes.success });
+    setTimeout(() => {
+      setSettingsSaved(false);
+      setCloudSyncMsg(null);
+    }, 5000);
+  };
+
+  const handlePushToCloud = async () => {
+    setIsSyncing(true);
+    setCloudSyncMsg({ text: 'Mengunggah seluruh data CMS ke Google Spreadsheet...' });
+    const res = await dataService.pushToCloud();
+    setIsSyncing(false);
+    setCloudSyncMsg({ text: res.message, isError: !res.success });
+    setTimeout(() => setCloudSyncMsg(null), 5000);
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -522,10 +553,21 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handlePushToCloud}
+            disabled={isSyncing}
+            className="text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 px-4 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+            title="Kirim dan sinkronkan semua perubahan ke Google Cloud agar tampil di semua perangkat"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Lintas Perangkat'}</span>
+          </button>
+
           <button
             onClick={() => setActivePage('beranda')}
-            className="text-xs font-bold text-slate-600 hover:text-emerald-900 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+            className="text-xs font-bold text-slate-600 hover:text-emerald-900 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
           >
             <Eye className="w-3.5 h-3.5" />
             <span>Lihat Website</span>
@@ -533,13 +575,40 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
 
           <button
             onClick={handleLogout}
-            className="text-xs font-bold text-rose-700 hover:text-rose-800 px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
+            className="text-xs font-bold text-rose-700 hover:text-rose-800 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Keluar</span>
           </button>
         </div>
       </div>
+
+      {/* Floating Status Notification for Cloud Sync & Image Uploads */}
+      {(uploadingImage || cloudSyncMsg) && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md bg-slate-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center gap-3 animate-in slide-in-from-bottom-5">
+          {uploadingImage ? (
+            <>
+              <RefreshCw className="w-4 h-4 text-amber-400 animate-spin shrink-0" />
+              <div className="text-xs">
+                <p className="font-bold text-amber-300">{uploadingImage}</p>
+                <p className="text-[11px] text-slate-300">File disimpan permanen ke Google Drive &amp; aktif di semua perangkat.</p>
+              </div>
+            </>
+          ) : cloudSyncMsg ? (
+            <>
+              {cloudSyncMsg.isError ? (
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              ) : (
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              )}
+              <div className="text-xs">
+                <p className="font-bold text-white">{cloudSyncMsg.text}</p>
+                <p className="text-[10px] text-slate-300">Semua perangkat &amp; smartphone otomatis menampilkan data terbaru.</p>
+              </div>
+            </>
+          ) : null}
+        </div>
+      )}
 
       {/* Navigation Tabs (Responsive horizontally scrollable on mobile) */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar scroll-smooth">
@@ -3093,6 +3162,83 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 <span className="truncate">🌐 Uji Endpoint API Web App</span>
                 <ExternalLink className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
               </a>
+            </div>
+          </div>
+
+          {/* Panduan Pembaruan Script Apps Script (Agar Logo & Foto Otomatis Masuk Drive & Sinkron ke Semua HP) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
+                  KODE BACKEND GOOGLE DRIVE &amp; SPREADSHEET
+                </span>
+                <h3 className="text-lg font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-1">
+                  Sinkronisasi Gambar &amp; Pengaturan Lintas Perangkat
+                </h3>
+                <p className="text-xs text-slate-600 max-w-2xl">
+                  Salin kode backend terbaru di bawah ini ke Google Apps Script Spreadsheet Anda agar setiap kali Anda mengganti logo atau foto di satu perangkat, gambarnya otomatis tersimpan di Google Drive sekolah dan langsung muncul di semua smartphone dan laptop pengunjung.
+                </p>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(APPS_SCRIPT_CODE);
+                    setCopiedCode(true);
+                    setTimeout(() => setCopiedCode(false), 3000);
+                  }}
+                  className="bg-emerald-900 hover:bg-emerald-800 text-amber-300 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-xs transition-colors"
+                >
+                  {copiedCode ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedCode ? '✓ Kode Tersalin!' : 'Salin Kode Apps Script'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">1</div>
+                <h5 className="text-xs font-bold text-slate-900">Buka Spreadsheet</h5>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Buka Spreadsheet sekolah Anda, lalu klik menu atas <strong>Ekstensi &gt; Apps Script</strong>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">2</div>
+                <h5 className="text-xs font-bold text-slate-900">Tempel Kode Baru</h5>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Hapus seluruh kode lama di file <code>Code.gs</code>, lalu <strong>Paste</strong> kode yang baru saja disalin. Klik tombol <strong>Simpan</strong> (ikon disket).
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">3</div>
+                <h5 className="text-xs font-bold text-slate-900">Terapkan Versi Baru</h5>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Klik tombol biru <strong>Terapkan (Deploy)</strong> di kanan atas &gt; <strong>Kelola penerapan</strong> &gt; Ikon pensil (Edit) &gt; Versi: <strong>Versi baru</strong> &gt; Klik <strong>Terapkan</strong>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+                <div className="w-6 h-6 rounded-lg bg-emerald-800 text-emerald-100 text-xs font-bold flex items-center justify-center">4</div>
+                <h5 className="text-xs font-bold text-emerald-950">Selesai &amp; Otomatis!</h5>
+                <p className="text-[11px] text-emerald-900/80 leading-relaxed">
+                  Sekarang setiap foto &amp; teks yang diubah admin langsung tersinkron dan tampil di semua smartphone pengunjung!
+                </p>
+              </div>
+            </div>
+
+            {/* Code Box Container */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-mono font-bold">Code.gs (Google Apps Script)</span>
+                <span className="text-[11px]">JavaScript Google Workspace</span>
+              </div>
+              <div className="max-h-72 overflow-y-auto bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-200 leading-relaxed">
+                <pre>{APPS_SCRIPT_CODE}</pre>
+              </div>
             </div>
           </div>
         </div>
