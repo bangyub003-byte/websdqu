@@ -12,7 +12,8 @@ import {
   ExtracurricularItem
 } from '../../types';
 import { dataService } from '../../services/dataService';
-import { GOOGLE_CONFIG, APPS_SCRIPT_CODE } from '../../config/googleConfig';
+import { GOOGLE_CONFIG, APPS_SCRIPT_CODE, getAppsScriptCode } from '../../config/googleConfig';
+import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import {
   ShieldCheck,
   Lock,
@@ -188,8 +189,11 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
 
   // Google Apps Script Integration State
   const [appsScriptUrlInput, setAppsScriptUrlInput] = useState(dataService.getAppsScriptUrl());
+  const [spreadsheetIdInput, setSpreadsheetIdInput] = useState(dataService.getSpreadsheetId());
+  const [driveFolderIdInput, setDriveFolderIdInput] = useState(dataService.getDriveFolderId());
   const [appsScriptSaved, setAppsScriptSaved] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   // Status unggah gambar ke Google Drive & sinkronisasi cloud
@@ -280,11 +284,30 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     setTimeout(() => setPwdFeedback(null), 5000);
   };
 
-  const handleSaveAppsScriptUrl = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveGoogleSettings = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     dataService.setAppsScriptUrl(appsScriptUrlInput);
+    dataService.setSpreadsheetId(spreadsheetIdInput);
+    dataService.setDriveFolderId(driveFolderIdInput);
     setAppsScriptSaved(true);
-    setTimeout(() => setAppsScriptSaved(false), 3000);
+    setTimeout(() => setAppsScriptSaved(false), 3500);
+  };
+
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    setSyncFeedback(null);
+    try {
+      dataService.setAppsScriptUrl(appsScriptUrlInput);
+      dataService.setSpreadsheetId(spreadsheetIdInput);
+      dataService.setDriveFolderId(driveFolderIdInput);
+      const res = await dataService.testAppsScriptConnection();
+      setSyncFeedback(res);
+    } catch (e: any) {
+      setSyncFeedback({ success: false, message: 'Gagal menguji koneksi: ' + (e.message || 'Periksa koneksi internet') });
+    } finally {
+      setIsTestingConnection(false);
+      setTimeout(() => setSyncFeedback(null), 8000);
+    }
   };
 
   const handleSyncGoogle = async () => {
@@ -294,6 +317,35 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     setIsSyncing(false);
     setSyncFeedback(res);
     setTimeout(() => setSyncFeedback(null), 6000);
+  };
+
+  const [isFormattingSheets, setIsFormattingSheets] = useState(false);
+
+  const handleFormatSheets = async () => {
+    setIsFormattingSheets(true);
+    setSyncFeedback(null);
+    try {
+      const res = await dataService.pushToCloud();
+      if (res && res.success) {
+        setSyncFeedback({
+          success: true,
+          message: 'Berhasil! Semua lembar (Settings, Teachers, Facilities, News, dll) telah diformat dan disinkronkan ke Google Spreadsheet.'
+        });
+      } else {
+        setSyncFeedback({
+          success: false,
+          message: res?.message || 'Gagal menyinkronkan lembar ke Spreadsheet. Pastikan URL Apps Script sudah benar.'
+        });
+      }
+    } catch (err: any) {
+      setSyncFeedback({
+        success: false,
+        message: err?.message || 'Terjadi kesalahan saat memformat lembar Spreadsheet.'
+      });
+    } finally {
+      setIsFormattingSheets(false);
+      setTimeout(() => setSyncFeedback(null), 7000);
+    }
   };
 
   const handleToggleAnnouncement = (id: string, current: boolean) => {
@@ -744,136 +796,52 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
             )}
           </div>
 
-          {/* Section: Logo & Media Images */}
+          {/* Section: Logo & Media Images dengan Pratinjau Thumbnail Nyata */}
           <div className="space-y-4">
-            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4" />
-              <span>Logo &amp; Banner Gambar Website</span>
-            </h4>
+            <div>
+              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4" />
+                <span>Foto Logo &amp; Banner Utama Website (Pratinjau Thumbnail)</span>
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pilih atau unggah file foto dari HP/Laptop Anda. Gambar otomatis dikompresi, disimpan aman di Google Drive, dan langsung tampil sebagai thumbnail.
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
               {/* Logo Sekolah */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                <label className="text-xs font-bold text-slate-800 block">Logo Sekolah</label>
-                <div className="w-20 h-20 bg-white rounded-xl border border-slate-200 p-2 flex items-center justify-center mx-auto overflow-hidden">
-                  <img
-                    src={editSettings.logoUrl || '/images/logo.png'}
-                    alt="Preview Logo"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-600">URL Gambar Logo:</label>
-                  <input
-                    type="text"
-                    value={editSettings.logoUrl || ''}
-                    onChange={e => setEditSettings({ ...editSettings, logoUrl: e.target.value })}
-                    placeholder="/images/logo.png atau https://..."
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                  />
-                  <div className="flex items-center gap-2 pt-1">
-                    <label className="cursor-pointer bg-emerald-900 hover:bg-emerald-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <span>Pilih File</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setEditSettings({ ...editSettings, logoUrl: url }));
-                          }
-                        }}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setEditSettings({ ...editSettings, logoUrl: '/images/logo.png' })}
-                      className="text-[10px] text-slate-600 hover:text-slate-900 px-2 py-1 bg-white border border-slate-200 rounded-lg"
-                    >
-                      Reset Bawaan
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ThumbnailUploader
+                label="Logo Resmi Sekolah"
+                value={editSettings.logoUrl || '/images/logo.png'}
+                onChange={url => setEditSettings({ ...editSettings, logoUrl: url })}
+                onUploadFile={(file, label) => handleFileUpload(file, url => setEditSettings({ ...editSettings, logoUrl: url }), label)}
+                aspectRatio="square"
+                fit="contain"
+                helperText="PNG transparan direkomendasikan"
+                defaultFallback="/images/logo.png"
+              />
 
               {/* Banner Hero Beranda */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                <label className="text-xs font-bold text-slate-800 block">Foto Banner Hero Beranda</label>
-                <div className="h-20 bg-slate-900 rounded-xl overflow-hidden border border-slate-200">
-                  <img
-                    src={editSettings.heroImageUrl || "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80"}
-                    alt="Preview Hero"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-600">URL Gambar Banner Hero:</label>
-                  <input
-                    type="text"
-                    value={editSettings.heroImageUrl || ''}
-                    onChange={e => setEditSettings({ ...editSettings, heroImageUrl: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                  />
-                  <div className="flex items-center gap-2 pt-1">
-                    <label className="cursor-pointer bg-emerald-900 hover:bg-emerald-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <span>Unggah File</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setEditSettings({ ...editSettings, heroImageUrl: url }));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
+              <ThumbnailUploader
+                label="Foto Banner Hero Beranda"
+                value={editSettings.heroImageUrl || "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80"}
+                onChange={url => setEditSettings({ ...editSettings, heroImageUrl: url })}
+                onUploadFile={(file, label) => handleFileUpload(file, url => setEditSettings({ ...editSettings, heroImageUrl: url }), label)}
+                aspectRatio="video"
+                fit="cover"
+                helperText="Format lanskap 16:9 disarankan"
+              />
 
               {/* Banner Halaman Profil */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                <label className="text-xs font-bold text-slate-800 block">Foto Banner Profil Sekolah</label>
-                <div className="h-20 bg-slate-900 rounded-xl overflow-hidden border border-slate-200">
-                  <img
-                    src={editSettings.profileBannerImageUrl || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80"}
-                    alt="Preview Banner Profil"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-600">URL Gambar Banner Profil:</label>
-                  <input
-                    type="text"
-                    value={editSettings.profileBannerImageUrl || ''}
-                    onChange={e => setEditSettings({ ...editSettings, profileBannerImageUrl: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                  />
-                  <div className="flex items-center gap-2 pt-1">
-                    <label className="cursor-pointer bg-emerald-900 hover:bg-emerald-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <span>Unggah File</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setEditSettings({ ...editSettings, profileBannerImageUrl: url }));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
+              <ThumbnailUploader
+                label="Foto Banner Profil Sekolah"
+                value={editSettings.profileBannerImageUrl || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80"}
+                onChange={url => setEditSettings({ ...editSettings, profileBannerImageUrl: url })}
+                onUploadFile={(file, label) => handleFileUpload(file, url => setEditSettings({ ...editSettings, profileBannerImageUrl: url }), label)}
+                aspectRatio="video"
+                fit="cover"
+                helperText="Format lanskap disarankan"
+              />
             </div>
           </div>
 
@@ -1758,29 +1726,16 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">URL Gambar / Foto Fasilitas</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newFacImage}
-                      onChange={e => setNewFacImage(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono"
-                    />
-                    <label className="cursor-pointer bg-emerald-900 text-white px-3 py-2 rounded-lg text-xs font-bold shrink-0 flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setNewFacImage(url));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
+                <div className="sm:col-span-2">
+                  <ThumbnailUploader
+                    label="Foto Fasilitas Sekolah (Thumbnail)"
+                    value={newFacImage}
+                    onChange={setNewFacImage}
+                    onUploadFile={(file, label) => handleFileUpload(file, setNewFacImage, label)}
+                    aspectRatio="video"
+                    fit="cover"
+                    helperText="Pilih foto fasilitas dari galeri HP atau komputer"
+                  />
                 </div>
               </div>
 
@@ -1831,30 +1786,14 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                         />
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-600">URL / Unggah Gambar</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={editFacImage}
-                            onChange={e => setEditFacImage(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                          />
-                          <label className="cursor-pointer bg-emerald-900 text-white px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 flex items-center gap-1">
-                            <Upload className="w-3 h-3" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={e => {
-                                if (e.target.files?.[0]) {
-                                  handleFileUpload(e.target.files[0], url => setEditFacImage(url));
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      </div>
+                      <ThumbnailUploader
+                        label="Foto Fasilitas (Thumbnail)"
+                        value={editFacImage}
+                        onChange={setEditFacImage}
+                        onUploadFile={(file, label) => handleFileUpload(file, setEditFacImage, label)}
+                        aspectRatio="video"
+                        fit="cover"
+                      />
 
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-slate-600">Spesifikasi (Koma dipisahkan)</label>
@@ -2017,29 +1956,16 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                     className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Foto (URL / Unggah)</label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="text"
-                      value={newTeacherImage}
-                      onChange={e => setNewTeacherImage(e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                    />
-                    <label className="cursor-pointer bg-emerald-900 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shrink-0 flex items-center gap-1">
-                      <Upload className="w-3 h-3" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setNewTeacherImage(url));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
+                <div className="sm:col-span-2">
+                  <ThumbnailUploader
+                    label="Foto Ustadz / Guru (Thumbnail)"
+                    value={newTeacherImage}
+                    onChange={setNewTeacherImage}
+                    onUploadFile={(file, label) => handleFileUpload(file, setNewTeacherImage, label)}
+                    aspectRatio="avatar"
+                    fit="cover"
+                    helperText="Pilih foto guru dari galeri HP atau komputer"
+                  />
                 </div>
               </div>
 
@@ -2298,31 +2224,16 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Foto Berita</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newNewsImage}
-                      onChange={e => setNewNewsImage(e.target.value)}
-                      placeholder="https://..."
-                      className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white font-mono"
-                    />
-                    <label className="cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-800 text-[10px] font-bold px-2.5 py-2 rounded-lg inline-flex items-center gap-1 shrink-0">
-                      <Upload className="w-3 h-3" />
-                      <span>Upload</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setNewNewsImage(url));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
+                <div className="sm:col-span-2">
+                  <ThumbnailUploader
+                    label="Foto Dokumentasi Berita (Thumbnail)"
+                    value={newNewsImage}
+                    onChange={setNewNewsImage}
+                    onUploadFile={(file, label) => handleFileUpload(file, setNewNewsImage, label)}
+                    aspectRatio="video"
+                    fit="cover"
+                    helperText="Pilih foto kegiatan atau berita dari galeri HP atau komputer"
+                  />
                 </div>
 
                 <div className="space-y-1">
@@ -2557,66 +2468,32 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center">
-                {/* QRIS Image Preview */}
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 flex flex-col items-center justify-center text-center shadow-xs">
-                  {editSettings.qrisImageUrl ? (
-                    <img
-                      src={editSettings.qrisImageUrl}
-                      alt="Preview QRIS"
-                      className="max-h-40 max-w-full object-contain rounded-xl"
-                    />
-                  ) : (
-                    <div className="py-6 text-slate-400 flex flex-col items-center">
-                      <ImageIcon className="w-12 h-12 stroke-[1.5]" />
-                      <span className="text-[11px] font-semibold mt-2">Belum ada gambar QRIS</span>
-                      <span className="text-[10px] text-slate-400">Barcode standar otomatis aktif</span>
-                    </div>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start">
+                {/* QRIS Image Preview with ThumbnailUploader */}
+                <div className="sm:col-span-2">
+                  <ThumbnailUploader
+                    label="Foto Barcode QRIS Resmi Sekolah (Thumbnail)"
+                    value={editSettings.qrisImageUrl || ''}
+                    onChange={url => setEditSettings({ ...editSettings, qrisImageUrl: url })}
+                    onUploadFile={(file, label) => handleFileUpload(file, url => setEditSettings({ ...editSettings, qrisImageUrl: url }), label)}
+                    aspectRatio="square"
+                    fit="contain"
+                    helperText="Unggah gambar screenshot atau file QRIS dari Bank"
+                  />
                 </div>
 
-                {/* Upload & NMID fields */}
-                <div className="sm:col-span-2 space-y-3">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">
-                      Unggah File Gambar Barcode QRIS
-                    </label>
-                    <label className="cursor-pointer bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl inline-flex items-center gap-2 shadow-xs transition-colors">
-                      <Upload className="w-4 h-4" />
-                      <span>Pilih File QRIS (PNG / JPG)</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) {
-                            handleFileUpload(e.target.files[0], url => setEditSettings({ ...editSettings, qrisImageUrl: url }));
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-
+                {/* NMID field */}
+                <div className="space-y-3 bg-white p-4 rounded-2xl border border-slate-200">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-600">Atau Masukkan URL Gambar QRIS:</label>
-                    <input
-                      type="text"
-                      value={editSettings.qrisImageUrl || ''}
-                      onChange={e => setEditSettings({ ...editSettings, qrisImageUrl: e.target.value })}
-                      placeholder="https://..."
-                      className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono bg-white"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-600">Nomor NMID QRIS:</label>
+                    <label className="text-[11px] font-bold text-slate-700">Nomor NMID QRIS:</label>
                     <input
                       type="text"
                       value={editSettings.qrisId || ''}
                       onChange={e => setEditSettings({ ...editSettings, qrisId: e.target.value })}
-                      placeholder="Contoh: NMID: ID1023249081721"
-                      className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono bg-white font-semibold"
+                      placeholder="Contoh: ID1023249081721"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-white font-semibold"
                     />
+                    <p className="text-[10px] text-slate-500">Nomor National Merchant ID yang tertera di bawah barcode QRIS Anda.</p>
                   </div>
                 </div>
               </div>
@@ -3062,32 +2939,45 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
       {/* TAB CONTENT: GOOGLE APPS SCRIPT DEPLOY GUIDE */}
       {activeTab === 'google' && (
         <div className="space-y-6">
+          {/* Main Google Integration Control Panel */}
           <div className="bg-emerald-950 text-white rounded-3xl p-6 sm:p-8 border border-emerald-800/60 shadow-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-800 text-emerald-100 border border-emerald-600">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Google Apps Script Web App Terhubung
+                    Integrasi Cloud Google Aktif
                   </span>
                 </div>
                 <h3 className="text-xl font-bold font-['Plus_Jakarta_Sans',sans-serif] text-white">
-                  Database Google Spreadsheet &amp; Drive Aktif
+                  Koneksi Google Spreadsheet &amp; Google Drive
                 </h3>
                 <p className="text-xs text-emerald-200/80 leading-relaxed max-w-2xl">
-                  Data konfirmasi infaq dan formulir pendukung terhubung langsung ke Google Spreadsheet resmi sekolah dan Google Drive.
+                  Kelola ID Spreadsheet, ID Folder Drive, dan URL Web App Apps Script agar seluruh perubahan data &amp; unggahan foto otomatis tersinkron ke semua perangkat.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
+                  onClick={handleFormatSheets}
+                  disabled={isFormattingSheets || isSyncing || isTestingConnection}
+                  className="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow transition-colors disabled:opacity-50 border border-emerald-600"
+                  title="Format dan isi lembar Spreadsheet agar mudah dibaca manusia"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isFormattingSheets ? 'animate-spin' : ''}`} />
+                  <span>{isFormattingSheets ? 'Memformat Lembar...' : 'Format & Isi Lembar Spreadsheet'}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleSyncGoogle}
-                  disabled={isSyncing}
-                  className="bg-amber-400 hover:bg-amber-300 text-slate-900 px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow transition-colors disabled:opacity-50"
+                  disabled={isSyncing || isFormattingSheets || isTestingConnection}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow transition-colors disabled:opacity-50"
+                  title="Tarik data terbaru yang diedit di Spreadsheet"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Data Spreadsheet'}</span>
+                  <span>{isSyncing ? 'Menyinkronkan...' : 'Tarik Data dari Spreadsheet'}</span>
                 </button>
               </div>
             </div>
@@ -3096,24 +2986,100 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
             {syncFeedback && (
               <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${syncFeedback.success ? 'bg-emerald-900/90 text-emerald-100 border border-emerald-700' : 'bg-rose-900/80 text-rose-100 border border-rose-700'}`}>
                 {syncFeedback.success ? <Check className="w-4 h-4 text-emerald-300 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />}
-                <span>{syncFeedback.message}</span>
+                <span className="leading-relaxed">{syncFeedback.message}</span>
               </div>
             )}
 
-            {/* Web App URL Form */}
-            <form onSubmit={handleSaveAppsScriptUrl} className="space-y-3 bg-emerald-900/40 p-4 rounded-2xl border border-emerald-800/60">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <label className="text-xs font-bold text-emerald-200">
-                  URL Web App Google Apps Script Aktif:
-                </label>
+            {/* Form Input ID Spreadsheet, ID Drive, & URL Web App */}
+            <form onSubmit={handleSaveGoogleSettings} className="space-y-4 bg-emerald-900/40 p-5 rounded-2xl border border-emerald-800/60">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-800/50 pb-3">
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                  Parameter Integrasi Google (Spreadsheet, Drive &amp; Apps Script)
+                </span>
                 {appsScriptSaved && (
-                  <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-emerald-300 flex items-center gap-1 bg-emerald-800/80 px-2.5 py-1 rounded-lg">
                     <Check className="w-3.5 h-3.5" />
-                    <span>URL Berhasil Diperbarui &amp; Disimpan!</span>
+                    <span>Semua ID &amp; URL Berhasil Disimpan!</span>
                   </span>
                 )}
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. ID Spreadsheet */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
+                      <span>📊 ID Google Spreadsheet:</span>
+                    </label>
+                    <a
+                      href={`https://docs.google.com/spreadsheets/d/${spreadsheetIdInput || GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
+                    >
+                      <span>Buka File</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={spreadsheetIdInput}
+                    onChange={e => setSpreadsheetIdInput(e.target.value)}
+                    placeholder="Contoh: 1JHMBdolxzEDbDEzjwsFDktXKjvEuYSImxEeOFYayOxk"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-emerald-300/70">
+                    ID terdapat di URL browser Spreadsheet Anda (antara <code>/d/</code> dan <code>/edit</code>).
+                  </p>
+                </div>
+
+                {/* 2. ID Folder Google Drive */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
+                      <span>📁 ID Folder Google Drive:</span>
+                    </label>
+                    <a
+                      href={`https://drive.google.com/drive/folders/${driveFolderIdInput || GOOGLE_CONFIG.DRIVE_FOLDER_ID}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
+                    >
+                      <span>Buka Folder</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    value={driveFolderIdInput}
+                    onChange={e => setDriveFolderIdInput(e.target.value)}
+                    placeholder="Contoh: 1e73r9W_Vj7s-0f3r4qg8zM9aBCDeFghI"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-emerald-300/70">
+                    Folder tempat menyimpan foto upload. Jika kosong, script otomatis membuat folder "SDQU_Berkas_Upload".
+                  </p>
+                </div>
+              </div>
+
+              {/* 3. URL Web App Google Apps Script */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-emerald-200">
+                    🌐 URL Web App Google Apps Script (/exec):
+                  </label>
+                  {appsScriptUrlInput && (
+                    <a
+                      href={`${appsScriptUrlInput}?action=getAll`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
+                    >
+                      <span>Tes di Tab Baru</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  )}
+                </div>
                 <input
                   type="url"
                   value={appsScriptUrlInput}
@@ -3121,12 +3087,29 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                   placeholder="https://script.google.com/macros/s/.../exec"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
                 />
+                <p className="text-[10px] text-emerald-300/70">
+                  Didapat setelah klik Deploy &gt; Penerapan Baru (Web App) di Apps Script dengan akses: "Siapa saja (Anyone)".
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2">
                 <button
                   type="submit"
-                  className="bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+                  className="bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Simpan URL</span>
+                  <span>Simpan Pengaturan ID &amp; URL</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={isTestingConnection || !appsScriptUrlInput}
+                  className="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-emerald-700/80 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isTestingConnection ? 'animate-spin' : ''}`} />
+                  <span>{isTestingConnection ? 'Menguji Koneksi...' : 'Uji Koneksi Langsung'}</span>
                 </button>
               </div>
             </form>
@@ -3134,7 +3117,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
             {/* Quick Links */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <a
-                href={`https://docs.google.com/spreadsheets/d/${GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
+                href={`https://docs.google.com/spreadsheets/d/${spreadsheetIdInput || GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
@@ -3144,7 +3127,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
               </a>
 
               <a
-                href={`https://drive.google.com/drive/folders/${GOOGLE_CONFIG.DRIVE_FOLDER_ID}`}
+                href={`https://drive.google.com/drive/folders/${driveFolderIdInput || GOOGLE_CONFIG.DRIVE_FOLDER_ID}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
@@ -3154,18 +3137,168 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
               </a>
 
               <a
-                href={`${appsScriptUrlInput}?action=getAll`}
+                href={`${appsScriptUrlInput || GOOGLE_CONFIG.APPS_SCRIPT_DEFAULT_URL}?action=getAll`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
               >
-                <span className="truncate">🌐 Uji Endpoint API Web App</span>
+                <span className="truncate">🌐 Cek Endpoint API Web App</span>
                 <ExternalLink className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
               </a>
             </div>
           </div>
 
-          {/* Panduan Pembaruan Script Apps Script (Agar Logo & Foto Otomatis Masuk Drive & Sinkron ke Semua HP) */}
+          {/* Panduan Lengkap & Praktis: Cara Mengedit Isi Web Langsung di Google Spreadsheet */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-4">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                PANDUAN LENGKAP &amp; OTOMATIS
+              </span>
+              <h3 className="text-lg font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-2">
+                Cara Mengedit Seluruh Isi Website di Google Spreadsheet
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">
+                Anda memiliki 2 cara mudah untuk mengubah konten website. Keduanya saling terhubung secara otomatis ke Google Spreadsheet sekolah dan langsung tampil di semua perangkat (HP, tablet, dan laptop pengunjung).
+              </p>
+            </div>
+
+            {/* 2 Pilihan Alur Kerja */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Opsi 1: Lewat Panel Admin */}
+              <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-3">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
+                  <span className="w-5 h-5 rounded-full bg-emerald-900 text-amber-300 flex items-center justify-center text-[10px]">A</span>
+                  <span>Cara 1: Lewat Menu Admin Ini (Paling Praktis &amp; Ada Thumbnail)</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Pilih menu di samping (misal: <strong>Pengaturan &amp; Hero</strong>, <strong>Guru &amp; Asatidz</strong>, atau <strong>Fasilitas</strong>). 
+                  Klik tombol <strong>Unggah Foto</strong> untuk memilih foto langsung dari galeri HP atau laptop. Foto otomatis disimpan ke Google Drive dan tampil sebagai <strong>thumbnail foto</strong>!
+                </p>
+                <div className="text-[11px] font-bold text-emerald-800 bg-white p-2.5 rounded-xl border border-emerald-200 flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Otomatis mengirim data ke Google Spreadsheet &amp; aktif di semua HP.</span>
+                </div>
+              </div>
+
+              {/* Opsi 2: Langsung di Google Spreadsheet */}
+              <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
+                <div className="flex items-center gap-2 text-amber-950 font-bold text-xs">
+                  <span className="w-5 h-5 rounded-full bg-amber-800 text-white flex items-center justify-center text-[10px]">B</span>
+                  <span>Cara 2: Langsung Buka &amp; Ketik di Google Spreadsheet</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  Buka Google Spreadsheet sekolah Anda, lalu pilih lembar kerja di bagian bawah sesuai bagian yang ingin Anda edit (misal lembar <strong>Settings</strong>, <strong>Teachers</strong>, atau <strong>News</strong>). Ketik perubahan teks pada kolom yang tersedia.
+                </p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://docs.google.com/spreadsheets/d/${GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors shadow-xs"
+                  >
+                    <span>Buka Spreadsheet Sekolah</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleFormatSheets}
+                    disabled={isFormattingSheets}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-colors"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-600" />
+                    <span>Format Lembar Baru</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Peta Kolom Setiap Lembar Spreadsheet */}
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-emerald-800" />
+                <span>Struktur Lembar Kerja (Sheet) di Google Spreadsheet:</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                {/* Sheet Settings */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>1. Lembar "Settings"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Kolom C</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Edit kolom <strong>Value</strong> untuk mengubah Nama Sekolah, Tagline, Nomor WhatsApp, Email, Alamat, Link Foto Logo, dan Banner Beranda.
+                  </p>
+                </div>
+
+                {/* Sheet Teachers */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>2. Lembar "Teachers"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Guru &amp; Asatidz</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Setiap baris mewakili 1 guru: kolom <strong>name</strong> (nama guru), <strong>role</strong> (jabatan), <strong>specialty</strong> (keahlian), dan <strong>imageUrl</strong> (foto).
+                  </p>
+                </div>
+
+                {/* Sheet Facilities */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>3. Lembar "Facilities"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Fasilitas</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Kolom <strong>name</strong> (nama ruang/gedung), <strong>category</strong>, <strong>imageUrl</strong> (foto fasilitas), dan <strong>description</strong>.
+                  </p>
+                </div>
+
+                {/* Sheet News */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>4. Lembar "News"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Berita &amp; Artikel</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Kolom <strong>title</strong> (judul), <strong>summary</strong>, <strong>content</strong> (isi berita lengkap), <strong>date</strong>, <strong>author</strong>, dan <strong>imageUrl</strong>.
+                  </p>
+                </div>
+
+                {/* Sheet Announcements */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>5. Lembar "Announcements"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Pengumuman</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Kolom <strong>title</strong>, <strong>content</strong>, <strong>category</strong>, dan <strong>isActive</strong> (isi "Ya" atau "Tidak" untuk mengaktifkan).
+                  </p>
+                </div>
+
+                {/* Sheet Events */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                  <div className="font-bold text-emerald-900 flex items-center justify-between">
+                    <span>6. Lembar "Events"</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Agenda Kegiatan</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Kolom <strong>title</strong>, <strong>date</strong> (tanggal), <strong>time</strong> (jam), <strong>location</strong> (tempat), dan <strong>description</strong>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Kunci: Mengapa Otomatis Berubah di Semua HP */}
+            <div className="p-4 rounded-2xl bg-slate-900 text-slate-200 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-amber-300 font-bold">
+                <Sparkles className="w-4 h-4" />
+                <span>Bagaimana Website Otomatis Berubah di Semua HP Pengunjung?</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-300">
+                Website ini dirancang secara <strong>real-time dinamis</strong>. Setiap kali wali santri atau pengunjung membuka website dari smartphone atau laptop, sistem langsung memanggil data terbaru dari Google Spreadsheet Anda melalui endpoint Web App Apps Script. Anda tidak perlu menyentuh Vercel atau melakukan deploy ulang setiap kali ada pergantian teks atau foto!
+              </p>
+            </div>
+          </div>
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="space-y-1">
@@ -3184,7 +3317,8 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText(APPS_SCRIPT_CODE);
+                    const code = getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput);
+                    navigator.clipboard.writeText(code);
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 3000);
                   }}
@@ -3237,7 +3371,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 <span className="text-[11px]">JavaScript Google Workspace</span>
               </div>
               <div className="max-h-72 overflow-y-auto bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-200 leading-relaxed">
-                <pre>{APPS_SCRIPT_CODE}</pre>
+                <pre>{getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput)}</pre>
               </div>
             </div>
           </div>

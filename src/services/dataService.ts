@@ -33,6 +33,8 @@ const STORAGE_KEYS = {
   PPDB: 'sdqu_ppdb_v1',
   INFAQ: 'sdqu_infaq_v1',
   APPS_SCRIPT_URL: 'sdqu_apps_script_url_v1',
+  SPREADSHEET_ID: 'sdqu_spreadsheet_id_v1',
+  DRIVE_FOLDER_ID: 'sdqu_drive_folder_id_v1',
   ADMIN_AUTH: 'sdqu_admin_auth_v1',
   ADMIN_PASSWORD: 'sdqu_admin_pwd_v1',
   LAST_CLOUD_SYNC: 'sdqu_last_cloud_sync_v1'
@@ -332,6 +334,79 @@ class DataService {
     this.notify();
   }
 
+  public getSpreadsheetId(): string {
+    return localStorage.getItem(STORAGE_KEYS.SPREADSHEET_ID) || GOOGLE_CONFIG.SPREADSHEET_ID;
+  }
+
+  public setSpreadsheetId(id: string): void {
+    const cleanId = id ? id.trim() : '';
+    if (cleanId) {
+      localStorage.setItem(STORAGE_KEYS.SPREADSHEET_ID, cleanId);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.SPREADSHEET_ID);
+    }
+    this.notify();
+  }
+
+  public getDriveFolderId(): string {
+    return localStorage.getItem(STORAGE_KEYS.DRIVE_FOLDER_ID) || GOOGLE_CONFIG.DRIVE_FOLDER_ID;
+  }
+
+  public setDriveFolderId(id: string): void {
+    const cleanId = id ? id.trim() : '';
+    if (cleanId) {
+      localStorage.setItem(STORAGE_KEYS.DRIVE_FOLDER_ID, cleanId);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.DRIVE_FOLDER_ID);
+    }
+    this.notify();
+  }
+
+  /**
+   * Tes koneksi ke Web App Google Apps Script
+   */
+  public async testAppsScriptConnection(): Promise<{ success: boolean; message: string }> {
+    const url = this.getAppsScriptUrl();
+    if (!url || url.trim() === '') {
+      return { success: false, message: 'URL Web App Apps Script belum diisi.' };
+    }
+
+    try {
+      const resp = await fetch(`${url}?action=getAll`, { method: 'GET' });
+      const text = await resp.text();
+
+      if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+        return {
+          success: false,
+          message: 'Web App mengembalikan halaman login Google. Pastikan saat "Deploy baru" di Apps Script, opsi Akses (Who has access) dipilih "Siapa saja (Anyone)".'
+        };
+      }
+
+      try {
+        const json = JSON.parse(text);
+        if (json && json.success) {
+          const sheetNames = json.data ? Object.keys(json.data).join(', ') : 'Tersambung';
+          return {
+            success: true,
+            message: `Koneksi Berhasil! Terhubung ke lembar spreadsheet: [${sheetNames}]`
+          };
+        }
+      } catch {
+        // parsing failed
+      }
+
+      return {
+        success: true,
+        message: 'Koneksi ke endpoint berhasil terhubung.'
+      };
+    } catch (e: any) {
+      return {
+        success: false,
+        message: 'Gagal menghubungi Web App: ' + (e.message || 'Periksa koneksi internet atau URL')
+      };
+    }
+  }
+
   // Announcements
   public addAnnouncement(item: Omit<Announcement, 'id'>): Announcement {
     const newItem: Announcement = {
@@ -579,7 +654,7 @@ class DataService {
           mode: 'no-cors' // Google Apps Script Web Apps redirect requirement
         });
 
-        driveLink = `https://drive.google.com/drive/folders/${GOOGLE_CONFIG.DRIVE_FOLDER_ID}`;
+        driveLink = `https://drive.google.com/drive/folders/${this.getDriveFolderId()}`;
         newApplicant.documentDriveUrl = driveLink;
       } catch (err) {
         console.warn('Apps Script push failed, saving locally:', err);
@@ -780,7 +855,17 @@ class DataService {
             data: cmsState
           })
         });
-        const json = await response.json();
+        const text = await response.text();
+        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+          this.isSyncing = false;
+          this.notify();
+          return {
+            success: false,
+            message: 'Web App memerlukan login Google. Pastikan saat "Deploy baru" di Google Apps Script, opsi Akses (Who has access) dipilih "Siapa saja (Anyone)".'
+          };
+        }
+        let json: any = null;
+        try { json = JSON.parse(text); } catch {}
         if (json && json.success) {
           this.lastSyncTime = Date.now();
           this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
@@ -788,7 +873,8 @@ class DataService {
           this.notify();
           return { success: true, message: 'Perubahan berhasil disimpan ke Google Spreadsheet (Tersinkron ke Semua Perangkat)!' };
         }
-      } catch (e) {
+      } catch (e: any) {
+        if (e.message && e.message.includes('login Google')) throw e;
         // Lanjut ke fallback
       }
 
@@ -805,7 +891,9 @@ class DataService {
           }
         })
       });
-      const fbJson = await fbResponse.json();
+      const fbText = await fbResponse.text();
+      let fbJson: any = null;
+      try { fbJson = JSON.parse(fbText); } catch {}
       if (fbJson && fbJson.success) {
         this.lastSyncTime = Date.now();
         this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
@@ -816,7 +904,7 @@ class DataService {
 
       this.isSyncing = false;
       this.notify();
-      return { success: false, message: 'Gagal mengirim data ke Google Spreadsheet.' };
+      return { success: false, message: 'Gagal mengirim data ke Google Spreadsheet. Periksa kembali URL Web App Apps Script Anda.' };
     } catch (err: any) {
       this.isSyncing = false;
       this.notify();
@@ -859,7 +947,146 @@ class DataService {
           }
         }
 
-        // 2. Cek baris CMS_CONFIG_V1 di lembar PPDB (kompatibel penuh dengan script awal)
+        // 2. Baca Lembar Human-Readable jika diedit langsung oleh pengguna di Google Spreadsheet
+        // A. Lembar Settings
+        const settingsRows = json.data.Settings || json.data.Pengaturan;
+        if (Array.isArray(settingsRows) && settingsRows.length > 0) {
+          const newSettingsObj: Record<string, any> = {};
+          settingsRows.forEach((r: any) => {
+            const k = r.Key || r.key || r.pengaturan || r.Pengaturan;
+            const v = r.Value !== undefined ? r.Value : (r.value !== undefined ? r.value : (r.Nilai !== undefined ? r.Nilai : r.nilai));
+            if (k && v !== undefined && v !== '') {
+              newSettingsObj[k] = v;
+            }
+          });
+          if (Object.keys(newSettingsObj).length > 0) {
+            this.settings = { ...this.settings, ...newSettingsObj };
+            this.saveLocalOnly(STORAGE_KEYS.SETTINGS, this.settings);
+            applied = true;
+          }
+        }
+
+        // B. Lembar Teachers / Guru
+        const teacherRows = json.data.Teachers || json.data.Guru;
+        if (Array.isArray(teacherRows) && teacherRows.length > 0) {
+          const validTeachers = teacherRows.filter((t: any) => t.name && t.name.trim() !== '').map((t: any, i: number) => ({
+            id: t.id || `teacher-${i + 1}`,
+            name: t.name || '',
+            role: t.role || 'Guru Mata Pelajaran',
+            specialty: t.specialty || t.subjects || 'Tahfidz Al-Qur\'an',
+            education: t.education || 'S.Pd.',
+            imageUrl: t.imageUrl || t.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80',
+            order: Number(t.order) || (i + 1)
+          }));
+          if (validTeachers.length > 0) {
+            this.teachers = validTeachers;
+            this.saveLocalOnly(STORAGE_KEYS.TEACHERS, this.teachers);
+            applied = true;
+          }
+        }
+
+        // C. Lembar Facilities / Fasilitas
+        const facRows = json.data.Facilities || json.data.Fasilitas;
+        if (Array.isArray(facRows) && facRows.length > 0) {
+          const validFac = facRows.filter((f: any) => f.name && f.name.trim() !== '').map((f: any, i: number) => {
+            const rawCat = (f.category || 'kelas').toLowerCase();
+            const category: 'ibadah' | 'kelas' | 'perpustakaan' | 'olahraga' | 'kesehatan' | 'semua' =
+              ['ibadah', 'kelas', 'perpustakaan', 'olahraga', 'kesehatan', 'semua'].includes(rawCat)
+                ? (rawCat as any)
+                : 'kelas';
+
+            return {
+              id: f.id || `fac-${i + 1}`,
+              name: f.name || '',
+              category,
+              categoryLabel: f.categoryLabel || f.category || 'Fasilitas Sekolah',
+              imageUrl: f.imageUrl || f.image || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80',
+              description: f.description || '',
+              specs: typeof f.specs === 'string' ? f.specs.split(',').map((s: string) => s.trim()).filter(Boolean) : (Array.isArray(f.specs) ? f.specs : [])
+            };
+          });
+          if (validFac.length > 0) {
+            this.facilities = validFac;
+            this.saveLocalOnly(STORAGE_KEYS.FACILITIES, this.facilities);
+            applied = true;
+          }
+        }
+
+        // D. Lembar News / Berita
+        const newsRows = json.data.News || json.data.Berita;
+        if (Array.isArray(newsRows) && newsRows.length > 0) {
+          const validNews = newsRows.filter((n: any) => n.title && n.title.trim() !== '').map((n: any, i: number) => ({
+            id: n.id || `news-${i + 1}`,
+            title: n.title || '',
+            excerpt: n.excerpt || n.summary || (n.content ? n.content.substring(0, 120) : ''),
+            content: n.content || n.summary || '',
+            date: n.date || new Date().toISOString().split('T')[0],
+            author: n.author || 'Humas SDQU Al I\'tisham',
+            imageUrl: n.imageUrl || n.image || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80',
+            category: n.category || 'Kegiatan'
+          }));
+          if (validNews.length > 0) {
+            this.news = validNews;
+            this.saveLocalOnly(STORAGE_KEYS.NEWS, this.news);
+            applied = true;
+          }
+        }
+
+        // E. Lembar Announcements / Pengumuman
+        const annRows = json.data.Announcements || json.data.Pengumuman;
+        if (Array.isArray(annRows) && annRows.length > 0) {
+          const validAnn = annRows.filter((a: any) => a.title && a.title.trim() !== '').map((a: any, i: number) => ({
+            id: a.id || `ann-${i + 1}`,
+            title: a.title || '',
+            content: a.content || '',
+            date: a.date || new Date().toISOString().split('T')[0],
+            category: a.category || 'Akademik',
+            isActive: a.isActive === 'Tidak' || a.isActive === false ? false : true
+          }));
+          if (validAnn.length > 0) {
+            this.announcements = validAnn;
+            this.saveLocalOnly(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
+            applied = true;
+          }
+        }
+
+        // F. Lembar Events / Agenda
+        const evRows = json.data.Events || json.data.Agenda;
+        if (Array.isArray(evRows) && evRows.length > 0) {
+          const validEv = evRows.filter((ev: any) => ev.title && ev.title.trim() !== '').map((ev: any, i: number) => ({
+            id: ev.id || `ev-${i + 1}`,
+            title: ev.title || '',
+            month: ev.month || (ev.date ? ev.date.substring(0, 3).toUpperCase() : 'AGENDA'),
+            dateRange: ev.dateRange || ev.date || 'Mendatang',
+            location: ev.location || '',
+            description: ev.description || '',
+            category: ev.category || 'Umum'
+          }));
+          if (validEv.length > 0) {
+            this.events = validEv;
+            this.saveLocalOnly(STORAGE_KEYS.EVENTS, this.events);
+            applied = true;
+          }
+        }
+
+        // G. Lembar Gallery / Galeri
+        const galRows = json.data.Gallery || json.data.Galeri;
+        if (Array.isArray(galRows) && galRows.length > 0) {
+          const validGal = galRows.filter((g: any) => g.title || g.imageUrl).map((g: any, i: number) => ({
+            id: g.id || `gal-${i + 1}`,
+            title: g.title || 'Dokumentasi Sekolah',
+            category: g.category || 'Kegiatan',
+            imageUrl: g.imageUrl || '',
+            date: g.date || ''
+          }));
+          if (validGal.length > 0) {
+            this.gallery = validGal;
+            this.saveLocalOnly(STORAGE_KEYS.GALLERY, this.gallery);
+            applied = true;
+          }
+        }
+
+        // 3. Cek baris CMS_CONFIG_V1 di lembar PPDB (kompatibel penuh dengan script awal)
         if (!applied && json.data.PPDB && Array.isArray(json.data.PPDB)) {
           const cmsRows = json.data.PPDB.filter((p: any) => p.registrationNumber === 'CMS_CONFIG_V1');
           if (cmsRows.length > 0) {
