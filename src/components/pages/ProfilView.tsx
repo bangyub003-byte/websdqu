@@ -17,6 +17,7 @@ import {
   Trophy,
   CheckCircle2
 } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 interface ProfilViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -52,9 +53,14 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
         {/* HERO IMAGE BANNER */}
         <div className="mt-8 relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
           <img
-            src={settings.profileBannerImageUrl || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600&q=80"}
+            src={getOptimizedImageUrl(settings.profileBannerImageUrl, "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600&q=80")}
             alt={`Kampus ${settings.schoolName}`}
+            referrerPolicy="no-referrer"
             className="w-full h-[320px] sm:h-[460px] object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600&q=80";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-transparent to-transparent pointer-events-none" />
 
@@ -429,9 +435,14 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
               <div className="space-y-3">
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-100">
                   <img
-                    src={teacher.imageUrl || "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80"}
+                    src={getOptimizedImageUrl(teacher.imageUrl, "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80")}
                     alt={teacher.name}
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80";
+                    }}
                   />
                   <span className="absolute bottom-2 left-2 bg-emerald-900/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md backdrop-blur-xs">
                     {teacher.education}

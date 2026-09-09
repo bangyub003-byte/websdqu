@@ -16,6 +16,7 @@ import {
   ChevronRight,
   MessageCircle
 } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 interface KegiatanViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -203,59 +204,76 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {(settings.kegiatanHarianList && settings.kegiatanHarianList.length > 0 ? settings.kegiatanHarianList : [
-              {
-                id: "harian-1",
-                title: "Sholat Dhuha & Berjamaah Terbimbing",
-                description: "Pembiasaan shalat sunnah Dhuha setiap pagi serta shalat Dzuhur & Ashar berjamaah dengan adab masjid lengkap.",
-                category: "IBADAH",
-                timeSchedule: "Setiap Hari (07.15 & Dzuhur)",
-                imageUrl: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=600&q=80"
-              },
-              {
-                id: "harian-2",
-                title: "Halaqah Tahfidz & Talaqqi Pagi",
-                description: "Metode setoran hafalan baru (ziyadah) dengan rasio 1 ustadz mendampingi maksimal 10–12 santri secara intensif.",
-                category: "TAHFIDZ",
-                timeSchedule: "Senin – Jumat (07.30 – 08.45)",
-                imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"
-              },
-              {
-                id: "harian-3",
-                title: "Kultum Dhuha & Muroja'ah Akbar",
-                description: "Latihan public speaking santri bergiliran membawakan nasihat hadits singkat, dilanjutkan muroja'ah bersama satu juz.",
-                category: "KARAKTER",
-                timeSchedule: "Jumat Pagi (07.15 – 08.15)",
-                imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80"
-              }
-            ]).map(item => (
-              <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow">
-                <div className="relative h-48 bg-slate-100">
-                  <img
-                    src={item.imageUrl || "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <span className="absolute top-3 left-3 bg-emerald-900/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase">
-                    {item.category || "KEGIATAN"}
-                  </span>
+            {((settings.dailyActivities && settings.dailyActivities.length > 0)
+              ? settings.dailyActivities
+              : (settings.kegiatanHarianList && settings.kegiatanHarianList.length > 0
+                ? settings.kegiatanHarianList
+                : [
+                  {
+                    id: "harian-1",
+                    title: "Sholat Dhuha & Berjamaah Terbimbing",
+                    desc: "Pembiasaan shalat sunnah Dhuha setiap pagi serta shalat Dzuhur & Ashar berjamaah dengan adab masjid lengkap.",
+                    badge: "IBADAH",
+                    time: "Setiap Hari (07.15 & Dzuhur)",
+                    imageUrl: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=600&q=80"
+                  },
+                  {
+                    id: "harian-2",
+                    title: "Halaqah Tahfidz & Talaqqi Pagi",
+                    desc: "Metode setoran hafalan baru (ziyadah) dengan rasio 1 ustadz mendampingi maksimal 10–12 santri secara intensif.",
+                    badge: "TAHFIDZ",
+                    time: "Senin – Jumat (07.30 – 08.45)",
+                    imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"
+                  },
+                  {
+                    id: "harian-3",
+                    title: "Kultum Dhuha & Muroja'ah Akbar",
+                    desc: "Latihan public speaking santri bergiliran membawakan nasihat hadits singkat, dilanjutkan muroja'ah bersama satu juz.",
+                    badge: "KARAKTER",
+                    time: "Jumat Pagi (07.15 – 08.15)",
+                    imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80"
+                  }
+                ])
+            ).map((item: any) => {
+              const displayImg = getOptimizedImageUrl(item.imageUrl, "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80");
+              const displayTime = item.time || item.timeSchedule;
+              const displayDesc = item.desc || item.description;
+              const displayBadge = item.badge || item.category || "KEGIATAN";
+
+              return (
+                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow">
+                  <div className="relative h-48 bg-slate-100 overflow-hidden">
+                    <img
+                      src={displayImg}
+                      alt={item.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80";
+                      }}
+                    />
+                    <span className="absolute top-3 left-3 bg-emerald-900/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase">
+                      {displayBadge}
+                    </span>
+                  </div>
+                  <div className="p-6 space-y-3">
+                    <h4 className="text-base font-bold text-slate-900">
+                      {item.title}
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {displayDesc}
+                    </p>
+                    {displayTime && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 pt-2 border-t border-slate-100">
+                        <Clock className="w-3.5 h-3.5 text-emerald-800" />
+                        <span>{displayTime}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="p-6 space-y-3">
-                  <h4 className="text-base font-bold text-slate-900">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {item.description}
-                  </p>
-                  {item.timeSchedule && (
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 pt-2 border-t border-slate-100">
-                      <Clock className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>{item.timeSchedule}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -281,67 +299,84 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(settings.kegiatanBerkalaList && settings.kegiatanBerkalaList.length > 0 ? settings.kegiatanBerkalaList : [
-              {
-                id: "berkala-1",
-                title: "Mukhayyam Al-Qur'an",
-                description: "Karantina intensif 3 hari di alam terbuka Playen untuk akselerasi kelancaran mutqin.",
-                category: "TAHFIDZ CAMP",
-                timeSchedule: "1x Tiap Semester",
-                imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80"
-              },
-              {
-                id: "berkala-2",
-                title: "Market Day Entrepreneur",
-                description: "Praktik muamalah Islami, kejujuran timbangan, literasi keuangan dasar, dan sedekah.",
-                category: "WIRAUSAHA",
-                timeSchedule: "Tengah Semester",
-                imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=500&q=80"
-              },
-              {
-                id: "berkala-3",
-                title: "Outing Class & Tadabbur Alam",
-                description: "Kunjungan edukasi riset ke kawasan geopark, hutan Wanagama, serta sentra sains.",
-                category: "RISET ALAM",
-                timeSchedule: "Setiap Akhir Tema",
-                imageUrl: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=500&q=80"
-              },
-              {
-                id: "berkala-4",
-                title: "Peringatan PHBI & Baksos",
-                description: "Penyembelihan qurban santri, festival Muharram, pembagian sembako dhuafa sekitar Playen.",
-                category: "SOSIAL",
-                timeSchedule: "Kalender Hijriah",
-                imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80"
-              }
-            ]).map(item => (
-              <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs flex flex-col justify-between">
-                <div>
-                  <img
-                    src={item.imageUrl || "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80"}
-                    alt={item.title}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-5 space-y-2">
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">
-                      {item.category}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900">
-                      {item.title}
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {item.description}
-                    </p>
+            {((settings.periodicPrograms && settings.periodicPrograms.length > 0)
+              ? settings.periodicPrograms
+              : (settings.kegiatanBerkalaList && settings.kegiatanBerkalaList.length > 0
+                ? settings.kegiatanBerkalaList
+                : [
+                  {
+                    id: "berkala-1",
+                    title: "Mukhayyam Al-Qur'an",
+                    desc: "Karantina intensif 3 hari di alam terbuka Playen untuk akselerasi kelancaran mutqin.",
+                    badge: "TAHFIDZ CAMP",
+                    time: "1x Tiap Semester",
+                    imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80"
+                  },
+                  {
+                    id: "berkala-2",
+                    title: "Market Day Entrepreneur",
+                    desc: "Praktik muamalah Islami, kejujuran timbangan, literasi keuangan dasar, dan sedekah.",
+                    badge: "WIRAUSAHA",
+                    time: "Tengah Semester",
+                    imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=500&q=80"
+                  },
+                  {
+                    id: "berkala-3",
+                    title: "Outing Class & Tadabbur Alam",
+                    desc: "Kunjungan edukasi riset ke kawasan geopark, hutan Wanagama, serta sentra sains.",
+                    badge: "RISET ALAM",
+                    time: "Setiap Akhir Tema",
+                    imageUrl: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=500&q=80"
+                  },
+                  {
+                    id: "berkala-4",
+                    title: "Peringatan PHBI & Baksos",
+                    desc: "Penyembelihan qurban santri, festival Muharram, pembagian sembako dhuafa sekitar Playen.",
+                    badge: "SOSIAL",
+                    time: "Kalender Hijriah",
+                    imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80"
+                  }
+                ])
+            ).map((item: any) => {
+              const displayImg = getOptimizedImageUrl(item.imageUrl, "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80");
+              const displayTime = item.time || item.timeSchedule;
+              const displayDesc = item.desc || item.description;
+              const displayBadge = item.badge || item.category || "AGENDA";
+
+              return (
+                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <img
+                      src={displayImg}
+                      alt={item.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-40 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80";
+                      }}
+                    />
+                    <div className="p-5 space-y-2">
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">
+                        {displayBadge}
+                      </span>
+                      <h4 className="text-sm font-bold text-slate-900">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {displayDesc}
+                      </p>
+                    </div>
                   </div>
+                  {displayTime && (
+                    <div className="p-5 pt-0 text-[11px] font-semibold text-slate-500 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-800" />
+                      <span>{displayTime}</span>
+                    </div>
+                  )}
                 </div>
-                {item.timeSchedule && (
-                  <div className="p-5 pt-0 text-[11px] font-semibold text-slate-500 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-emerald-800" />
-                    <span>{item.timeSchedule}</span>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -367,57 +402,75 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(settings.kegiatanEkskulList && settings.kegiatanEkskulList.length > 0 ? settings.kegiatanEkskulList : [
-              {
-                id: "ekskul-1",
-                title: "Panahan Tradisional & Horsebow",
-                description: "Olahraga sunnah melatih fokus, kekuatan lengan, ketenangan napas, dan adab ksatria muslim.",
-                category: "OLAHRAGA SUNNAH",
-                timeSchedule: "Sabtu Pagi (08.00 - 10.00)",
-                imageUrl: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=500&q=80"
-              },
-              {
-                id: "ekskul-2",
-                title: "Pencak Silat Tapak Suci",
-                description: "Bela diri prestasi dan pembinaan fisik mental dengan akhlak mulia serta ketahanan santri.",
-                category: "BELA DIRI",
-                timeSchedule: "Kamis Sore (15.30 - 17.00)",
-                imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80"
-              },
-              {
-                id: "ekskul-3",
-                title: "Khat & Kaligrafi Al-Qur'an",
-                description: "Seni menulis indah mushaf khat Naskhi dan Riq'ah bersama khattat berpengalaman.",
-                category: "SENI ISLAM",
-                timeSchedule: "Rabu Sore (15.30 - 16.45)",
-                imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=500&q=80"
-              }
-            ]).map((ekskul) => (
-              <div key={ekskul.id} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="relative h-36 rounded-2xl overflow-hidden bg-slate-100">
-                    <img
-                      src={ekskul.imageUrl || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=500&q=80"}
-                      alt={ekskul.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute top-2 left-2 bg-emerald-900/90 text-amber-300 text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase">
-                      {ekskul.category || "EKSKUL"}
-                    </span>
+            {((settings.extracurriculars && settings.extracurriculars.length > 0)
+              ? settings.extracurriculars
+              : (settings.kegiatanEkskulList && settings.kegiatanEkskulList.length > 0
+                ? settings.kegiatanEkskulList
+                : [
+                  {
+                    id: "ekskul-1",
+                    title: "Panahan Tradisional & Horsebow",
+                    desc: "Olahraga sunnah melatih fokus, kekuatan lengan, ketenangan napas, dan adab ksatria muslim.",
+                    badge: "OLAHRAGA SUNNAH",
+                    time: "Sabtu Pagi (08.00 - 10.00)",
+                    imageUrl: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=500&q=80"
+                  },
+                  {
+                    id: "ekskul-2",
+                    title: "Pencak Silat Tapak Suci",
+                    desc: "Bela diri prestasi dan pembinaan fisik mental dengan akhlak mulia serta ketahanan santri.",
+                    badge: "BELA DIRI",
+                    time: "Kamis Sore (15.30 - 17.00)",
+                    imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80"
+                  },
+                  {
+                    id: "ekskul-3",
+                    title: "Khat & Kaligrafi Al-Qur'an",
+                    desc: "Seni menulis indah mushaf khat Naskhi dan Riq'ah bersama khattat berpengalaman.",
+                    badge: "SENI ISLAM",
+                    time: "Rabu Sore (15.30 - 16.45)",
+                    imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=500&q=80"
+                  }
+                ])
+            ).map((ekskul: any) => {
+              const displayImg = getOptimizedImageUrl(ekskul.imageUrl, "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=500&q=80");
+              const displayTitle = ekskul.title || ekskul.name;
+              const displayDesc = ekskul.desc || ekskul.description;
+              const displayBadge = ekskul.badge || ekskul.category || "EKSKUL";
+              const displaySchedule = ekskul.time || ekskul.schedule || ekskul.timeSchedule;
+
+              return (
+                <div key={ekskul.id} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="relative h-36 rounded-2xl overflow-hidden bg-slate-100">
+                      <img
+                        src={displayImg}
+                        alt={displayTitle}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=500&q=80";
+                        }}
+                      />
+                      <span className="absolute top-2 left-2 bg-emerald-900/90 text-amber-300 text-[9px] font-extrabold px-2.5 py-0.5 rounded-md uppercase">
+                        {displayBadge}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900">
+                      {displayTitle}
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {displayDesc}
+                    </p>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    {ekskul.title}
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {ekskul.description}
-                  </p>
+                  <div className="text-[11px] font-semibold text-slate-500 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-emerald-800" />
+                    <span>{displaySchedule || "Program Ekstrakurikuler Pilihan"}</span>
+                  </div>
                 </div>
-                <div className="text-[11px] font-semibold text-slate-500 pt-2 border-t border-slate-100 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-emerald-800" />
-                  <span>{ekskul.timeSchedule || "Program Ekstrakurikuler Pilihan"}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

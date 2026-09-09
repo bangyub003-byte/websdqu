@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivePage, SchoolSettings } from '../types';
 import { BookOpen, MapPin, Mail, Phone, Clock, Globe, Instagram, Youtube, MessageCircle, ShieldCheck } from 'lucide-react';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 interface FooterProps {
   setActivePage: (page: ActivePage) => void;
@@ -23,11 +24,13 @@ export const Footer: React.FC<FooterProps> = ({ setActivePage, settings }) => {
             <div className="flex items-center gap-3">
               {settings.logoUrl ? (
                 <img
-                  src={settings.logoUrl}
-                  alt="Logo Sekolah"
+                  src={getOptimizedImageUrl(settings.logoUrl)}
+                  alt={`Logo ${settings.schoolName}`}
+                  referrerPolicy="no-referrer"
                   className="w-11 h-11 rounded-xl object-contain shadow-md bg-white border border-slate-100 p-1"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=120&q=80';
                   }}
                 />
               ) : (

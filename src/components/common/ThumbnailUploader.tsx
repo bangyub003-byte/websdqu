@@ -1,5 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, Trash2, ExternalLink, Check, RefreshCw, Link as LinkIcon, Eye } from 'lucide-react';
+import {
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Check,
+  RefreshCw,
+  Link as LinkIcon,
+  Eye,
+  CloudCheck
+} from 'lucide-react';
+import { getOptimizedImageUrl, extractDriveFileId } from '../../utils/imageUtils';
 
 interface ThumbnailUploaderProps {
   label: string;
@@ -24,9 +34,11 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Aspect ratio classes
   const aspectClass = {
@@ -36,13 +48,12 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
     banner: 'aspect-[21/9] w-full max-h-[200px]'
   }[aspectRatio];
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const processFile = async (file: File) => {
     if (!file) return;
 
-    // Tampilkan preview lokal sekejap selagi diunggah ke Google Drive
-    const localUrl = URL.createObjectURL(file);
-    onChange(localUrl);
+    // Tampilkan preview lokal sekejap selagi mengunggah ke Google Drive
+    const tempUrl = URL.createObjectURL(file);
+    setLocalPreview(tempUrl);
     setPreviewError(false);
 
     if (onUploadFile) {
@@ -53,7 +64,28 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
         console.error('Upload failed:', err);
       } finally {
         setIsUploading(false);
+        // Hapus local preview setelah beberapa detik agar memakai URL final dari props
+        setTimeout(() => {
+          setLocalPreview(null);
+          URL.revokeObjectURL(tempUrl);
+        }, 1500);
       }
+    }
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      await processFile(file);
     }
   };
 
@@ -65,7 +97,9 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
     }
   };
 
-  const hasImage = Boolean(value && value.trim() !== '');
+  const hasImage = Boolean(localPreview || (value && value.trim() !== ''));
+  const isDriveUrl = Boolean(extractDriveFileId(value));
+  const displayImageSrc = localPreview || getOptimizedImageUrl(value, defaultFallback);
 
   return (
     <div className="space-y-2.5 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
@@ -76,25 +110,47 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
           <span>{label}</span>
         </label>
         {hasImage && (
-          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-            <Check className="w-3 h-3" />
-            <span>Thumbnail Aktif</span>
-          </span>
+          <div className="flex items-center gap-1.5">
+            {isDriveUrl && (
+              <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200 flex items-center gap-1">
+                <CloudCheck className="w-3 h-3" />
+                <span>Google Drive</span>
+              </span>
+            )}
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+              <Check className="w-3 h-3" />
+              <span>Thumbnail Aktif</span>
+            </span>
+          </div>
         )}
       </div>
 
       {/* Thumbnail Display Box */}
-      <div className="relative group">
+      <div
+        className="relative group"
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
+      >
         <div
           className={`${aspectClass} mx-auto bg-slate-900/5 rounded-2xl border-2 border-dashed ${
-            hasImage ? 'border-emerald-500/40 bg-slate-950/5' : 'border-slate-300 hover:border-emerald-700'
+            isDragOver
+              ? 'border-emerald-600 bg-emerald-50/50 scale-[1.01]'
+              : hasImage
+              ? 'border-emerald-500/40 bg-slate-950/5'
+              : 'border-slate-300 hover:border-emerald-700'
           } overflow-hidden flex items-center justify-center transition-all relative`}
         >
           {hasImage && !previewError ? (
             <img
-              src={value}
+              src={displayImageSrc}
               alt={label}
-              onError={() => setPreviewError(true)}
+              referrerPolicy="no-referrer"
+              onError={() => {
+                if (!localPreview) {
+                  setPreviewError(true);
+                }
+              }}
               className={`w-full h-full ${
                 fit === 'contain' ? 'object-contain p-3' : 'object-cover'
               } transition-transform duration-300 group-hover:scale-[1.02]`}
@@ -109,7 +165,7 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-700">Pilih / Unggah Foto</p>
-                <p className="text-[10px] text-slate-500">Klik untuk memilih dari galeri atau berkas</p>
+                <p className="text-[10px] text-slate-500">Klik atau seret foto ke sini</p>
               </div>
             </div>
           )}
@@ -119,7 +175,7 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
             <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex flex-col items-center justify-center text-white gap-2 z-10 animate-in fade-in">
               <RefreshCw className="w-6 h-6 text-amber-400 animate-spin" />
               <p className="text-xs font-bold text-amber-300">Menyimpan ke Google Drive...</p>
-              <p className="text-[10px] text-slate-300">Otomatis sinkron ke semua HP</p>
+              <p className="text-[10px] text-slate-300">Otomatis sinkron ke semua perangkat</p>
             </div>
           )}
         </div>
@@ -160,7 +216,7 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
               </button>
 
               <a
-                href={value}
+                href={getOptimizedImageUrl(value)}
                 target="_blank"
                 rel="noreferrer"
                 className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
@@ -172,6 +228,7 @@ export const ThumbnailUploader: React.FC<ThumbnailUploaderProps> = ({
               <button
                 type="button"
                 onClick={() => {
+                  setLocalPreview(null);
                   if (defaultFallback) {
                     onChange(defaultFallback);
                   } else {

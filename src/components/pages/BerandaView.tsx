@@ -21,6 +21,7 @@ import {
   Calendar,
   X
 } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 interface BerandaViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -67,10 +68,14 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[480px] sm:min-h-[540px] lg:min-h-[600px] flex items-center p-5 sm:p-10 lg:p-14 shadow-2xl">
           {/* Background image overlay with soft focus */}
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity"
-            style={{
-              backgroundImage: `url('${settings.heroImageUrl || "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80"}')`
+          <img
+            src={getOptimizedImageUrl(settings.heroImageUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80")}
+            alt="Hero Background"
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity pointer-events-none"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/80 to-transparent pointer-events-none" />
@@ -456,9 +461,14 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
               <img
-                src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80"
+                src={getOptimizedImageUrl(settings.berandaWhyUsImageUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80")}
                 alt="Pendampingan Santri SDQU Al I'tisham"
+                referrerPolicy="no-referrer"
                 className="w-full h-[440px] sm:h-[480px] object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80";
+                }}
               />
               
               {/* Floating Top Badge */}
@@ -556,51 +566,62 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS).map(item => (
-            <div
-              key={item.id}
-              className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-6"
-            >
-              <div className="space-y-4">
-                {/* 5 Stars & Quote Icon */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {[...Array(item.rating || 5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
-                    ))}
-                  </div>
-                  <Quote className="w-6 h-6 text-slate-300" />
-                </div>
+          {(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS).map(item => {
+            const displayQuote = item.quote || item.content;
+            const displayImg = item.imageUrl || item.avatar;
+            const isHttpImg = displayImg && (displayImg.startsWith('http') || displayImg.startsWith('/'));
 
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
-                  "{item.content}"
-                </p>
-              </div>
-
-              {/* Author */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
-                  />
-                ) : (
-                  <div className={`w-10 h-10 rounded-full ${item.avatarColor || 'bg-emerald-700'} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
-                    {item.avatar || (item.name ? item.name.substring(0, 2).toUpperCase() : 'WS')}
+            return (
+              <div
+                key={item.id}
+                className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-6"
+              >
+                <div className="space-y-4">
+                  {/* 5 Stars & Quote Icon */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {[...Array(item.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                      ))}
+                    </div>
+                    <Quote className="w-6 h-6 text-slate-300" />
                   </div>
-                )}
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">
-                    {item.name}
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    {item.role}
+
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+                    "{displayQuote}"
                   </p>
                 </div>
+
+                {/* Author */}
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                  {isHttpImg ? (
+                    <img
+                      src={getOptimizedImageUrl(displayImg, "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80")}
+                      alt={item.name}
+                      referrerPolicy="no-referrer"
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80";
+                      }}
+                    />
+                  ) : (
+                    <div className={`w-10 h-10 rounded-full ${item.avatarColor || 'bg-emerald-700'} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
+                      {item.avatar || (item.name ? item.name.substring(0, 2).toUpperCase() : 'WS')}
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">
+                      {item.name}
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      {item.role} {item.studentInfo ? `• ${item.studentInfo}` : ''}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

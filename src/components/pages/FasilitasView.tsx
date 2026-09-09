@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Users
 } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 interface FasilitasViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -111,9 +112,14 @@ export const FasilitasView: React.FC<FasilitasViewProps> = ({
               <div>
                 <div className="relative h-48 bg-slate-100 overflow-hidden">
                   <img
-                    src={fac.imageUrl}
+                    src={getOptimizedImageUrl(fac.imageUrl, "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80")}
                     alt={fac.title}
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80";
+                    }}
                   />
                   <span className="absolute top-3 left-3 bg-emerald-950/85 text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider backdrop-blur-xs">
                     {fac.category}

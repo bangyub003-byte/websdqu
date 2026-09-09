@@ -16,6 +16,7 @@ import {
   Sparkles,
   Users
 } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 interface InfaqViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -293,9 +294,14 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
               <div className="max-w-[240px] mx-auto bg-white p-3 rounded-2xl border border-slate-200 flex flex-col items-center justify-center relative shadow-inner">
                 {settings.qrisImageUrl ? (
                   <img
-                    src={settings.qrisImageUrl}
+                    src={getOptimizedImageUrl(settings.qrisImageUrl)}
                     alt="QRIS SD Qur'an Unggulan Al I'tisham"
+                    referrerPolicy="no-referrer"
                     className="w-full h-auto max-h-56 object-contain rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=400&q=80";
+                    }}
                   />
                 ) : (
                   <div className="w-44 h-44 bg-slate-50 flex flex-col items-center justify-center relative rounded-xl">

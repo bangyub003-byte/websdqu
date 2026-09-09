@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ActivePage, SchoolSettings } from '../types';
 import { BookOpen, Menu, X, ArrowRight, ShieldCheck, Phone, MapPin } from 'lucide-react';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 interface NavbarProps {
   activePage: ActivePage;
@@ -44,12 +45,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {settings.logoUrl ? (
               <img
-                src={settings.logoUrl}
-                alt="Logo Sekolah"
+                src={getOptimizedImageUrl(settings.logoUrl)}
+                alt={`Logo ${settings.schoolName}`}
+                referrerPolicy="no-referrer"
                 className="w-11 h-11 rounded-xl object-contain shadow-md bg-white border border-slate-100 p-1 group-hover:scale-105 transition-transform duration-200"
                 onError={(e) => {
-                  // If broken image, hide img and fallback
-                  e.currentTarget.style.display = 'none';
+                  // Fallback ke placeholder jika URL bermasalah
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=120&q=80';
                 }}
               />
             ) : (

@@ -1188,7 +1188,13 @@ class DataService {
         heroCardDescription: data.settings.heroCardDescription || INITIAL_SETTINGS.heroCardDescription,
         heroCardCurriculumTitle: data.settings.heroCardCurriculumTitle || INITIAL_SETTINGS.heroCardCurriculumTitle,
         heroCardCurriculumSubtitle: data.settings.heroCardCurriculumSubtitle || INITIAL_SETTINGS.heroCardCurriculumSubtitle,
-        heroCardButtonText: data.settings.heroCardButtonText || INITIAL_SETTINGS.heroCardButtonText
+        heroCardButtonText: data.settings.heroCardButtonText || INITIAL_SETTINGS.heroCardButtonText,
+        testimonials: (data.settings.testimonials && data.settings.testimonials.length > 0) ? data.settings.testimonials : this.settings.testimonials,
+        dailyActivities: (data.settings.dailyActivities && data.settings.dailyActivities.length > 0) ? data.settings.dailyActivities : this.settings.dailyActivities,
+        periodicPrograms: (data.settings.periodicPrograms && data.settings.periodicPrograms.length > 0) ? data.settings.periodicPrograms : this.settings.periodicPrograms,
+        extracurriculars: (data.settings.extracurriculars && data.settings.extracurriculars.length > 0) ? data.settings.extracurriculars : this.settings.extracurriculars,
+        achievements: (data.settings.achievements && data.settings.achievements.length > 0) ? data.settings.achievements : this.settings.achievements,
+        fasilitasEcoItems: (data.settings.fasilitasEcoItems && data.settings.fasilitasEcoItems.length > 0) ? data.settings.fasilitasEcoItems : this.settings.fasilitasEcoItems
       };
       this.saveLocalOnly(STORAGE_KEYS.SETTINGS, this.settings);
     }

@@ -1602,10 +1602,10 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                     <label className="text-[10px] font-bold text-slate-600 block">Kutipan Testimoni</label>
                     <textarea
                       rows={2}
-                      value={t.quote}
+                      value={t.quote || t.content || ''}
                       onChange={e => {
                         const updated = [...(editSettings.testimonials || [])];
-                        updated[idx] = { ...updated[idx], quote: e.target.value };
+                        updated[idx] = { ...updated[idx], quote: e.target.value, content: e.target.value };
                         setEditSettings({ ...editSettings, testimonials: updated });
                       }}
                       className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
@@ -1615,16 +1615,16 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                   <div>
                     <ThumbnailUploader
                       label={`Foto / Avatar untuk ${t.name}`}
-                      value={t.avatar || ''}
+                      value={t.imageUrl || t.avatar || ''}
                       onChange={url => {
                         const updated = [...(editSettings.testimonials || [])];
-                        updated[idx] = { ...updated[idx], avatar: url };
+                        updated[idx] = { ...updated[idx], avatar: url, imageUrl: url };
                         setEditSettings({ ...editSettings, testimonials: updated });
                       }}
                       onUploadFile={(file, label) =>
                         handleFileUpload(file, url => {
                           const updated = [...(editSettings.testimonials || [])];
-                          updated[idx] = { ...updated[idx], avatar: url };
+                          updated[idx] = { ...updated[idx], avatar: url, imageUrl: url };
                           setEditSettings({ ...editSettings, testimonials: updated });
                         }, label)
                       }
