@@ -113,6 +113,10 @@ export interface ExtracurricularItem {
   id: string;
   name: string;
   desc: string;
+  category?: string;
+  imageUrl?: string;
+  schedule?: string;
+  coach?: string;
 }
 
 export interface AchievementItem {
@@ -122,6 +126,87 @@ export interface AchievementItem {
   kapanewon?: string;
   kabupaten?: string;
   description: string;
+  imageUrl?: string;
+}
+
+export interface TestimonialItem {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  avatarColor?: string;
+  content?: string;
+  quote?: string;
+  studentInfo?: string;
+  rating?: number;
+  imageUrl?: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  title: string;
+  category?: string;
+  description?: string;
+  desc?: string;
+  timeOrFrequency?: string;
+  time?: string;
+  day?: string;
+  schedule?: string;
+  badge?: string;
+  imageUrl?: string;
+  type?: 'harian' | 'berkala';
+}
+
+export interface SPMBStepItem {
+  id?: string;
+  step?: number;
+  stepNumber?: number;
+  title: string;
+  description: string;
+  dateOrPeriod?: string;
+  icon?: string;
+}
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface InfaqProgramItem {
+  id: string;
+  tag: string;
+  title: string;
+  description: string;
+  highlight: string;
+  iconType?: string;
+}
+
+export interface EcoFeatureItem {
+  id: string;
+  title: string;
+  description: string;
+  iconName?: string;
+}
+
+export interface CoreValueItem {
+  id: string;
+  title: string;
+  arabic?: string;
+  description?: string;
+  desc?: string;
+}
+
+export interface LegalitasItem {
+  id: string;
+  badge?: string;
+  title: string;
+  description?: string;
+  nomor?: string;
+  instansi?: string;
+  tanggal?: string;
+  codeOrSk?: string;
+  themeColor?: 'emerald' | 'amber' | 'teal';
 }
 
 export interface SchoolSettings {
@@ -180,6 +265,111 @@ export interface SchoolSettings {
   };
   qrisId: string;
   qrisImageUrl?: string;
+  // Beranda custom fields
+  heroSecondaryBtnText?: string;
+  heroSecondaryBtnModalTitle?: string;
+  heroSecondaryBtnModalDesc?: string;
+  heroStatsRibbon?: {
+    stat1Val: string;
+    stat1Label: string;
+    stat2Val: string;
+    stat2Label: string;
+    stat3Val: string;
+    stat3Label: string;
+    stat4Val: string;
+    stat4Label: string;
+  };
+  berandaFeaturesTitle?: string;
+  berandaFeaturesSubtitle?: string;
+  berandaFeatures?: {
+    id: string;
+    title: string;
+    description: string;
+  }[];
+  testimonialsTitle?: string;
+  testimonialsSubtitle?: string;
+  testimonials?: TestimonialItem[];
+  ctaBannerBadge?: string;
+  ctaBannerTitle?: string;
+  ctaBannerDesc?: string;
+  ctaBannerBtnText?: string;
+
+  // Profil custom fields
+  profilHeadmasterName?: string;
+  profilHeadmasterRole?: string;
+  profilHeadmasterQuote?: string;
+  profilHeadmasterPhotoUrl?: string;
+  profilHeadmasterSpeech?: string;
+  profilAchievementsTitle?: string;
+  profilAchievementsSubtitle?: string;
+  profilCoreValuesTitle?: string;
+  profilCoreValuesSubtitle?: string;
+  profilCoreValues?: CoreValueItem[];
+  profilLegalitas?: LegalitasItem[];
+  teachersSectionTitle?: string;
+  teachersSectionSubtitle?: string;
+
+  // Kegiatan custom fields
+  kegiatanBadge?: string;
+  kegiatanTitle?: string;
+  kegiatanSubtitle?: string;
+  kegiatanStat1Val?: string;
+  kegiatanStat1Label?: string;
+  kegiatanStat2Val?: string;
+  kegiatanStat2Label?: string;
+  kegiatanStatsRibbon?: {
+    stat1Val: string;
+    stat1Label: string;
+    stat2Val: string;
+    stat2Label: string;
+    stat3Val: string;
+    stat3Label: string;
+    stat4Val: string;
+    stat4Label: string;
+  };
+  dailyActivitiesTitle?: string;
+  dailyActivitiesSubtitle?: string;
+  dailyActivities?: ActivityItem[];
+  periodicProgramsTitle?: string;
+  periodicProgramsSubtitle?: string;
+  periodicPrograms?: ActivityItem[];
+
+  // Fasilitas custom fields
+  fasilitasBadge?: string;
+  fasilitasTitle?: string;
+  fasilitasSubtitle?: string;
+  fasilitasStat1Val?: string;
+  fasilitasStat1Label?: string;
+  fasilitasStat1Sub?: string;
+  fasilitasStat2Val?: string;
+  fasilitasStat2Label?: string;
+  fasilitasStat2Sub?: string;
+  fasilitasEcoBadge?: string;
+  fasilitasEcoTitle?: string;
+  fasilitasEcoSubtitle?: string;
+  fasilitasEcoItems?: EcoFeatureItem[];
+
+  // Infaq custom fields
+  infaqBadge?: string;
+  infaqTitle?: string;
+  infaqSubtitle?: string;
+  infaqTrustBadges?: string[];
+  infaqPrograms?: InfaqProgramItem[];
+
+  // SPMB custom fields
+  spmbBadge?: string;
+  spmbTitle?: string;
+  spmbSubtitle?: string;
+  spmbStatusPill?: string;
+  spmbStepsTitle?: string;
+  spmbStepsSubtitle?: string;
+  spmbSteps?: SPMBStepItem[];
+  spmbDocsTitle?: string;
+  spmbDocsSubtitle?: string;
+  spmbDocsList?: string[];
+  spmbFaqTitle?: string;
+  spmbFaqSubtitle?: string;
+  spmbFaqs?: FAQItem[];
 }
 
 export type ActivePage = 'beranda' | 'profil' | 'kegiatan' | 'fasilitas' | 'infaq' | 'spmb' | 'admin';

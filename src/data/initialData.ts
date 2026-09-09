@@ -171,7 +171,368 @@ export const INITIAL_SETTINGS: SchoolSettings = {
     holderName: "SDQ UNGGULAN AL I'TISHAM",
     branch: "Capem Gunungkidul (Kode: 112)"
   },
-  qrisId: "NMID: ID1023249081721"
+  qrisId: "NMID: ID1023249081721",
+  heroSecondaryBtnText: "Kenali Selayang Pandang",
+  heroSecondaryBtnModalTitle: "Selayang Pandang & Profil Singkat SDQU Al I'tisham",
+  heroSecondaryBtnModalDesc: "Pendidikan dasar Islam terpadu yang menyemaikan generasi mutqin Al-Qur'an berakhlak mulia dan berwawasan luas di Dusun Banaran, Playen, Gunungkidul.",
+  heroStatsRibbon: {
+    stat1Val: "1.200+",
+    stat1Label: "Santri Aktif & Alumni",
+    stat2Val: "100%",
+    stat2Label: "Target Tahfidz Mutqin",
+    stat3Val: "45+",
+    stat3Label: "Asatidz Bersanad",
+    stat4Val: "25+",
+    stat4Label: "Prestasi Tingkat DIY & Nas"
+  },
+  berandaFeaturesTitle: "Mengapa Memilih SDQU Al I'tisham Playen?",
+  berandaFeaturesSubtitle: "Kombinasi kurikulum berkarakter islami, tahfidzul Qur'an mutqin, serta bimbingan penuh kasih sayang untuk tumbuh kembang ananda.",
+  berandaFeatures: [
+    {
+      id: "feat-1",
+      title: "Guru Tahfidz Bersanad & Berpengalaman",
+      description: "Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar."
+    },
+    {
+      id: "feat-2",
+      title: "Mutaba'ah Digital Santri Terkoneksi Real–time",
+      description: "Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali."
+    },
+    {
+      id: "feat-3",
+      title: "Rasio Ideal 1:12 untuk Perhatian Optimal",
+      description: "Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif."
+    },
+    {
+      id: "feat-4",
+      title: "Lingkungan Ramah Anak, Nyaman & Sehat",
+      description: "Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur."
+    }
+  ],
+  testimonialsTitle: "Apa Kata Para Wali Santri SDQU Al I'tisham",
+  testimonialsSubtitle: "Bukti nyata transformasi adab, kecintaan pada Al-Qur'an, dan prestasi akademik yang membanggakan keluarga.",
+  testimonials: [
+    {
+      id: "test-1",
+      name: "dr. Ahmad Wahyudi, Sp.A",
+      role: "Wali Santri Alumni 2024 • Playen",
+      avatar: "AW",
+      avatarColor: "bg-emerald-700",
+      content: "Alhamdulillah, anak kami tidak hanya hafal 4 juz dengan mutqin saat lulus, tapi yang paling membuat haru adalah kebiasaannya menjaga shalat tepat waktu dan adab bicaranya yang santun kepada kakek neneknya."
+    },
+    {
+      id: "test-2",
+      name: "Siti Nurjanah, S.Pd.",
+      role: "Wali Santri Kelas 4 • Wonosari",
+      avatar: "SN",
+      avatarColor: "bg-amber-600",
+      content: "Kekhawatiran kami tentang beban sekolah gugur seketika. Sistem pembelajaran di SDQU Al I'tisham sangat menyenangkan (joyful learning). Ananda selalu antusias bercerita tentang sains dan tilawah tiap pulang sekolah."
+    },
+    {
+      id: "test-3",
+      name: "Fajar Pratama, M.T.",
+      role: "Wali Santri Kelas 2 • Paliyan",
+      avatar: "FP",
+      avatarColor: "bg-teal-700",
+      content: "Komunikasi ustadz-ustadzah sangat terbuka. Mutaba'ah harian di aplikasi memudahkan kami memantau muroja'ah di rumah. Guru-gurunya sabar luar biasa dan benar-benar menanamkan cinta Qur'an tanpa paksaan."
+    }
+  ],
+  ctaBannerBadge: "GELOMBANG 1 DITUTUP SEGERA",
+  ctaBannerTitle: "Mari Bergabung Bersama Keluarga Besar SDQU Al I'tisham Playen",
+  ctaBannerDesc: "Kuota penerimaan santri baru dibatasi demi menjaga rasio pembinaan halaqah yang optimal. Daftarkan putra-putri tercinta hari ini dan amankan kursi belajar mereka.",
+  ctaBannerBtnText: "Daftar SPMB Online 2025/2026",
+
+  // Profil
+  profilHeadmasterName: "Ustadz H. Abdullah Mansur, S.Pd.I., M.Pd.",
+  profilHeadmasterRole: "Kepala Sekolah SDQU Al I'tisham Playen",
+  profilHeadmasterQuote: "Pendidikan sejati bukan sekadar mengisi bejana akal, melainkan menyalakan lentera tauhid dan adab dalam dada setiap santri.",
+  profilHeadmasterPhotoUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+  profilHeadmasterSpeech: "Bismillahirrohmanirrohim. Segala puji bagi Allah Rabb semesta alam. SD Qur'an Unggulan Al I'tisham berikhtiar melahirkan generasi yang akrab dengan Al-Qur'an sejak usia dini, berkarakter mulia, serta siap menatap era modern dengan keyakinan aqidah yang kokoh. Bersama para asatidz bersanad dan dukungan penuh para wali santri, kami terus berbenah menghadirkan iklim belajar yang aman, ramah anak, dan penuh berkah.",
+  profilAchievementsTitle: "Capaian Prestasi Santri & Sekolah",
+  profilAchievementsSubtitle: "Bukti nyata ikhtiar dan dedikasi santri bersama para asatidz di tingkat Kapanewon hingga Kabupaten.",
+  profilCoreValuesTitle: "4 Nilai Pokok Pendidikan Kami",
+  profilCoreValuesSubtitle: "Prinsip utama yang menjadi panduan dalam setiap nafas pembinaan di SDQU Al I'tisham Playen.",
+  profilCoreValues: [
+    {
+      id: "val-1",
+      title: "Ketauhidan & Aqidah Shahihah",
+      arabic: "العقيدة الصحيحة",
+      description: "Menanamkan kecintaan kepada Allah dan Rasul-Nya sebagai pondasi pertama sebelum ilmu dan keterampilan lainnya diajarkan."
+    },
+    {
+      id: "val-2",
+      title: "Adab Sebelum Ilmu",
+      arabic: "الأدب قبل العلم",
+      description: "Membiasakan akhlak santun, menghormati orang tua dan guru, serta menjaga tutur kata islami dalam kehidupan sehari-hari."
+    },
+    {
+      id: "val-3",
+      title: "Tahfidz Mutqin & Tartil",
+      arabic: "الحفظ المتقن",
+      description: "Bimbingan talaqqi bersanad dengan target hafalan yang kokoh dan kaidah tajwid yang benar tanpa membebani mental anak."
+    },
+    {
+      id: "val-4",
+      title: "Kemandirian & Akhlak Berdikari",
+      arabic: "الاستقلالية",
+      description: "Melatih santri disiplin mandiri merapikan perlengkapan, peduli kebersihan, dan tangguh menghadapi tantangan masa depan."
+    }
+  ],
+  profilLegalitas: [
+    {
+      id: "leg-1",
+      badge: "AKREDITASI BAN S/M",
+      title: "Terakreditasi BAN-PDM Terakreditasi",
+      description: "Memenuhi seluruh standar nasional pendidikan (SNP) dengan nilai capaian memuaskan dari Badan Akreditasi Nasional.",
+      codeOrSk: "Sertifikat Akreditasi BAN-PDM 2023",
+      themeColor: "emerald"
+    },
+    {
+      id: "leg-2",
+      badge: "IZIN OPERASIONAL",
+      title: "Kemendikbudristek & Dinas",
+      description: "Lembaga resmi terdaftar di Dinas Pendidikan Kabupaten Gunungkidul dan terdata aktif dalam sistem Dapodik Kemendikbudristek.",
+      codeOrSk: "Izin Operasional No: 421.2/0836/2022",
+      themeColor: "amber"
+    },
+    {
+      id: "leg-3",
+      badge: "YAYASAN PENYELENGGARA",
+      title: "Pondok Pesantren Al I'tishom",
+      description: "Berdiri di bawah naungan legalitas hukum Kemenkumham RI dengan dewan pembina dan asatidz berpengalaman dakwah sejak 2009.",
+      codeOrSk: "AHU-001271.AH.01.12.Tahun 2021",
+      themeColor: "teal"
+    }
+  ],
+  teachersSectionTitle: "Dewan Guru & Asatidz",
+  teachersSectionSubtitle: "Para asatidz dan ustazah yang kompeten, mencintai anak-anak, serta membimbing santri dengan keteladanan akhlak nabawiyah.",
+
+  // Kegiatan
+  kegiatanBadge: "KURIKULUM BERKARAKTER & DINAMIS",
+  kegiatanTitle: "Kegiatan & Eksplorasi Santri Unggulan",
+  kegiatanSubtitle: "Menghidupkan adab Qur'ani, kecakapan intelektual, ketahanan fisik, dan kreativitas mandiri melalui pembiasaan harian terpadu dan ragam ekstrakurikuler aplikatif di Playen.",
+  kegiatanStat1Val: "12+",
+  kegiatanStat1Label: "Klub Bakat & Minat",
+  kegiatanStat2Val: "100%",
+  kegiatanStat2Label: "Integrasi Adab",
+  kegiatanStatsRibbon: {
+    stat1Val: "07.00",
+    stat1Label: "Mulai Halaqah Pagi",
+    stat2Val: "30 Juz",
+    stat2Label: "Bimbingan Tajwid Sanad",
+    stat3Val: "100%",
+    stat3Label: "Praktik Lapangan Sunnah",
+    stat4Val: "24/7",
+    stat4Label: "Pendampingan Karakter"
+  },
+  dailyActivitiesTitle: "Kegiatan Harian & Mingguan Santri",
+  dailyActivitiesSubtitle: "Rutinitas pembentukan kedisiplinan, ibadah wajib & sunnah, dan tahfidz berkelanjutan.",
+  dailyActivities: [
+    {
+      id: "act-d1",
+      title: "Sholat Dhuha & Berjamaah Terbimbing",
+      category: "IBADAH",
+      description: "Pembiasaan shalat sunnah Dhuha setiap pagi serta shalat Dzuhur & Ashar berjamaah dengan adab masjid lengkap.",
+      timeOrFrequency: "Setiap Hari (07.15 & Dzuhur)",
+      imageUrl: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=600&q=80",
+      type: "harian"
+    },
+    {
+      id: "act-d2",
+      title: "Halaqah Tahfidz & Talaqqi Pagi",
+      category: "TAHFIDZ",
+      description: "Metode setoran hafalan baru (ziyadah) dengan rasio 1 ustadz mendampingi maksimal 10–12 santri secara intensif.",
+      timeOrFrequency: "Senin – Jumat (07.30 – 08.45)",
+      imageUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80",
+      type: "harian"
+    },
+    {
+      id: "act-d3",
+      title: "Kultum Dhuha & Muroja'ah Akbar",
+      category: "KARAKTER",
+      description: "Latihan public speaking santri bergiliran membawakan nasihat hadits singkat, dilanjutkan muroja'ah bersama satu juz.",
+      timeOrFrequency: "Rabu & Jumat (08.45 – 09.15)",
+      imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
+      type: "harian"
+    },
+    {
+      id: "act-d4",
+      title: "Senam Pagi & Olahraga Kebugaran",
+      category: "JASMANI",
+      description: "Aktivitas pembinaan fisik santri di lapangan terbuka asri untuk menjaga kebugaran dan stamina menghafal Al-Qur'an.",
+      timeOrFrequency: "Jumat Pagi (06.45 – 07.30)",
+      imageUrl: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=600&q=80",
+      type: "harian"
+    }
+  ],
+  periodicProgramsTitle: "Program Unggulan Berkala",
+  periodicProgramsSubtitle: "Agenda penguatan spiritual, literasi, karya, dan kepedulian sosial santri dalam satu semester.",
+  periodicPrograms: [
+    {
+      id: "act-p1",
+      title: "Dauroh Qur'an & Mabit Santri",
+      category: "TAHFIDZ AKBAR",
+      description: "Program intensif muroja'ah dan karantina hafalan semalam di sekolah dengan suasana qiyamul lail berjamaah.",
+      timeOrFrequency: "1 Kali per Semester",
+      imageUrl: "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=600&q=80",
+      type: "berkala"
+    },
+    {
+      id: "act-p2",
+      title: "Outing Class Sains & Alam Gunungkidul",
+      category: "EKSPLORASI",
+      description: "Pembelajaran kontekstual di alam terbuka, mengenal flora fauna lokal, peternakan, dan sains terapan ciptaan Allah SWT.",
+      timeOrFrequency: "Tengah Semester",
+      imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80",
+      type: "berkala"
+    },
+    {
+      id: "act-p3",
+      title: "Bakti Sosial & Santunan Berkah",
+      category: "SOSIAL",
+      description: "Penyaluran sedekah dan paket sembako santri kepada warga sekitar Playen untuk melatih empati kedermawanan.",
+      timeOrFrequency: "Bulan Ramadhan / Idul Adha",
+      imageUrl: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=80",
+      type: "berkala"
+    }
+  ],
+
+  // Fasilitas
+  fasilitasBadge: "SARANA & PRASARANA MODERN",
+  fasilitasTitle: "Fasilitas Pendukung Belajar & Tahfidz yang Asri",
+  fasilitasSubtitle: "Menghadirkan lingkungan belajar yang aman, nyaman, dan sejuk di Playen. Menunjang percepatan hafalan Al-Qur'an, eksplorasi sains, serta kesehatan jasmani santri.",
+  fasilitasStat1Val: "100%",
+  fasilitasStat1Label: "Milik Sendiri",
+  fasilitasStat1Sub: "Lahan Wakaf Resmi",
+  fasilitasStat2Val: "24/7",
+  fasilitasStat2Label: "Keamanan Terpadu",
+  fasilitasStat2Sub: "CCTV & One Gate",
+  fasilitasEcoBadge: "STANDAR KESELAMATAN & KENYAMANAN",
+  fasilitasEcoTitle: "Ekosistem Belajar Hijau, Aman, dan Ramah Anak di Playen",
+  fasilitasEcoSubtitle: "Kenyamanan lingkungan fisik secara langsung mempengaruhi daya serap ingatan hafalan Al-Qur'an santri dan ketenangan orang tua selama ananda beraktivitas di sekolah.",
+  fasilitasEcoItems: [
+    {
+      id: "eco-1",
+      title: "Bebas Polusi & Udara Sejuk",
+      description: "Jauh dari kebisingan jalan raya utama, dikelilingi pepohonan rimbun yang memasok udara segar untuk fokus belajar."
+    },
+    {
+      id: "eco-2",
+      title: "Keamanan Terpadu & Ramah Anak",
+      description: "Akses satu pintu (one gate system), pengawasan ustadz dan pos satpam, serta area tanpa sudut berbahaya bagi santri kecil."
+    },
+    {
+      id: "eco-3",
+      title: "Air Bersih & Sanitasi Standar",
+      description: "Sumber air wudhu mengalir jernih melimpah, toilet santri putra dan putri terpisah dengan standar higienis terjaga."
+    },
+    {
+      id: "eco-4",
+      title: "Masjid Nyaman & Terbuka",
+      description: "Pusat ruhaniyah sekolah yang bersih dan sejuk untuk pembiasaan shalat berjamaah, halaqah Qur'an, dan tasmi'."
+    }
+  ],
+
+  // Infaq
+  infaqBadge: "INFAQ, WAKAF & SEDEKAH PENDIDIKAN",
+  infaqTitle: "Investasi Abadi untuk Generasi Penghafal Al-Qur'an",
+  infaqSubtitle: "Salurkan infaq dan wakaf terbaik Anda guna mendukung operasional beasiswa santri dhuafa berprestasi, fasilitas halaqah tahfidz, dan pengembangan sarana dakwah di Playen, Gunungkidul.",
+  infaqTrustBadges: ["100% Saluran Amanah", "Laporan Keuangan Berkala", "Terdaftar Kemenag DIY"],
+  infaqPrograms: [
+    {
+      id: "inf-1",
+      tag: "BEASISWA DHUAFA",
+      title: "Beasiswa Santri Qur'an",
+      description: "Bantuan biaya pendidikan, seragam, dan buku untuk santri yatim dan dhuafa berprestasi agar terus lancar menghafal Al-Qur'an.",
+      highlight: "Mulai Rp 50.000 / paket",
+      iconType: "scholarship"
+    },
+    {
+      id: "inf-2",
+      tag: "WAKAF JARIYAH",
+      title: "Wakaf Sarana & Bangunan",
+      description: "Pembangunan dan perluasan ruang kelas baru, perluasan masjid jami' sekolah, serta pengadaan AC ramah lingkungan.",
+      highlight: "Pahala Mengalir Abadi",
+      iconType: "building"
+    },
+    {
+      id: "inf-3",
+      tag: "OPERASIONAL DAKWAH",
+      title: "Operasional Dakwah & Al-Qur'an",
+      description: "Pengadaan mushaf Al-Qur'an rasm Utsmani, media pembelajaran digital sains terpadu, dan pelatihan sanad asatidz berkala.",
+      highlight: "Investasi Generasi Emas",
+      iconType: "book"
+    }
+  ],
+
+  // SPMB
+  spmbBadge: "PENERIMAAN SANTRI BARU (PSB) ONLINE",
+  spmbTitle: "Pendaftaran Santri Baru SD Quran Unggulan Al-Itisham Playen",
+  spmbSubtitle: "Selamat datang di portal resmi Penerimaan Santri Baru (PSB). Silakan mengisi formulir pendaftaran online langsung di bawah ini. Tim panitia siap mendampingi ananda bertumbuh dalam keimanan kokoh, hafalan Al-Qur'an mutqin, serta budi pekerti mulia.",
+  spmbStatusPill: "KUOTA TERBATAS • MAKS. 28 SANTRI/KELAS",
+  spmbStepsTitle: "Alur Pendaftaran Santri Baru",
+  spmbStepsSubtitle: "Proses mudah dan transparan dari pengisian formulir hingga penyambutan santri baru:",
+  spmbSteps: [
+    {
+      step: 1,
+      title: "Isi Formulir Online",
+      description: "Mengisi formulir PSB melalui link yang tersedia dan melengkapi biodata dasar santri."
+    },
+    {
+      step: 2,
+      title: "Konfirmasi Panitia",
+      description: "Konfirmasi pengisian data via WhatsApp panitia untuk penjadwalan observasi."
+    },
+    {
+      step: 3,
+      title: "Observasi & Pemetaan",
+      description: "Pemetaan fitrah, kesiapan belajar, dan sosialisasi santri bersama para asatidz."
+    },
+    {
+      step: 4,
+      title: "Wawancara Orang Tua",
+      description: "Penyelarasan visi pendidikan antara orang tua dan madrasah demi tumbuh kembang optimal."
+    },
+    {
+      step: 5,
+      title: "Daftar Ulang",
+      description: "Verifikasi berkas fisik, pengukuran seragam, dan penerimaan atribut santri baru."
+    }
+  ],
+  spmbDocsTitle: "Syarat & Dokumen Kelengkapan Berkas",
+  spmbDocsSubtitle: "Berkas diserahkan dalam map folio saat tahapan observasi tatap muka:",
+  spmbDocsList: [
+    "Fotokopi Akta Kelahiran Calon Santri (2 lembar)",
+    "Fotokopi Kartu Keluarga (KK) terbaru (2 lembar)",
+    "Fotokopi KTP kedua orang tua / wali (masing-masing 1 lembar)",
+    "Pas foto berwarna calon santri ukuran 3x4 (4 lembar)",
+    "Fotokopi Ijazah / Surat Keterangan Lulus TK/RA/PAUD",
+    "Surat Keterangan Sehat dari Dokter / Fasilitas Kesehatan"
+  ],
+  spmbFaqTitle: "Pertanyaan yang Sering Diajukan (FAQ)",
+  spmbFaqSubtitle: "Jawaban seputar tes observasi, kurikulum tahfidz, dan proses pendaftaran santri baru.",
+  spmbFaqs: [
+    {
+      id: "faq-1",
+      question: "Apakah calon santri harus sudah bisa membaca Al-Qur'an dan Calistung saat mendaftar?",
+      answer: "Tidak wajib. Observasi di SDQU Al I'tisham lebih menitikberatkan pada pemetaan kesiapan motorik, kemandirian anak, daya tangkap, dan kemauan belajar. Kami memiliki program matrikulasi dan bimbingan membaca dari dasar (BTA & Iqro')."
+    },
+    {
+      id: "faq-2",
+      question: "Berapa target hafalan Al-Qur'an selama 6 tahun di SDQU Al I'tisham?",
+      answer: "Target minimal kelulusan adalah 3 hingga 5 juz mutqin dengan sanad tajwid yang benar. Bagi santri kelas akselerasi atau peminatan khusus, disediakan program tahfidz intensif hingga 10–30 juz."
+    },
+    {
+      id: "faq-3",
+      question: "Apakah kurikulum umum (Kemendikbud) tetap diajarkan secara lengkap?",
+      answer: "Ya, kurikulum nasional tetap diajarkan secara lengkap dan terpadu. Santri tetap menempuh Asesmen Standarisasi Pendidikan Daerah (ASPD) dan mata pelajaran sains, matematika, bahasa, serta IPS dengan standar tinggi."
+    },
+    {
+      id: "faq-4",
+      question: "Apakah tersedia program beasiswa untuk santri yatim atau dhuafa?",
+      answer: "Ya, Yayasan Al I'tisham menyediakan jalur Beasiswa Tahfidz Prestasi dan Beasiswa Dhuafa. Orang tua dapat mengajukan keringanan biaya melalui konfirmasi dokumen kepada tim panitia PSB."
+    }
+  ]
 };
 
 export const INITIAL_ANNOUNCEMENTS: Announcement[] = [

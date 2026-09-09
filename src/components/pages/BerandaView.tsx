@@ -114,8 +114,8 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                   onClick={() => setShowVideoModal(true)}
                   className="bg-white/15 hover:bg-white/25 text-white border border-white/25 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-md transition-all flex items-center gap-2"
                 >
-                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white text-white" />
-                  <span>Tonton Profil Singkat</span>
+                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
+                  <span>{settings.heroSecondaryBtnText || "Kenali Selayang Pandang"}</span>
                 </button>
               </div>
 
@@ -215,10 +215,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </div>
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  1.200+
+                  {settings.heroStatsRibbon?.stat1Val || "1.200+"}
                 </div>
                 <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  Santri Aktif &amp; Alumni
+                  {settings.heroStatsRibbon?.stat1Label || "Santri Aktif & Alumni"}
                 </div>
               </div>
             </div>
@@ -230,10 +230,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </div>
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  100%
+                  {settings.heroStatsRibbon?.stat2Val || "100%"}
                 </div>
                 <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  Target Tahfidz Mutqin
+                  {settings.heroStatsRibbon?.stat2Label || "Target Tahfidz Mutqin"}
                 </div>
               </div>
             </div>
@@ -245,10 +245,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </div>
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  45+
+                  {settings.heroStatsRibbon?.stat3Val || "45+"}
                 </div>
                 <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  Asatidz Bersanad
+                  {settings.heroStatsRibbon?.stat3Label || "Asatidz Bersanad"}
                 </div>
               </div>
             </div>
@@ -260,10 +260,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </div>
               <div>
                 <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  25+
+                  {settings.heroStatsRibbon?.stat4Val || "25+"}
                 </div>
                 <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  Prestasi Tingkat DIY &amp; Nas
+                  {settings.heroStatsRibbon?.stat4Label || "Prestasi Tingkat DIY & Nas"}
                 </div>
               </div>
             </div>
@@ -490,76 +490,51 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 NILAI OTENTIK PENDIDIKAN KAMI
               </div>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
-                Mengapa Ayah &amp; Bunda Mempercayakan Putra–Putrinya di SDQU Al I'tisham?
+                {settings.berandaFeaturesTitle || "Mengapa Ayah & Bunda Mempercayakan Putra–Putrinya di SDQU Al I'tisham?"}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-                Kami memandang setiap anak sebagai amanah mulia yang memiliki keunikan fitrah. Lingkungan belajar dirancang agar ananda merasa aman, disayangi, dan bersemangat menuntut ilmu.
+                {settings.berandaFeaturesSubtitle || "Kami memandang setiap anak sebagai amanah mulia yang memiliki keunikan fitrah. Lingkungan belajar dirancang agar ananda merasa aman, disayangi, dan bersemangat menuntut ilmu."}
               </p>
             </div>
 
-            {/* 4 Feature Points */}
+            {/* Feature Points - Editable by Admin */}
             <div className="space-y-3.5 pt-2">
-              
-              {/* Point 1 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
+              {(settings.berandaFeatures && settings.berandaFeatures.length > 0 ? settings.berandaFeatures : [
+                {
+                  id: "feat-1",
+                  title: "Guru Tahfidz Bersanad & Berpengalaman",
+                  description: "Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar."
+                },
+                {
+                  id: "feat-2",
+                  title: "Mutaba'ah Digital Santri Terkoneksi Real–time",
+                  description: "Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali."
+                },
+                {
+                  id: "feat-3",
+                  title: "Rasio Ideal 1:12 untuk Perhatian Optimal",
+                  description: "Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif."
+                },
+                {
+                  id: "feat-4",
+                  title: "Lingkungan Ramah Anak, Nyaman & Sehat",
+                  description: "Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur."
+                }
+              ]).map((feat) => (
+                <div key={feat.id} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">
+                      {feat.title}
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      {feat.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Guru Tahfidz Bersanad &amp; Berpengalaman
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar.
-                  </p>
-                </div>
-              </div>
-
-              {/* Point 2 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Mutaba'ah Digital Santri Terkoneksi Real–time
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali.
-                  </p>
-                </div>
-              </div>
-
-              {/* Point 3 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Rasio Ideal 1:12 untuk Perhatian Optimal
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif.
-                  </p>
-                </div>
-              </div>
-
-              {/* Point 4 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Lingkungan Ramah Anak, Nyaman &amp; Sehat
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur.
-                  </p>
-                </div>
-              </div>
-
+              ))}
             </div>
           </div>
 
@@ -573,15 +548,15 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
             AMANAH &amp; KESAN ORANG TUA
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
-            Apa Kata Para Wali Santri SDQU Al I'tisham
+            {settings.testimonialsTitle || "Apa Kata Para Wali Santri SDQU Al I'tisham"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600">
-            Bukti nyata transformasi adab, kecintaan pada Al-Qur'an, dan prestasi akademik yang membanggakan keluarga.
+            {settings.testimonialsSubtitle || "Bukti nyata transformasi adab, kecintaan pada Al-Qur'an, dan prestasi akademik yang membanggakan keluarga."}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {INITIAL_TESTIMONIALS.map(item => (
+          {(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS).map(item => (
             <div
               key={item.id}
               className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-6"
@@ -590,7 +565,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 {/* 5 Stars & Quote Icon */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-amber-500">
-                    {[...Array(5)].map((_, i) => (
+                    {[...Array(item.rating || 5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
                     ))}
                   </div>
@@ -604,9 +579,17 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
 
               {/* Author */}
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className={`w-10 h-10 rounded-full ${item.avatarColor} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
-                  {item.avatar}
-                </div>
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                  />
+                ) : (
+                  <div className={`w-10 h-10 rounded-full ${item.avatarColor || 'bg-emerald-700'} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
+                    {item.avatar || (item.name ? item.name.substring(0, 2).toUpperCase() : 'WS')}
+                  </div>
+                )}
                 <div>
                   <h4 className="text-xs font-bold text-slate-900">
                     {item.name}
@@ -629,15 +612,15 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
             <div className="lg:col-span-8 space-y-4">
               <div className="inline-flex items-center gap-2 bg-emerald-900 border border-emerald-700 text-amber-300 text-xs font-bold px-3 py-1 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                <span>GELOMBANG 1 DITUTUP SEGERA</span>
+                <span>{settings.ctaBannerBadge || "GELOMBANG 1 DITUTUP SEGERA"}</span>
               </div>
 
               <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                Mari Bergabung Bersama Keluarga Besar SDQU Al I'tisham Playen
+                {settings.ctaBannerTitle || "Mari Bergabung Bersama Keluarga Besar SDQU Al I'tisham Playen"}
               </h2>
 
               <p className="text-xs sm:text-sm text-emerald-200/90 max-w-xl leading-relaxed">
-                Kuota penerimaan santri baru dibatasi demi menjaga rasio pembinaan halaqah yang optimal. Daftarkan putra-putri tercinta hari ini dan amankan kursi belajar mereka.
+                {settings.ctaBannerDesc || "Kuota penerimaan santri baru dibatasi demi menjaga rasio pembinaan halaqah yang optimal. Daftarkan putra-putri tercinta hari ini dan amankan kursi belajar mereka."}
               </p>
             </div>
 
@@ -646,7 +629,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 onClick={() => setActivePage('spmb')}
                 className="bg-[#d97706] hover:bg-[#b45309] text-white py-3.5 px-6 rounded-full text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-2"
               >
-                <span>Daftar SPMB Online 2025/2026</span>
+                <span>{settings.ctaBannerBtnText || "Daftar SPMB Online 2025/2026"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -665,37 +648,81 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
         </div>
       </section>
 
-      {/* Video Modal Popup */}
+      {/* Selayang Pandang / Video Modal Popup */}
       {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="bg-slate-900 rounded-3xl p-4 max-w-3xl w-full text-white space-y-4 border border-slate-700 shadow-2xl">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-amber-400" />
-                <span>Video Profil SDQU Al I'tisham Playen</span>
-              </h3>
+          <div className="bg-slate-900 rounded-3xl p-5 sm:p-7 max-w-2xl w-full text-white space-y-5 border border-slate-700 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">
+                    {settings.heroSecondaryBtnModalTitle || "Selayang Pandang & Profil Singkat SDQU Al I'tisham"}
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Dusun Banaran, Playen, Gunungkidul, DI Yogyakarta
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowVideoModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black flex items-center justify-center relative">
-              <iframe
-                className="w-full h-full"
-                src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0"
-                title="Profil SDQU Al I'tisham Playen"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
+            {settings.heroVideoUrl && settings.heroVideoUrl.trim() !== '' ? (
+              <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black flex items-center justify-center relative">
+                <iframe
+                  className="w-full h-full"
+                  src={settings.heroVideoUrl}
+                  title="Profil SDQU Al I'tisham Playen"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="space-y-4 text-slate-300 text-xs sm:text-sm leading-relaxed">
+                <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800/80 text-emerald-100">
+                  <p>
+                    {settings.heroSecondaryBtnModalDesc || "SD Quran Unggulan Al-Itisham Playen membina generasi dengan pendidikan akhlak agama Islam, tahfidzul Qur'an, kurikulum terpadu, guru berpengalaman, dan lingkungan belajar kondusif di Banaran, Playen."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                    <div className="text-amber-400 font-bold text-xs mb-1">Tahfidz Bersanad</div>
+                    <div className="text-[11px] text-slate-300">Talaqqi intensif rasio 1:12 dengan target mutqin 3–5 juz.</div>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                    <div className="text-amber-400 font-bold text-xs mb-1">Karakter Adab</div>
+                    <div className="text-[11px] text-slate-300">Pembiasaan sholat Dhuha, birrul walidain, dan budaya santun.</div>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                    <div className="text-amber-400 font-bold text-xs mb-1">Terakreditasi BAN</div>
+                    <div className="text-[11px] text-slate-300">Kurikulum terpadu Kemendikbud &amp; Pesantren yang unggul.</div>
+                  </div>
+                </div>
+              </div>
+            )}
             
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+              <button
+                onClick={() => {
+                  setShowVideoModal(false);
+                  setActivePage('profil');
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+              >
+                <span>Lihat Profil Lengkap</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={() => setShowVideoModal(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors"
               >
                 Tutup
               </button>

@@ -273,8 +273,19 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {settings.achievements?.map((ach) => (
-            <div key={ach.id} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+            <div key={ach.id} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between overflow-hidden">
               <div className="space-y-3">
+                {/* Optional Thumbnail Image */}
+                {ach.imageUrl && (
+                  <div className="w-full h-44 -mx-6 -mt-6 mb-4 overflow-hidden bg-slate-100 border-b border-slate-100">
+                    <img
+                      src={ach.imageUrl}
+                      alt={ach.category}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
                     ach.category === 'ASPD' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
@@ -324,59 +335,65 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
             LANDASAN NILAI KARAKTER
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
-            4 Nilai Pokok (Core Values)
+            {settings.coreValuesTitle || "4 Nilai Pokok (Core Values)"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600">
-            Membimbing setiap tindak tanduk peserta didik, pengajar, dan tenaga kependidikan dalam keseharian madrasah.
+            {settings.coreValuesSubtitle || "Membimbing setiap tindak tanduk peserta didik, pengajar, dan tenaga kependidikan dalam keseharian madrasah."}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
-              <Compass className="w-5 h-5" />
+          {(settings.coreValues && settings.coreValues.length > 0 ? settings.coreValues : [
+            {
+              id: "val-1",
+              number: "NILAI 01",
+              title: "Al-I'tisham (Keteguhan)",
+              description: "Berpegang teguh pada syariat agama Allah (Al-Qur'an & Sunnah) dalam segala kondisi zaman dengan penuh keyakinan dan kemantapan hati.",
+              color: "emerald"
+            },
+            {
+              id: "val-2",
+              number: "NILAI 02",
+              title: "Al-Itqan (Profesionalisme)",
+              description: "Menyelesaikan setiap tugas dan hafalan dengan tuntas, rapi, presisi, dan berusaha memberikan hasil karya terbaik di setiap kesempatan.",
+              color: "amber"
+            },
+            {
+              id: "val-3",
+              number: "NILAI 03",
+              title: "Al-Amanah (Integritas)",
+              description: "Kejujuran dan tanggung jawab mutlak dalam menjaga titipan ilmu, nama baik keluarga, inisiatif, serta semangat persaudaraan sesama muslim.",
+              color: "teal"
+            },
+            {
+              id: "val-4",
+              number: "NILAI 04",
+              title: "Al-Ihsan (Kebaikan Hati)",
+              description: "Senantiasa berbuat kebajikan, berempati sosial tinggi, bertutur kata santun, serta beribadah seolah-olah melihat Allah Ta'ala.",
+              color: "rose"
+            }
+          ]).map((val, idx) => (
+            <div key={val.id} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                val.color === 'emerald' ? 'bg-emerald-100 text-emerald-800' :
+                val.color === 'amber' ? 'bg-amber-100 text-amber-800' :
+                val.color === 'rose' ? 'bg-rose-100 text-rose-800' :
+                'bg-teal-100 text-teal-800'
+              }`}>
+                {idx === 0 ? <Compass className="w-5 h-5" /> :
+                 idx === 1 ? <Target className="w-5 h-5" /> :
+                 idx === 2 ? <Scale className="w-5 h-5" /> :
+                 <Heart className="w-5 h-5" />}
+              </div>
+              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">
+                {val.number || `NILAI 0${idx + 1}`}
+              </span>
+              <h4 className="text-base font-bold text-slate-900">{val.title}</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {val.description}
+              </p>
             </div>
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">NILAI 01</span>
-            <h4 className="text-base font-bold text-slate-900">Al-I'tisham (Keteguhan)</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Berpegang teguh pada syariat agama Allah (Al-Qur'an &amp; Sunnah) dalam segala kondisi zaman dengan penuh keyakinan dan kemantapan hati.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
-              <Target className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">NILAI 02</span>
-            <h4 className="text-base font-bold text-slate-900">Al-Itqan (Profesionalisme)</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Menyelesaikan setiap tugas dan hafalan dengan tuntas, rapi, presisi, dan berusaha memberikan hasil karya terbaik di setiap kesempatan.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-sm">
-              <Scale className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">NILAI 03</span>
-            <h4 className="text-base font-bold text-slate-900">Al-Amanah (Integritas)</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Kejujuran dan tanggung jawab mutlak dalam menjaga titipan ilmu, nama baik keluarga, inisiatif, serta semangat persaudaraan sesama muslim.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-sm">
-              <Heart className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wide">NILAI 04</span>
-            <h4 className="text-base font-bold text-slate-900">Al-Ihsan (Kebaikan Hati)</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Senantiasa berbuat kebajikan, berempati sosial tinggi, bertutur kata santun, serta beribadah seolah-olah melihat Allah Ta'ala.
-            </p>
-          </div>
-
+          ))}
         </div>
       </section>
 
@@ -404,7 +421,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teachers.slice(0, 8).map(teacher => (
+          {teachers.map(teacher => (
             <div
               key={teacher.id}
               className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow group flex flex-col justify-between space-y-4"
@@ -412,7 +429,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
               <div className="space-y-3">
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-100">
                   <img
-                    src={teacher.imageUrl}
+                    src={teacher.imageUrl || "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80"}
                     alt={teacher.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -442,55 +459,58 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       {/* LEGALITAS & AKREDITASI */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
-              <Award className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">AKREDITASI BAN S/M</span>
-              <h4 className="text-base font-bold text-slate-900 mt-1">Terakreditasi "{settings.accreditation}"</h4>
-              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Memenuhi seluruh standar nasional pendidikan (SNP) dengan nilai capaian memuaskan dari Badan Akreditasi Nasional.
-              </p>
-              <div className="mt-4 inline-block bg-emerald-50 text-emerald-900 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-200">
-                {settings.skAkreditasi}
+          {(settings.legalitasList && settings.legalitasList.length > 0 ? settings.legalitasList : [
+            {
+              id: "leg-1",
+              tag: "AKREDITASI BAN S/M",
+              title: `Terakreditasi "${settings.accreditation}"`,
+              description: "Memenuhi seluruh standar nasional pendidikan (SNP) dengan nilai capaian memuaskan dari Badan Akreditasi Nasional.",
+              badge: settings.skAkreditasi,
+              color: "emerald"
+            },
+            {
+              id: "leg-2",
+              tag: "IZIN OPERASIONAL",
+              title: "Kemendikbudristek & Dinas",
+              description: "Lembaga resmi terdaftar di Dinas Pendidikan Kabupaten Gunungkidul dan terdata aktif dalam sistem Dapodik Kemendikbudristek.",
+              badge: `NPSN: ${settings.npsn}`,
+              color: "amber"
+            },
+            {
+              id: "leg-3",
+              tag: "YAYASAN PENYELENGGARA",
+              title: settings.foundation,
+              description: "Badan hukum nirlaba yang berfokus pada dakwah pendidikan Al-Qur'an dan kemaslahatan umat di Playen, Gunungkidul.",
+              badge: "Playen, Gunungkidul, D.I. Yogyakarta",
+              color: "teal"
+            }
+          ]).map((leg, idx) => (
+            <div key={leg.id} className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${
+                leg.color === 'amber' ? 'bg-amber-50 text-amber-800' :
+                leg.color === 'teal' ? 'bg-teal-50 text-teal-800' :
+                'bg-emerald-50 text-emerald-800'
+              }`}>
+                {idx === 0 ? <Award className="w-6 h-6" /> :
+                 idx === 1 ? <FileCheck2 className="w-6 h-6" /> :
+                 <Building className="w-6 h-6" />}
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">{leg.tag}</span>
+                <h4 className="text-base font-bold text-slate-900 mt-1">{leg.title}</h4>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  {leg.description}
+                </p>
+                <div className={`mt-4 inline-block text-xs font-bold px-3 py-1.5 rounded-lg border ${
+                  leg.color === 'amber' ? 'bg-amber-50 text-amber-900 border-amber-200' :
+                  leg.color === 'teal' ? 'bg-teal-50 text-teal-900 border-teal-200' :
+                  'bg-emerald-50 text-emerald-900 border-emerald-200'
+                }`}>
+                  {leg.badge}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-800 flex items-center justify-center">
-              <FileCheck2 className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">IZIN OPERASIONAL</span>
-              <h4 className="text-base font-bold text-slate-900 mt-1">Kemendikbudristek &amp; Dinas</h4>
-              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Lembaga resmi terdaftar di Dinas Pendidikan Kabupaten Gunungkidul dan terdata aktif dalam sistem Dapodik Kemendikbudristek.
-              </p>
-              <div className="mt-4 inline-block bg-amber-50 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-200">
-                NPSN: {settings.npsn}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-800 flex items-center justify-center">
-              <Building className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">YAYASAN PENYELENGGARA</span>
-              <h4 className="text-base font-bold text-slate-900 mt-1">{settings.foundation}</h4>
-              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Badan hukum nirlaba yang berfokus pada dakwah pendidikan Al-Qur'an dan kemaslahatan umat di Playen, Gunungkidul.
-              </p>
-              <div className="mt-4 inline-block bg-teal-50 text-teal-900 text-xs font-bold px-3 py-1.5 rounded-lg border border-teal-200">
-                Playen, Gunungkidul, D.I. Yogyakarta
-              </div>
-            </div>
-          </div>
-
+          ))}
         </div>
       </section>
 

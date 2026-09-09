@@ -9,11 +9,20 @@ import {
   SchoolSettings,
   TeacherItem,
   AchievementItem,
-  ExtracurricularItem
+  ExtracurricularItem,
+  TestimonialItem,
+  InfaqProgramItem,
+  EcoFeatureItem,
+  CoreValueItem,
+  LegalitasItem,
+  SPMBStepItem,
+  FAQItem
 } from '../../types';
 import { dataService } from '../../services/dataService';
 import { GOOGLE_CONFIG, APPS_SCRIPT_CODE, getAppsScriptCode } from '../../config/googleConfig';
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
+import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
+import { AdminSpmbTab } from '../admin/AdminSpmbTab';
 import {
   ShieldCheck,
   Lock,
@@ -44,7 +53,9 @@ import {
   BookOpen,
   Sparkles,
   KeyRound,
-  FileText
+  FileText,
+  CheckCircle2,
+  MessageSquare
 } from 'lucide-react';
 
 interface AdminCMSViewProps {
@@ -85,6 +96,8 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     | 'programs_achievements'
     | 'facilities'
     | 'teachers'
+    | 'kegiatan'
+    | 'spmb'
     | 'announcements'
     | 'news'
     | 'events'
@@ -162,6 +175,14 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [newTeacherSpecialty, setNewTeacherSpecialty] = useState('');
   const [newTeacherEducation, setNewTeacherEducation] = useState('');
   const [newTeacherImage, setNewTeacherImage] = useState('https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80');
+
+  // Edit Teacher State
+  const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
+  const [editTeacherName, setEditTeacherName] = useState('');
+  const [editTeacherRole, setEditTeacherRole] = useState('');
+  const [editTeacherSpecialty, setEditTeacherSpecialty] = useState('');
+  const [editTeacherEducation, setEditTeacherEducation] = useState('');
+  const [editTeacherImage, setEditTeacherImage] = useState('');
 
   // New Facility State
   const [showAddFacility, setShowAddFacility] = useState(false);
@@ -399,6 +420,26 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     requestDelete('Hapus Data Asatidz', 'Hapus data pengajar/asatidz ini dari sistem?', () => {
       dataService.deleteTeacher(id);
     });
+  };
+
+  const startEditTeacher = (tc: TeacherItem) => {
+    setEditingTeacherId(tc.id);
+    setEditTeacherName(tc.name);
+    setEditTeacherRole(tc.role);
+    setEditTeacherSpecialty(tc.specialty);
+    setEditTeacherEducation(tc.education);
+    setEditTeacherImage(tc.imageUrl);
+  };
+
+  const handleSaveEditTeacher = (id: string) => {
+    dataService.updateTeacher(id, {
+      name: editTeacherName,
+      role: editTeacherRole,
+      specialty: editTeacherSpecialty,
+      education: editTeacherEducation,
+      imageUrl: editTeacherImage
+    });
+    setEditingTeacherId(null);
   };
 
   const handleCreateFacility = (e: React.FormEvent) => {
@@ -669,8 +710,10 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
           { id: 'general_branding', label: 'Pengaturan & Hero Beranda', icon: Settings },
           { id: 'vision_missions', label: 'Visi, Misi & Sejarah', icon: BookOpen },
           { id: 'programs_achievements', label: 'Program & Prestasi', icon: Trophy },
-          { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
           { id: 'teachers', label: `Guru & Asatidz (${teachers.length})`, icon: Users },
+          { id: 'kegiatan', label: 'Kegiatan & Ekskul', icon: Calendar },
+          { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
+          { id: 'spmb', label: 'Alur & SPMB', icon: CheckCircle2 },
           { id: 'announcements', label: `Pengumuman (${announcements.length})`, icon: Megaphone },
           { id: 'news', label: `Berita (${news.length})`, icon: Newspaper },
           { id: 'events', label: `Agenda (${events.length})`, icon: Calendar },
@@ -1208,6 +1251,445 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
             </div>
           </div>
 
+          {/* Section: Tombol Video Profil / Pengganti Tonton Profil Singkat */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>Tombol &amp; Modal Video Profil Beranda</span>
+            </h4>
+            <p className="text-xs text-slate-500">
+              Ganti teks tombol "Tonton Profil Singkat" dengan kata-kata lain pilihan Anda dan sesuaikan judul modalnya.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Teks Tombol Profil (Di Sebelah Tombol PSB)</label>
+                <input
+                  type="text"
+                  value={editSettings.heroVideoBtnText || ''}
+                  onChange={e => setEditSettings({ ...editSettings, heroVideoBtnText: e.target.value })}
+                  placeholder="Contoh: Kenali Sekolah Kami / Profil Singkat"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Judul Jendela Modal Profil</label>
+                <input
+                  type="text"
+                  value={editSettings.heroVideoTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, heroVideoTitle: e.target.value })}
+                  placeholder="Profil Singkat SD Qur'an Unggulan Al I'tisham"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Deskripsi Modal Profil</label>
+              <textarea
+                rows={2}
+                value={editSettings.heroVideoDesc || ''}
+                onChange={e => setEditSettings({ ...editSettings, heroVideoDesc: e.target.value })}
+                placeholder="Deskripsi singkat tentang sekolah yang tampil saat tombol diklik..."
+                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Section: 4 Statistik Utama Beranda (Pita Angka) */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4" />
+                  <span>4 Angka Statistik Utama Beranda</span>
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Ubah angka, judul, dan penjelasan 4 kartu statistik di bawah hero (1.200+ Santri, 28 Asatidz, 100% Target Mutqin, 80+ Prestasi).
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = [...(editSettings.berandaStats || []), { value: '100+', label: 'Stat Baru', sublabel: 'Keterangan tambahan stat' }];
+                  setEditSettings({ ...editSettings, berandaStats: updated });
+                }}
+                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Stat</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(editSettings.berandaStats || []).map((st, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400">Stat #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = editSettings.berandaStats?.filter((_, i) => i !== idx);
+                        setEditSettings({ ...editSettings, berandaStats: updated });
+                      }}
+                      className="text-rose-500 hover:text-rose-700"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 block">Angka / Nilai</label>
+                    <input
+                      type="text"
+                      value={st.value}
+                      onChange={e => {
+                        const updated = [...(editSettings.berandaStats || [])];
+                        updated[idx] = { ...updated[idx], value: e.target.value };
+                        setEditSettings({ ...editSettings, berandaStats: updated });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-emerald-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 block">Judul Label</label>
+                    <input
+                      type="text"
+                      value={st.label}
+                      onChange={e => {
+                        const updated = [...(editSettings.berandaStats || [])];
+                        updated[idx] = { ...updated[idx], label: e.target.value };
+                        setEditSettings({ ...editSettings, berandaStats: updated });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 block">Penjelasan Sublabel</label>
+                    <input
+                      type="text"
+                      value={st.sublabel || ''}
+                      onChange={e => {
+                        const updated = [...(editSettings.berandaStats || [])];
+                        updated[idx] = { ...updated[idx], sublabel: e.target.value };
+                        setEditSettings({ ...editSettings, berandaStats: updated });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section: Mengapa Memilih Kami (Why Choose Us) */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>Bagian "Mengapa Memilih SDQU Al I'tisham"</span>
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Tagline Badge</label>
+                <input
+                  type="text"
+                  value={editSettings.berandaWhyUsTagline || ''}
+                  onChange={e => setEditSettings({ ...editSettings, berandaWhyUsTagline: e.target.value })}
+                  placeholder="MENGAPA MEMILIH KAMI"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Judul Bagian</label>
+                <input
+                  type="text"
+                  value={editSettings.berandaWhyUsTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, berandaWhyUsTitle: e.target.value })}
+                  placeholder="Fondasi Kokoh untuk Generasi Emas Masa Depan"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Deskripsi Pengantar</label>
+              <textarea
+                rows={2}
+                value={editSettings.berandaWhyUsDesc || ''}
+                onChange={e => setEditSettings({ ...editSettings, berandaWhyUsDesc: e.target.value })}
+                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+              />
+            </div>
+
+            {/* 4 Cards Why Choose Us */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-slate-700 block">4 Pilar Keunggulan Utama</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(editSettings.berandaWhyUsItems || []).map((item, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded">Pilar #{idx + 1}</span>
+                      <input
+                        type="text"
+                        value={item.badge || ''}
+                        onChange={e => {
+                          const updated = [...(editSettings.berandaWhyUsItems || [])];
+                          updated[idx] = { ...updated[idx], badge: e.target.value };
+                          setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                        }}
+                        placeholder="Badge"
+                        className="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-300 text-right w-24"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={e => {
+                          const updated = [...(editSettings.berandaWhyUsItems || [])];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                        }}
+                        placeholder="Judul Pilar"
+                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <textarea
+                        rows={2}
+                        value={item.desc}
+                        onChange={e => {
+                          const updated = [...(editSettings.berandaWhyUsItems || [])];
+                          updated[idx] = { ...updated[idx], desc: e.target.value };
+                          setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                        }}
+                        placeholder="Deskripsi keunggulan..."
+                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Testimoni Wali Santri */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Testimoni Orang Tua &amp; Wali Santri</span>
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Ubah kutipan, nama wali, info santri, serta upload foto thumbnail wali santri.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const newItem: TestimonialItem = {
+                    id: 'testi-' + Date.now(),
+                    name: 'Nama Wali Santri',
+                    role: 'Wali Santri Kelas ...',
+                    quote: 'Kesan dan pengalaman mempercayakan pendidikan putra-putri di SDQU Al I\'tisham.',
+                    studentInfo: 'Ayahanda / Ibunda ...',
+                    avatar: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80'
+                  };
+                  setEditSettings({
+                    ...editSettings,
+                    testimonials: [...(editSettings.testimonials || []), newItem]
+                  });
+                }}
+                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Testimoni</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Tagline Testimoni</label>
+                <input
+                  type="text"
+                  value={editSettings.testimonialsHeaderTagline || ''}
+                  onChange={e => setEditSettings({ ...editSettings, testimonialsHeaderTagline: e.target.value })}
+                  placeholder="KATA MEREKA TENTANG AL I'TISHAM"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Judul Bagian Testimoni</label>
+                <input
+                  type="text"
+                  value={editSettings.testimonialsHeaderTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, testimonialsHeaderTitle: e.target.value })}
+                  placeholder="Kepercayaan Penuh dari Ayah &amp; Bunda"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {(editSettings.testimonials || []).map((t, idx) => (
+                <div key={t.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-950">Testimoni #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        requestDelete('Hapus Testimoni', `Hapus testimoni dari ${t.name}?`, () => {
+                          const updated = editSettings.testimonials?.filter((_, i) => i !== idx);
+                          setEditSettings({ ...editSettings, testimonials: updated });
+                        });
+                      }}
+                      className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block">Nama Wali Santri *</label>
+                      <input
+                        type="text"
+                        value={t.name}
+                        onChange={e => {
+                          const updated = [...(editSettings.testimonials || [])];
+                          updated[idx] = { ...updated[idx], name: e.target.value };
+                          setEditSettings({ ...editSettings, testimonials: updated });
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block">Role / Status</label>
+                      <input
+                        type="text"
+                        value={t.role}
+                        onChange={e => {
+                          const updated = [...(editSettings.testimonials || [])];
+                          updated[idx] = { ...updated[idx], role: e.target.value };
+                          setEditSettings({ ...editSettings, testimonials: updated });
+                        }}
+                        placeholder="Wali Santri Kelas 4"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block">Info Santri (Anak)</label>
+                      <input
+                        type="text"
+                        value={t.studentInfo || ''}
+                        onChange={e => {
+                          const updated = [...(editSettings.testimonials || [])];
+                          updated[idx] = { ...updated[idx], studentInfo: e.target.value };
+                          setEditSettings({ ...editSettings, testimonials: updated });
+                        }}
+                        placeholder="Ibunda Aisyah (Hafal 3 Juz)"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-600 block">Kutipan Testimoni</label>
+                    <textarea
+                      rows={2}
+                      value={t.quote}
+                      onChange={e => {
+                        const updated = [...(editSettings.testimonials || [])];
+                        updated[idx] = { ...updated[idx], quote: e.target.value };
+                        setEditSettings({ ...editSettings, testimonials: updated });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <ThumbnailUploader
+                      label={`Foto / Avatar untuk ${t.name}`}
+                      value={t.avatar || ''}
+                      onChange={url => {
+                        const updated = [...(editSettings.testimonials || [])];
+                        updated[idx] = { ...updated[idx], avatar: url };
+                        setEditSettings({ ...editSettings, testimonials: updated });
+                      }}
+                      onUploadFile={(file, label) =>
+                        handleFileUpload(file, url => {
+                          const updated = [...(editSettings.testimonials || [])];
+                          updated[idx] = { ...updated[idx], avatar: url };
+                          setEditSettings({ ...editSettings, testimonials: updated });
+                        }, label)
+                      }
+                      aspectRatio="avatar"
+                      fit="cover"
+                      helperText="Pilih foto profil orang tua/wali dari galeri"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section: CTA Banner Beranda */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>Banner Ajakan Pendaftaran (CTA Beranda)</span>
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Badge Banner</label>
+                <input
+                  type="text"
+                  value={editSettings.berandaCtaBadge || ''}
+                  onChange={e => setEditSettings({ ...editSettings, berandaCtaBadge: e.target.value })}
+                  placeholder="PENERIMAAN SANTRI BARU"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Teks Tombol Aksi</label>
+                <input
+                  type="text"
+                  value={editSettings.berandaCtaBtnText || ''}
+                  onChange={e => setEditSettings({ ...editSettings, berandaCtaBtnText: e.target.value })}
+                  placeholder="Daftar Santri Baru Sekarang"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Judul Banner CTA</label>
+              <input
+                type="text"
+                value={editSettings.berandaCtaTitle || ''}
+                onChange={e => setEditSettings({ ...editSettings, berandaCtaTitle: e.target.value })}
+                placeholder="Siapkan Masa Depan Qur'ani Putra-Putri Anda Bersama Kami"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Deskripsi Banner CTA</label>
+              <textarea
+                rows={2}
+                value={editSettings.berandaCtaDesc || ''}
+                onChange={e => setEditSettings({ ...editSettings, berandaCtaDesc: e.target.value })}
+                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+              />
+            </div>
+          </div>
+
           <div className="flex justify-end pt-4 border-t border-slate-100">
             <button
               type="submit"
@@ -1349,6 +1831,189 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 onChange={e => setEditSettings({ ...editSettings, historyPart3: e.target.value })}
                 className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
               />
+            </div>
+          </div>
+
+          {/* Section: 4 Nilai Utama Sekolah (Core Values) */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>4 Nilai Utama &amp; Karakter Santri (Core Values)</span>
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Tagline Bagian</label>
+                <input
+                  type="text"
+                  value={editSettings.coreValuesHeaderTagline || ''}
+                  onChange={e => setEditSettings({ ...editSettings, coreValuesHeaderTagline: e.target.value })}
+                  placeholder="NILAI &amp; BUDAYA SEKOLAH"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Judul Bagian</label>
+                <input
+                  type="text"
+                  value={editSettings.coreValuesHeaderTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, coreValuesHeaderTitle: e.target.value })}
+                  placeholder="Empat Pilar Karakter Lulusan"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(editSettings.coreValues || []).map((cv, idx) => (
+                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded">
+                      Pilar #{idx + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={cv.title}
+                      onChange={e => {
+                        const updated = [...(editSettings.coreValues || [])];
+                        updated[idx] = { ...updated[idx], title: e.target.value };
+                        setEditSettings({ ...editSettings, coreValues: updated });
+                      }}
+                      placeholder="Judul Nilai"
+                      className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      rows={2}
+                      value={cv.desc}
+                      onChange={e => {
+                        const updated = [...(editSettings.coreValues || [])];
+                        updated[idx] = { ...updated[idx], desc: e.target.value };
+                        setEditSettings({ ...editSettings, coreValues: updated });
+                      }}
+                      placeholder="Penjelasan nilai..."
+                      className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section: Legalitas & Izin Operasional Sekolah */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText className="w-4 h-4" />
+                  <span>Legalitas &amp; Surat Izin Operasional Resmi</span>
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Daftar SK dan izin resmi dari Kemenag, Kemendikbud, dan Yayasan yang tampil di halaman Profil.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const newItem: LegalitasItem = {
+                    id: 'leg-' + Date.now(),
+                    title: 'Surat Izin Operasional',
+                    nomor: 'SK-Nomor-...',
+                    instansi: 'Instansi Penerbit',
+                    tanggal: 'Tahun ...'
+                  };
+                  setEditSettings({
+                    ...editSettings,
+                    legalitas: [...(editSettings.legalitas || []), newItem]
+                  });
+                }}
+                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Legalitas</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Tagline Legalitas</label>
+                <input
+                  type="text"
+                  value={editSettings.legalitasHeaderTagline || ''}
+                  onChange={e => setEditSettings({ ...editSettings, legalitasHeaderTagline: e.target.value })}
+                  placeholder="PAYUNG HUKUM &amp; KELAYAKAN"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Judul Bagian Legalitas</label>
+                <input
+                  type="text"
+                  value={editSettings.legalitasHeaderTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, legalitasHeaderTitle: e.target.value })}
+                  placeholder="Legalitas Resmi &amp; Akreditasi Lembaga"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {(editSettings.legalitas || []).map((leg, idx) => (
+                <div key={leg.id || idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800">{leg.title || `Dokumen #${idx + 1}`}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = editSettings.legalitas?.filter((_, i) => i !== idx);
+                        setEditSettings({ ...editSettings, legalitas: updated });
+                      }}
+                      className="text-rose-500 hover:text-rose-700 p-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      value={leg.title}
+                      onChange={e => {
+                        const updated = [...(editSettings.legalitas || [])];
+                        updated[idx] = { ...updated[idx], title: e.target.value };
+                        setEditSettings({ ...editSettings, legalitas: updated });
+                      }}
+                      placeholder="Nama Dokumen"
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={leg.nomor}
+                      onChange={e => {
+                        const updated = [...(editSettings.legalitas || [])];
+                        updated[idx] = { ...updated[idx], nomor: e.target.value };
+                        setEditSettings({ ...editSettings, legalitas: updated });
+                      }}
+                      placeholder="Nomor SK / Izin"
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                    />
+                    <input
+                      type="text"
+                      value={leg.instansi}
+                      onChange={e => {
+                        const updated = [...(editSettings.legalitas || [])];
+                        updated[idx] = { ...updated[idx], instansi: e.target.value };
+                        setEditSettings({ ...editSettings, legalitas: updated });
+                      }}
+                      placeholder="Penerbit SK"
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1523,7 +2188,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                   Rekam Jejak Prestasi Sekolah &amp; Siswa
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Data capaian ASPD, MTQ, O2SN, FLS2N tingkat Kapanewon dan Kabupaten.
+                  Data capaian ASPD, MTQ, O2SN, FLS2N serta upload foto thumbnail dokumentasi piala/piagam prestasi.
                 </p>
               </div>
               <button
@@ -1535,7 +2200,8 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                     year: '2024',
                     kapanewon: 'Peringkat 1',
                     kabupaten: 'Peringkat Unggul',
-                    description: 'Keterangan capaian prestasi'
+                    description: 'Keterangan capaian prestasi',
+                    imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80'
                   };
                   setEditSettings({
                     ...editSettings,
@@ -1549,9 +2215,43 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
               </button>
             </div>
 
-            <div className="space-y-3">
+            {/* Header Teks Bagian Prestasi */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-700">Tagline Bagian Prestasi</label>
+                <input
+                  type="text"
+                  value={editSettings.prestasiHeaderTagline || ''}
+                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderTagline: e.target.value })}
+                  placeholder="JEJAK KEUNGGULAN &amp; PRESTASI"
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-700">Judul Bagian Prestasi</label>
+                <input
+                  type="text"
+                  value={editSettings.prestasiHeaderTitle || ''}
+                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderTitle: e.target.value })}
+                  placeholder="Capaian Membanggakan Santri &amp; Sekolah"
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white"
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-1">
+                <label className="text-[11px] font-bold text-slate-700">Deskripsi Bagian Prestasi</label>
+                <textarea
+                  rows={2}
+                  value={editSettings.prestasiHeaderDesc || ''}
+                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderDesc: e.target.value })}
+                  placeholder="Deskripsi pengantar capaian prestasi santri Al I'tisham..."
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
               {editSettings.achievements?.map((ach, idx) => (
-                <div key={ach.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div key={ach.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                     <div>
                       <label className="text-[10px] font-bold text-slate-600 block">Kategori</label>
@@ -1640,6 +2340,29 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                         setEditSettings({ ...editSettings, achievements: updated });
                       }}
                       className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                    />
+                  </div>
+
+                  {/* Thumbnail Uploader for Achievement */}
+                  <div>
+                    <ThumbnailUploader
+                      label={`Foto Dokumentasi Prestasi (${ach.category} - ${ach.year})`}
+                      value={ach.imageUrl || ''}
+                      onChange={url => {
+                        const updated = [...editSettings.achievements];
+                        updated[idx] = { ...updated[idx], imageUrl: url };
+                        setEditSettings({ ...editSettings, achievements: updated });
+                      }}
+                      onUploadFile={(file, label) =>
+                        handleFileUpload(file, url => {
+                          const updated = [...editSettings.achievements];
+                          updated[idx] = { ...updated[idx], imageUrl: url };
+                          setEditSettings({ ...editSettings, achievements: updated });
+                        }, label)
+                      }
+                      aspectRatio="video"
+                      fit="cover"
+                      helperText="Pilih atau upload foto piala, sertifikat, atau santri berprestasi"
                     />
                   </div>
                 </div>
@@ -1894,7 +2617,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
                 Kelola Data Asatidz &amp; Dewan Guru
               </h3>
               <p className="text-xs text-slate-500">
-                Data akan tampil langsung pada halaman Profil Sekolah.
+                Data akan tampil langsung pada halaman Profil Sekolah dengan foto thumbnail dan gelar pendidik.
               </p>
             </div>
 
@@ -1905,6 +2628,50 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
               <Plus className="w-3.5 h-3.5" />
               <span>Tambah Guru Baru</span>
             </button>
+          </div>
+
+          {/* Header Teks Bagian Asatidz */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-slate-700">Tagline Bagian Guru &amp; Asatidz</label>
+              <input
+                type="text"
+                value={editSettings.teachersHeaderTagline || ''}
+                onChange={e => setEditSettings({ ...editSettings, teachersHeaderTagline: e.target.value })}
+                placeholder="TENAGA PENDIDIK &amp; ASATIDZ"
+                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-slate-700">Judul Bagian Guru &amp; Asatidz</label>
+              <input
+                type="text"
+                value={editSettings.teachersHeaderTitle || ''}
+                onChange={e => setEditSettings({ ...editSettings, teachersHeaderTitle: e.target.value })}
+                placeholder="Dibina oleh Asatidz Berpengalaman &amp; Berijazah Sanad"
+                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white"
+              />
+            </div>
+            <div className="sm:col-span-2 space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold text-slate-700">Deskripsi Bagian Guru &amp; Asatidz</label>
+                <button
+                  type="button"
+                  onClick={handleSaveSettings}
+                  className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 underline"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Simpan Teks Header Guru</span>
+                </button>
+              </div>
+              <textarea
+                rows={2}
+                value={editSettings.teachersHeaderDesc || ''}
+                onChange={e => setEditSettings({ ...editSettings, teachersHeaderDesc: e.target.value })}
+                placeholder="Dewan asatidz yang mengampu di SD Qur'an Unggulan Al I'tisham..."
+                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+              />
+            </div>
           </div>
 
           {/* Form Tambah Guru */}
@@ -1989,32 +2756,153 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
 
           {/* Grid Guru */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {teachers.map(tc => (
-              <div key={tc.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={tc.imageUrl}
-                    alt={tc.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h4 className="text-xs font-bold text-slate-900 truncate">{tc.name}</h4>
-                    <p className="text-[11px] text-emerald-800 font-semibold truncate">{tc.role}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{tc.education} • {tc.specialty}</p>
-                  </div>
-                </div>
+            {teachers.map(tc => {
+              const isEditing = editingTeacherId === tc.id;
+              return (
+                <div key={tc.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <div className="text-xs font-bold text-emerald-950 border-b border-slate-200 pb-1 flex items-center justify-between">
+                        <span>Edit Data Asatidz</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingTeacherId(null)}
+                          className="text-slate-400 hover:text-slate-600 text-[10px]"
+                        >
+                          Batal
+                        </button>
+                      </div>
 
-                <button
-                  onClick={() => handleDeleteTeacher(tc.id)}
-                  className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0"
-                  title="Hapus Data Guru"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600">Nama Lengkap &amp; Gelar</label>
+                        <input
+                          type="text"
+                          value={editTeacherName}
+                          onChange={e => setEditTeacherName(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-600">Jabatan / Peran</label>
+                          <input
+                            type="text"
+                            value={editTeacherRole}
+                            onChange={e => setEditTeacherRole(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-600">Pendidikan</label>
+                          <input
+                            type="text"
+                            value={editTeacherEducation}
+                            onChange={e => setEditTeacherEducation(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600">Spesialisasi / Keahlian</label>
+                        <input
+                          type="text"
+                          value={editTeacherSpecialty}
+                          onChange={e => setEditTeacherSpecialty(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                        />
+                      </div>
+
+                      <ThumbnailUploader
+                        label="Foto Guru (Thumbnail)"
+                        value={editTeacherImage}
+                        onChange={setEditTeacherImage}
+                        onUploadFile={(file, label) => handleFileUpload(file, setEditTeacherImage, label)}
+                        aspectRatio="avatar"
+                        fit="cover"
+                        helperText="Ganti foto ustadz/guru dari galeri"
+                      />
+
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setEditingTeacherId(null)}
+                          className="px-3 py-1 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditTeacher(tc.id)}
+                          className="px-3 py-1 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800 flex items-center gap-1"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Simpan</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={tc.imageUrl}
+                          alt={tc.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-slate-900 truncate">{tc.name}</h4>
+                          <p className="text-[11px] text-emerald-800 font-semibold truncate">{tc.role}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{tc.education} • {tc.specialty}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => startEditTeacher(tc)}
+                          className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg"
+                          title="Edit Data Guru"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeacher(tc.id)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                          title="Hapus Data Guru"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
+
+      {/* TAB CONTENT: KEGIATAN & EKSKUL */}
+      {activeTab === 'kegiatan' && (
+        <AdminKegiatanTab
+          settings={editSettings}
+          onUpdateSettings={setEditSettings}
+          handleFileUpload={handleFileUpload}
+          requestDelete={requestDelete}
+          onSave={handleSaveSettings}
+          settingsSaved={settingsSaved}
+        />
+      )}
+
+      {/* TAB CONTENT: ALUR & SPMB */}
+      {activeTab === 'spmb' && (
+        <AdminSpmbTab
+          settings={editSettings}
+          onUpdateSettings={setEditSettings}
+          requestDelete={requestDelete}
+          onSave={handleSaveSettings}
+          settingsSaved={settingsSaved}
+        />
       )}
 
       {/* TAB CONTENT: PENGUMUMAN */}

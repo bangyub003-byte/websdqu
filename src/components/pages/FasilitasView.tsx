@@ -46,15 +46,15 @@ export const FasilitasView: React.FC<FasilitasViewProps> = ({
           <div className="space-y-4 max-w-2xl">
             <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
               <Building2 className="w-3.5 h-3.5" />
-              <span>SARANA &amp; PRASARANA MODERN</span>
+              <span>{settings.fasilitasHeaderTagline || "SARANA & PRASARANA MODERN"}</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.2] font-['Plus_Jakarta_Sans',sans-serif]">
-              Fasilitas Pendukung Belajar &amp; Tahfidz yang Asri
+              {settings.fasilitasHeaderTitle || "Fasilitas Pendukung Belajar & Tahfidz yang Asri"}
             </h1>
 
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Menghadirkan lingkungan belajar yang aman, nyaman, dan sejuk di Playen. Menunjang percepatan hafalan Al-Qur'an, eksplorasi sains, serta kesehatan jasmani santri.
+              {settings.fasilitasHeaderDesc || "Menghadirkan lingkungan belajar yang aman, nyaman, dan sejuk di Playen. Menunjang percepatan hafalan Al-Qur'an, eksplorasi sains, serta kesehatan jasmani santri."}
             </p>
           </div>
 
@@ -149,63 +149,66 @@ export const FasilitasView: React.FC<FasilitasViewProps> = ({
               STANDAR KESELAMATAN &amp; KENYAMANAN
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
-              Ekosistem Belajar Hijau, Aman, dan Ramah Anak di Playen
+              {settings.fasilitasEcoTitle || "Ekosistem Belajar Hijau, Aman, dan Ramah Anak di Playen"}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Kenyamanan lingkungan fisik secara langsung mempengaruhi daya serap ingatan hafalan Al-Qur'an santri dan ketenangan orang tua selama ananda beraktivitas di sekolah.
+              {settings.fasilitasEcoDesc || "Kenyamanan lingkungan fisik secara langsung mempengaruhi daya serap ingatan hafalan Al-Qur'an santri dan ketenangan orang tua selama ananda beraktivitas di sekolah."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                CCTV 24 Jam &amp; One Gate
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Pintu gerbang terpusat dengan pos sekuriti siaga, buku tamu digital, serta kamera pemantau di setiap sudut strategis.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center">
-                <Droplets className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Air Minum Higienis Gratis
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Stasiun air minum filtrasi Reverse Osmosis (RO) siap minum bagi seluruh santri, mengurangi sampah botol plastik sekali pakai.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Sanitasi &amp; Toilet Bersih
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Kloset duduk ramah anak, wastafel cuci tangan dengan sabun cair antiseptik di setiap lorong, serta pembersihan berkala per 2 jam.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-green-100 text-green-800 flex items-center justify-center">
-                <TreePine className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Ruang Terbuka Hijau &amp; Asri
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Kawasan 100% bebas asap rokok dan polusi kendaraan, dikelilingi pepohonan rindang khas Gunungkidul yang menyejukkan.
-              </p>
-            </div>
-
+            {(settings.fasilitasEcoFeatures && settings.fasilitasEcoFeatures.length > 0 ? settings.fasilitasEcoFeatures : [
+              {
+                id: "eco-1",
+                title: "CCTV 24 Jam & One Gate",
+                description: "Pintu gerbang terpusat dengan pos sekuriti siaga, buku tamu digital, serta kamera pemantau di setiap sudut strategis.",
+                iconName: "ShieldCheck"
+              },
+              {
+                id: "eco-2",
+                title: "Air Minum Higienis Gratis",
+                description: "Stasiun air minum filtrasi Reverse Osmosis (RO) siap minum bagi seluruh santri, mengurangi sampah botol plastik sekali pakai.",
+                iconName: "Droplets"
+              },
+              {
+                id: "eco-3",
+                title: "Sanitasi & Toilet Bersih",
+                description: "Kloset duduk ramah anak, wastafel cuci tangan dengan sabun cair antiseptik di setiap lorong, serta pembersihan berkala per 2 jam.",
+                iconName: "Sparkles"
+              },
+              {
+                id: "eco-4",
+                title: "Ruang Terbuka Hijau & Asri",
+                description: "Kawasan 100% bebas asap rokok dan polusi kendaraan, dikelilingi pepohonan rindang khas Gunungkidul yang menyejukkan.",
+                iconName: "TreePine"
+              }
+            ]).map((item, idx) => {
+              const icons = [
+                <ShieldCheck key="1" className="w-5 h-5" />,
+                <Droplets key="2" className="w-5 h-5" />,
+                <Sparkles key="3" className="w-5 h-5" />,
+                <TreePine key="4" className="w-5 h-5" />
+              ];
+              const colors = [
+                "bg-emerald-100 text-emerald-800",
+                "bg-teal-100 text-teal-800",
+                "bg-amber-100 text-amber-800",
+                "bg-green-100 text-green-800"
+              ];
+              return (
+                <div key={item.id || idx} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+                  <div className={`w-10 h-10 rounded-xl ${colors[idx % colors.length]} flex items-center justify-center`}>
+                    {icons[idx % icons.length]}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

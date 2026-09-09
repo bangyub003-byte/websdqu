@@ -90,15 +90,15 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
             <HeartHandshake className="w-3.5 h-3.5" />
-            <span>INFAQ, WAKAF &amp; SEDEKAH PENDIDIKAN</span>
+            <span>{settings.infaqHeaderTagline || "INFAQ, WAKAF & SEDEKAH PENDIDIKAN"}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.2] font-['Plus_Jakarta_Sans',sans-serif]">
-            Investasi Abadi untuk Generasi Penghafal Al-Qur'an
+            {settings.infaqHeaderTitle || "Investasi Abadi untuk Generasi Penghafal Al-Qur'an"}
           </h1>
 
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Salurkan infaq dan wakaf terbaik Anda guna mendukung operasional beasiswa santri dhuafa berprestasi, fasilitas halaqah tahfidz, dan pengembangan sarana dakwah di Playen, Gunungkidul.
+            {settings.infaqHeaderDesc || "Salurkan infaq dan wakaf terbaik Anda guna mendukung operasional beasiswa santri dhuafa berprestasi, fasilitas halaqah tahfidz, dan pengembangan sarana dakwah di Playen, Gunungkidul."}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-semibold text-slate-600">
@@ -121,61 +121,61 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
       {/* SECTION 1: 3 PROGRAM INFAQ UNGGULAN */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide bg-emerald-50 px-2.5 py-1 rounded-md">
-              BEASISWA DHUAFA
-            </span>
-            <h3 className="text-lg font-bold text-slate-900">
-              Beasiswa Santri Qur'an
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Bantuan biaya pendidikan, seragam, dan buku untuk santri yatim dan dhuafa berprestasi agar terus lancar menghafal Al-Qur'an.
-            </p>
-            <div className="pt-2 text-xs font-bold text-emerald-900 flex items-center gap-1">
-              <span>Mulai Rp 50.000 / paket</span>
-            </div>
-          </div>
+          {(settings.infaqPrograms && settings.infaqPrograms.length > 0 ? settings.infaqPrograms : [
+            {
+              id: "infaq-1",
+              title: "Beasiswa Santri Qur'an",
+              description: "Bantuan biaya pendidikan, seragam, dan buku untuk santri yatim dan dhuafa berprestasi agar terus lancar menghafal Al-Qur'an.",
+              badge: "BEASISWA DHUAFA",
+              target: "Mulai Rp 50.000 / paket"
+            },
+            {
+              id: "infaq-2",
+              title: "Wakaf Sarana & Bangunan",
+              description: "Pembangunan dan perluasan ruang kelas baru, perluasan masjid jami' sekolah, serta pengadaan AC ramah lingkungan.",
+              badge: "WAKAF JARIYAH",
+              target: "Pahala Mengalir Abadi"
+            },
+            {
+              id: "infaq-3",
+              title: "Operasional Halaqah & Sanad",
+              description: "Penyediaan mushaf Al-Qur'an standar Madinah, buku tajwid matan Jazariyyah, serta apresiasi kafalah asatidz pengampu tahfidz.",
+              badge: "MUSHAF & ASATIDZ",
+              target: "Dukungan Rutin Bulanan"
+            }
+          ]).map((item, idx) => {
+            const icons = [
+              <GraduationCap key="1" className="w-6 h-6" />,
+              <Building key="2" className="w-6 h-6" />,
+              <BookOpen key="3" className="w-6 h-6" />
+            ];
+            const colors = [
+              { bg: "bg-emerald-100", text: "text-emerald-800", badgeBg: "bg-emerald-50", badgeText: "text-emerald-800" },
+              { bg: "bg-amber-100", text: "text-amber-800", badgeBg: "bg-amber-50", badgeText: "text-amber-800" },
+              { bg: "bg-teal-100", text: "text-teal-800", badgeBg: "bg-teal-50", badgeText: "text-teal-800" }
+            ];
+            const style = colors[idx % colors.length];
 
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center">
-              <Building className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wide bg-amber-50 px-2.5 py-1 rounded-md">
-              WAKAF JARIYAH
-            </span>
-            <h3 className="text-lg font-bold text-slate-900">
-              Wakaf Sarana &amp; Bangunan
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Pembangunan dan perluasan ruang kelas baru, perluasan masjid jami' sekolah, serta pengadaan AC ramah lingkungan.
-            </p>
-            <div className="pt-2 text-xs font-bold text-amber-800 flex items-center gap-1">
-              <span>Pahala Mengalir Abadi</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wide bg-teal-50 px-2.5 py-1 rounded-md">
-              MUSHAF &amp; ASATIDZ
-            </span>
-            <h3 className="text-lg font-bold text-slate-900">
-              Operasional Halaqah &amp; Sanad
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Penyediaan mushaf Al-Qur'an standar Madinah, buku tajwid matan Jazariyyah, serta apresiasi kafalah asatidz pengampu tahfidz.
-            </p>
-            <div className="pt-2 text-xs font-bold text-teal-800 flex items-center gap-1">
-              <span>Dukungan Rutin Bulanan</span>
-            </div>
-          </div>
-
+            return (
+              <div key={item.id || idx} className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
+                <div className={`w-12 h-12 rounded-2xl ${style.bg} ${style.text} flex items-center justify-center`}>
+                  {icons[idx % icons.length]}
+                </div>
+                <span className={`text-[10px] font-bold ${style.badgeText} uppercase tracking-wide ${style.badgeBg} px-2.5 py-1 rounded-md`}>
+                  {item.badge}
+                </span>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {item.description}
+                </p>
+                <div className={`pt-2 text-xs font-bold ${style.text} flex items-center gap-1`}>
+                  <span>{item.target}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 

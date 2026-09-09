@@ -216,45 +216,23 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-2">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">1</span>
-                <h4 className="text-xs font-bold text-slate-900">Isi Formulir Online</h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Mengisi formulir PSB melalui link yang tersedia dan melengkapi biodata dasar santri.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">2</span>
-                <h4 className="text-xs font-bold text-slate-900">Konfirmasi Panitia</h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Konfirmasi pengisian data via WhatsApp panitia untuk penjadwalan observasi.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">3</span>
-                <h4 className="text-xs font-bold text-slate-900">Observasi &amp; Pemetaan</h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Pemetaan fitrah, kesiapan belajar, dan sosialisasi santri bersama para asatidz.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">4</span>
-                <h4 className="text-xs font-bold text-slate-900">Wawancara Orang Tua</h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Penyelarasan visi pendidikan antara orang tua dan madrasah demi tumbuh kembang optimal.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">5</span>
-                <h4 className="text-xs font-bold text-slate-900">Daftar Ulang</h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Verifikasi berkas fisik, pengukuran seragam, dan penerimaan atribut santri baru.
-                </p>
-              </div>
+              {(settings.spmbSteps && settings.spmbSteps.length > 0 ? settings.spmbSteps : [
+                { id: "step-1", stepNumber: 1, title: "Isi Formulir Online", description: "Mengisi formulir PSB melalui link yang tersedia dan melengkapi biodata dasar santri." },
+                { id: "step-2", stepNumber: 2, title: "Konfirmasi Panitia", description: "Konfirmasi pengisian data via WhatsApp panitia untuk penjadwalan observasi." },
+                { id: "step-3", stepNumber: 3, title: "Observasi & Pemetaan", description: "Pemetaan fitrah, kesiapan belajar, dan sosialisasi santri bersama para asatidz." },
+                { id: "step-4", stepNumber: 4, title: "Wawancara Orang Tua", description: "Penyelarasan visi pendidikan antara orang tua dan madrasah demi tumbuh kembang optimal." },
+                { id: "step-5", stepNumber: 5, title: "Daftar Ulang", description: "Verifikasi berkas fisik, pengukuran seragam, dan penerimaan atribut santri baru." }
+              ]).map((st, idx) => (
+                <div key={st.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-900 text-white font-bold text-xs flex items-center justify-center">
+                    {st.stepNumber || idx + 1}
+                  </span>
+                  <h4 className="text-xs font-bold text-slate-900">{st.title}</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    {st.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -270,30 +248,19 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Fotokopi Akta Kelahiran Calon Santri (2 lembar)</span>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Fotokopi Kartu Keluarga (KK) terbaru (2 lembar)</span>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Fotokopi KTP kedua orang tua / wali (masing-masing 1 lembar)</span>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Pas foto berwarna calon santri ukuran 3x4 (4 lembar)</span>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Fotokopi Ijazah / Surat Keterangan Lulus TK/RA/PAUD</span>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <span>Surat Keterangan Sehat dari Dokter / Fasilitas Kesehatan</span>
-              </div>
+              {(settings.spmbRequirements && settings.spmbRequirements.length > 0 ? settings.spmbRequirements : [
+                "Fotokopi Akta Kelahiran Calon Santri (2 lembar)",
+                "Fotokopi Kartu Keluarga (KK) terbaru (2 lembar)",
+                "Fotokopi KTP kedua orang tua / wali (masing-masing 1 lembar)",
+                "Pas foto berwarna calon santri ukuran 3x4 (4 lembar)",
+                "Fotokopi Ijazah / Surat Keterangan Lulus TK/RA/PAUD",
+                "Surat Keterangan Sehat dari Dokter / Fasilitas Kesehatan"
+              ]).map((reqText, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
+                  <span>{reqText}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -313,32 +280,32 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
           </div>
 
           <div className="max-w-3xl mx-auto space-y-3">
-            <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-              <h4 className="text-sm font-bold text-slate-900">
-                1. Apakah calon santri harus sudah bisa membaca Al-Qur'an dan Calistung saat mendaftar?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Tidak diwajibkan. Observasi bertujuan untuk memetakan kesiapan psikologis, motorik, dan kebiasaan adab ananda. Tim guru akan membimbing dari nol dengan metode talaqqi yang menyenangkan dan penuh kasih sayang.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-              <h4 className="text-sm font-bold text-slate-900">
-                2. Berapa target hafalan Al-Qur'an di SDQU Al I'tisham Playen?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Target standar kelulusan adalah minimal hafalan mutqin bersanad dengan tartil. Bagi santri dengan potensi akselerasi, disediakan bimbingan khusus untuk mencapai target hafalan yang lebih tinggi.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-              <h4 className="text-sm font-bold text-slate-900">
-                3. Bagaimana jika saya mengalami kendala saat mengisi formulir online?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor {settings.phoneSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).
-              </p>
-            </div>
+            {(settings.spmbFaqs && settings.spmbFaqs.length > 0 ? settings.spmbFaqs : [
+              {
+                id: "faq-1",
+                question: "1. Apakah calon santri harus sudah bisa membaca Al-Qur'an dan Calistung saat mendaftar?",
+                answer: "Tidak diwajibkan. Observasi bertujuan untuk memetakan kesiapan psikologis, motorik, dan kebiasaan adab ananda. Tim guru akan membimbing dari nol dengan metode talaqqi yang menyenangkan dan penuh kasih sayang."
+              },
+              {
+                id: "faq-2",
+                question: "2. Berapa target hafalan Al-Qur'an di SDQU Al I'tisham Playen?",
+                answer: "Target standar kelulusan adalah minimal hafalan mutqin bersanad dengan tartil. Bagi santri dengan potensi akselerasi, disediakan bimbingan khusus untuk mencapai target hafalan yang lebih tinggi."
+              },
+              {
+                id: "faq-3",
+                question: "3. Bagaimana jika saya mengalami kendala saat mengisi formulir online?",
+                answer: `Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor ${settings.phoneSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).`
+              }
+            ]).map((faqItem, idx) => (
+              <div key={faqItem.id || idx} className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
+                <h4 className="text-sm font-bold text-slate-900">
+                  {faqItem.question}
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {faqItem.answer}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
       )}
