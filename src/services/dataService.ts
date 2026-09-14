@@ -659,18 +659,24 @@ class DataService {
           payload.fileMime = fileData.type;
         }
 
-        // Call Google Apps Script endpoint via POST
-        await fetch(this.appsScriptUrl, {
+              // Call Google Apps Script endpoint via POST
+      try {
+        const resp = await fetch(this.appsScriptUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload),
-          mode: 'no-cors' // Google Apps Script Web Apps redirect requirement
+          body: JSON.stringify(payload)
         });
+        const resJson = await resp.json();
 
-        driveLink = `https://drive.google.com/drive/folders/${this.getDriveFolderId()}`;
-        newApplicant.documentDriveUrl = driveLink;
+        if (resJson.success) {
+          driveLink = resJson.driveUrl || driveLink;
+          newApplicant.documentDriveUrl = driveLink;
+        } else {
+          console.warn('Simpan PPDB gagal di server:', resJson.message);
+        }
       } catch (err) {
         console.warn('Apps Script push failed, saving locally:', err);
+      }
       }
     }
 
@@ -721,7 +727,6 @@ class DataService {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'save_infaq', data: newRecord }),
-          mode: 'no-cors'
         });
       } catch (e) {
         console.warn('Apps script infaq push failed:', e);
@@ -880,6 +885,7 @@ class DataService {
         let json: any = null;
         try { json = JSON.parse(text); } catch {}
         if (json && json.success) {
+          await this.syncFromCloud();
           this.lastSyncTime = Date.now();
           this.saveLocalOnly(STORAGE_KEYS.LAST_CLOUD_SYNC, this.lastSyncTime.toString());
           this.isSyncing = false;
@@ -939,7 +945,9 @@ class DataService {
     this.notify();
 
     try {
-      const response = await fetch(`${url}?action=getAll`);
+      const response = await fetch(`${url}?action=getAll&_t=${Date.now()}`, {
+  cache: 'no-store'
+});
       const json = await response.json();
 
       if (json && json.success && json.data) {
