@@ -283,6 +283,7 @@ class DataService {
       clearTimeout(this.cloudPushTimer);
     }
     this.cloudPushTimer = setTimeout(() => {
+      this.cloudPushTimer = null;
       this.pushToCloud().catch(err => {
         console.warn('Auto cloud push notification:', err);
       });
@@ -957,6 +958,10 @@ class DataService {
    * Mengambil data terbaru dari Google Spreadsheet saat web dibuka di perangkat mana pun.
    */
   public async syncFromCloud(): Promise<{ success: boolean; message: string; count?: number }> {
+    if (this.cloudPushTimer || this.isSyncing) {
+      return { success: false, message: 'Dilewati: masih ada perubahan lokal yang sedang disinkronkan.' };
+    }
+
     const url = this.getAppsScriptUrl();
     if (!url) {
       return { success: false, message: 'URL Google Apps Script belum dikonfigurasi.' };
