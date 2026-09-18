@@ -106,7 +106,19 @@ export const compressImage = (
     img.src = objectUrl;
   });
 };
-
+/**
+ * Menghapus duplikat item berdasarkan id, mempertahankan kemunculan TERAKHIR
+ * (asumsi data terbaru di posisi akhir array lebih valid)
+ */
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+  const map = new Map<string, T>();
+  items.forEach(item => {
+    if (item && item.id) {
+      map.set(item.id, item); // overwrite jika id sama -> otomatis dedup
+    }
+  });
+  return Array.from(map.values());
+}
 type Listener = () => void;
 
 class DataService {
@@ -183,7 +195,7 @@ class DataService {
       this.lastSyncTime = parseInt(savedLastSync, 10) || null;
     }
 
-    // Cross-tab real-time synchronization
+    // Cross-tab real-time synchronization & auto-sync
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
         if (e.key && Object.values(STORAGE_KEYS).includes(e.key)) {
@@ -192,10 +204,22 @@ class DataService {
         }
       });
 
-      // Auto-sinkronisasi awal saat web dibuka di perangkat mana pun
+      // Sync awal saat web dibuka di perangkat mana pun
       setTimeout(() => {
         this.syncFromCloud().catch(() => {});
       }, 500);
+
+      // Polling otomatis berkala dari cloud
+      setInterval(() => {
+        this.syncFromCloud().catch(() => {});
+      }, 20000);
+
+      // Sync ulang saat tab kembali aktif (misal user balik dari tab lain)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.syncFromCloud().catch(() => {});
+        }
+      });
     }
   }
 
@@ -659,8 +683,6 @@ class DataService {
           payload.fileMime = fileData.type;
         }
 
-              // Call Google Apps Script endpoint via POST
-      try {
         const resp = await fetch(this.appsScriptUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -668,15 +690,14 @@ class DataService {
         });
         const resJson = await resp.json();
 
-        if (resJson.success) {
+        if (resJson && resJson.success) {
           driveLink = resJson.driveUrl || driveLink;
           newApplicant.documentDriveUrl = driveLink;
         } else {
-          console.warn('Simpan PPDB gagal di server:', resJson.message);
+          console.warn('Simpan PPDB gagal di server:', resJson?.message);
         }
       } catch (err) {
         console.warn('Apps Script push failed, saving locally:', err);
-      }
       }
     }
 
@@ -955,18 +976,19 @@ class DataService {
         let count = 0;
 
         // 1. Cek lembar CMS_Data (jika script baru sudah diterapkan)
-        if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Data.length > 0) {
-          const cmsRow = json.data.CMS_Data[0];
-          if (cmsRow && cmsRow.value) {
-            try {
-              const parsed = typeof cmsRow.value === 'string' ? JSON.parse(cmsRow.value) : cmsRow.value;
-              this.applyLoadedState(parsed);
-              applied = true;
-            } catch (err) {
-              console.warn('Gagal membaca lembar CMS_Data:', err);
-            }
-          }
-        }
+if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Data.length > 0) {
+  const cmsRow = json.data.CMS_Data[0];
+  const rawValue = cmsRow?.Value ?? cmsRow?.value; // dukung "Value" (header asli) & "value" (jaga-jaga)
+  if (rawValue) {
+    try {
+      const parsed = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+      this.applyLoadedState(parsed);
+      applied = true;
+    } catch (err) {
+      console.warn('Gagal membaca lembar CMS_Data:', err);
+    }
+  }
+}
 
         // 2. Baca Lembar Human-Readable jika diedit langsung oleh pengguna di Google Spreadsheet
         // A. Lembar Settings
@@ -1000,7 +1022,7 @@ class DataService {
             order: Number(t.order) || (i + 1)
           }));
           if (validTeachers.length > 0) {
-            this.teachers = validTeachers;
+            this.teachers = dedupeById(validTeachers);
             this.saveLocalOnly(STORAGE_KEYS.TEACHERS, this.teachers);
             applied = true;
           }
@@ -1027,7 +1049,7 @@ class DataService {
             };
           });
           if (validFac.length > 0) {
-            this.facilities = validFac;
+            this.facilities = dedupeById(validFac);
             this.saveLocalOnly(STORAGE_KEYS.FACILITIES, this.facilities);
             applied = true;
           }
@@ -1208,32 +1230,32 @@ class DataService {
     }
 
     if (Array.isArray(data.announcements) && data.announcements.length > 0) {
-      this.announcements = data.announcements;
+      this.announcements = dedupeById(data.announcements );
       this.saveLocalOnly(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
     }
 
     if (Array.isArray(data.news) && data.news.length > 0) {
-      this.news = data.news;
+      this.news = dedupeById(data.news );
       this.saveLocalOnly(STORAGE_KEYS.NEWS, this.news);
     }
 
     if (Array.isArray(data.events) && data.events.length > 0) {
-      this.events = data.events;
+      this.events = dedupeById(data.events );
       this.saveLocalOnly(STORAGE_KEYS.EVENTS, this.events);
     }
 
     if (Array.isArray(data.teachers) && data.teachers.length > 0) {
-      this.teachers = data.teachers;
+        this.teachers = dedupeById(data.teachers);
       this.saveLocalOnly(STORAGE_KEYS.TEACHERS, this.teachers);
     }
 
     if (Array.isArray(data.facilities) && data.facilities.length > 0) {
-      this.facilities = data.facilities;
+      this.facilities = dedupeById(data.facilities);
       this.saveLocalOnly(STORAGE_KEYS.FACILITIES, this.facilities);
     }
 
     if (Array.isArray(data.gallery) && data.gallery.length > 0) {
-      this.gallery = data.gallery;
+      this.gallery = dedupeById(data.gallery );
       this.saveLocalOnly(STORAGE_KEYS.GALLERY, this.gallery);
     }
   }
