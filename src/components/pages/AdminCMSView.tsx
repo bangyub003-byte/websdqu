@@ -276,6 +276,7 @@ React.useEffect(() => {
   };
 
   const handlePushToCloud = async () => {
+    dataService.cancelScheduledPush();
     setIsSyncing(true);
     setCloudSyncMsg({ text: 'Mengunggah seluruh data CMS ke Google Spreadsheet...' });
     const res = await dataService.pushToCloud();
@@ -345,6 +346,7 @@ React.useEffect(() => {
   const [isFormattingSheets, setIsFormattingSheets] = useState(false);
 
   const handleFormatSheets = async () => {
+    dataService.cancelScheduledPush();
     setIsFormattingSheets(true);
     setSyncFeedback(null);
     try {
