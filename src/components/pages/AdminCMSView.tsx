@@ -112,9 +112,10 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Sync settings whenever updated from dataService
-  React.useEffect(() => {
-    setEditSettings({ ...settings });
-  }, [settings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+React.useEffect(() => {
+  setEditSettings({ ...settings });
+}, []); // hanya sinkron sekali saat panel admin pertama dibuka, bukan tiap polling
 
   // Safe In-App Delete Confirmation Modal (never blocked by iframe security)
   const [deleteModal, setDeleteModal] = useState<{
