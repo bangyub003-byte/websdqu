@@ -111,6 +111,20 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [editSettings, setEditSettings] = useState<SchoolSettings>({ ...settings });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // Sub-tab Navigation States (Left sidebar navigation for TU staff)
+  const [brandingSubTab, setBrandingSubTab] = useState<'logo_banner' | 'identity' | 'contact_psb' | 'hero_stats' | 'why_us' | 'testimonials_cta'>('logo_banner');
+  const [visionSubTab, setVisionSubTab] = useState<'vision_mission' | 'history' | 'core_values' | 'legalitas'>('vision_mission');
+  const [programsSubTab, setProgramsSubTab] = useState<'featured' | 'extracurriculars' | 'achievements'>('featured');
+  const [facilitiesSubTab, setFacilitiesSubTab] = useState<'list' | 'add'>('list');
+  const [teachersSubTab, setTeachersSubTab] = useState<'list' | 'add' | 'header'>('list');
+  const [announcementsSubTab, setAnnouncementsSubTab] = useState<'list' | 'add'>('list');
+  const [newsSubTab, setNewsSubTab] = useState<'list' | 'add'>('list');
+  const [eventsSubTab, setEventsSubTab] = useState<'list' | 'add'>('list');
+  const [infaqSubTab, setInfaqSubTab] = useState<'bank_qris' | 'records'>('bank_qris');
+  const [publishSubTab, setPublishSubTab] = useState<'backup' | 'guide'>('backup');
+  const [securitySubTab, setSecuritySubTab] = useState<'password' | 'tips'>('password');
+  const [googleSubTab, setGoogleSubTab] = useState<'config' | 'actions' | 'script_code'>('config');
+
   // Sync settings whenever updated from dataService
   // eslint-disable-next-line react-hooks/exhaustive-deps
 React.useEffect(() => {
@@ -825,7 +839,7 @@ React.useEffect(() => {
       {/* TAB CONTENT: PENGATURAN UMUM & MEDIA BRANDING */}
       {activeTab === 'general_branding' && (
         <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Pengaturan Umum, Logo &amp; Media Gambar
@@ -835,15 +849,61 @@ React.useEffect(() => {
               </p>
             </div>
 
-            {settingsSaved && (
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300 flex items-center gap-1.5">
-                <Check className="w-4 h-4" />
-                <span>Pengaturan Berhasil Disimpan!</span>
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {settingsSaved && (
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300 flex items-center gap-1.5">
+                  <Check className="w-4 h-4" />
+                  <span>Pengaturan Berhasil Disimpan!</span>
+                </span>
+              )}
+              <button
+                type="submit"
+                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Pengaturan</span>
+              </button>
+            </div>
           </div>
 
+          {/* Sub-Bab Layout: Sidebar Kiri + Konten Kanan */}
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Pengaturan
+              </div>
+              {[
+                { id: 'logo_banner', label: '1. Logo & Foto Banner', desc: 'Logo sekolah, banner hero & profil' },
+                { id: 'identity', label: '2. Identitas & Teks Utama', desc: 'Nama, tagline, akreditasi & NPSN' },
+                { id: 'contact_psb', label: '3. Kontak, Alamat & PSB', desc: 'WhatsApp, email, link PSB & video' },
+                { id: 'hero_stats', label: '4. Statistik Pita Beranda', desc: '4 kartu angka capaian' },
+                { id: 'why_us', label: '5. Mengapa Memilih Kami', desc: 'Nilai keunggulan & dokumentasi' },
+                { id: 'testimonials_cta', label: '6. Testimoni & Banner CTA', desc: 'Kutipan wali & ajakan pendaftaran' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setBrandingSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    brandingSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${brandingSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Section: Logo & Media Images dengan Pratinjau Thumbnail Nyata */}
+          {brandingSubTab === 'logo_banner' && (
           <div className="space-y-4">
             <div>
               <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -891,9 +951,11 @@ React.useEffect(() => {
               />
             </div>
           </div>
+          )}
 
           {/* Section: Identitas & Teks Header */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {brandingSubTab === 'identity' && (
+          <div className="space-y-4">
             <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
               <FileText className="w-4 h-4" />
               <span>Identitas &amp; Teks Utama Sekolah</span>
@@ -1104,9 +1166,12 @@ React.useEffect(() => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Section: URL Iframe PSB */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {brandingSubTab === 'contact_psb' && (
+          <div className="space-y-6">
+          <div className="space-y-4">
             <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
               Link Iframe Pendaftaran PSB Online
             </h4>
@@ -1300,9 +1365,12 @@ React.useEffect(() => {
               />
             </div>
           </div>
+          </div>
+          )}
 
           {/* Section: 4 Statistik Utama Beranda (Pita Angka) */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {brandingSubTab === 'hero_stats' && (
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -1386,9 +1454,11 @@ React.useEffect(() => {
               ))}
             </div>
           </div>
+          )}
 
           {/* Section: Mengapa Memilih Kami (Why Choose Us) */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {brandingSubTab === 'why_us' && (
+          <div className="space-y-4">
             <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>Bagian "Mengapa Memilih SDQU Al I'tisham"</span>
@@ -1478,9 +1548,12 @@ React.useEffect(() => {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Section: Testimoni Wali Santri */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {/* Section: Testimoni Wali Santri & CTA Banner */}
+          {brandingSubTab === 'testimonials_cta' && (
+          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -1693,15 +1766,19 @@ React.useEffect(() => {
               />
             </div>
           </div>
+          </div>
+          )}
 
-          <div className="flex justify-end pt-4 border-t border-slate-100">
-            <button
-              type="submit"
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              <span>Simpan Perubahan Pengaturan</span>
-            </button>
+              <div className="flex justify-end pt-4 border-t border-slate-100">
+                <button
+                  type="submit"
+                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan Pengaturan</span>
+                </button>
+              </div>
+            </div>
           </div>
         </form>
       )}
@@ -1709,7 +1786,7 @@ React.useEffect(() => {
       {/* TAB CONTENT: VISI, MISI & SEJARAH */}
       {activeTab === 'vision_missions' && (
         <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Kelola Visi, Misi &amp; Sejarah Lembaga
@@ -1719,15 +1796,60 @@ React.useEffect(() => {
               </p>
             </div>
 
-            {settingsSaved && (
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300 flex items-center gap-1.5">
-                <Check className="w-4 h-4" />
-                <span>Berhasil Disimpan!</span>
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {settingsSaved && (
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300 flex items-center gap-1.5">
+                  <Check className="w-4 h-4" />
+                  <span>Berhasil Disimpan!</span>
+                </span>
+              )}
+              <button
+                type="submit"
+                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Visi &amp; Sejarah</span>
+              </button>
+            </div>
           </div>
 
-          {/* Visi */}
+          {/* Sub-Bab Layout: Sidebar Kiri + Konten Kanan */}
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Profil
+              </div>
+              {[
+                { id: 'vision_mission', label: '1. Visi & Misi Lembaga', desc: 'Visi utama & daftar butir misi' },
+                { id: 'history', label: '2. Latar Belakang & Sejarah', desc: 'Profil singkat & 3 paragraf sejarah' },
+                { id: 'core_values', label: '3. Karakter & Core Values', desc: '4 pilar nilai karakter santri' },
+                { id: 'legalitas', label: '4. Legalitas & Izin SK Resmi', desc: 'Payung hukum, SK Kemenag & izin' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setVisionSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    visionSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${visionSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
+          {/* Visi & Misi */}
+          {visionSubTab === 'vision_mission' && (
+          <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-900 uppercase tracking-wider text-emerald-900">
               Visi Utama Lembaga
@@ -1790,9 +1912,12 @@ React.useEffect(() => {
               ))}
             </div>
           </div>
+          </div>
+          )}
 
           {/* Sejarah */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {visionSubTab === 'history' && (
+          <div className="space-y-4">
             <label className="text-xs font-bold text-slate-900 uppercase tracking-wider text-emerald-900 block">
               Latar Belakang &amp; Sejarah Sekolah
             </label>
@@ -1837,9 +1962,11 @@ React.useEffect(() => {
               />
             </div>
           </div>
+          )}
 
           {/* Section: 4 Nilai Utama Sekolah (Core Values) */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {visionSubTab === 'core_values' && (
+          <div className="space-y-4">
             <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>4 Nilai Utama &amp; Karakter Santri (Core Values)</span>
@@ -1906,9 +2033,11 @@ React.useEffect(() => {
               ))}
             </div>
           </div>
+          )}
 
           {/* Section: Legalitas & Izin Operasional Sekolah */}
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          {visionSubTab === 'legalitas' && (
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -2020,23 +2149,59 @@ React.useEffect(() => {
               ))}
             </div>
           </div>
+          )}
 
-          <div className="flex justify-end pt-4 border-t border-slate-100">
-            <button
-              type="submit"
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              <span>Simpan Visi, Misi &amp; Sejarah</span>
-            </button>
+              <div className="flex justify-end pt-4 border-t border-slate-100">
+                <button
+                  type="submit"
+                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Visi, Misi &amp; Sejarah</span>
+                </button>
+              </div>
+            </div>
           </div>
         </form>
       )}
 
       {/* TAB CONTENT: PROGRAM UNGGULAN, EKSKUL & PRESTASI */}
       {activeTab === 'programs_achievements' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Program
+              </div>
+              {[
+                { id: 'featured', label: '1. 7 Program Unggulan', desc: 'Program keunggulan sekolah' },
+                { id: 'extracurriculars', label: '2. Ekstrakurikuler', desc: '5 pilihan kegiatan ekskul' },
+                { id: 'achievements', label: '3. Rekam Prestasi', desc: 'Capaian lomba & kejuaraan' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setProgramsSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    programsSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${programsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* 7 Program Unggulan */}
+          {programsSubTab === 'featured' && (
           <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -2100,8 +2265,10 @@ React.useEffect(() => {
               </button>
             </div>
           </form>
+          )}
 
           {/* 5 Ekstrakurikuler Pilihan */}
+          {programsSubTab === 'extracurriculars' && (
           <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -2183,8 +2350,10 @@ React.useEffect(() => {
               </button>
             </div>
           </form>
+          )}
 
           {/* Prestasi Sekolah & Siswa */}
+          {programsSubTab === 'achievements' && (
           <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -2383,13 +2552,17 @@ React.useEffect(() => {
               </button>
             </div>
           </form>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: FASILITAS (6 FASILITAS) */}
       {activeTab === 'facilities' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Kelola Fasilitas Kampus ({facilities.length} Fasilitas)
@@ -2400,17 +2573,48 @@ React.useEffect(() => {
             </div>
 
             <button
-              onClick={() => setShowAddFacility(!showAddFacility)}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+              type="button"
+              onClick={() => setFacilitiesSubTab(facilitiesSubTab === 'list' ? 'add' : 'list')}
+              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Fasilitas</span>
+              <span>{facilitiesSubTab === 'list' ? 'Tambah Fasilitas Baru' : 'Lihat Daftar Fasilitas'}</span>
             </button>
           </div>
 
-          {/* Form Tambah Fasilitas */}
-          {showAddFacility && (
-            <form onSubmit={handleCreateFacility} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Fasilitas
+              </div>
+              {[
+                { id: 'list', label: '1. Daftar Fasilitas', desc: `${facilities.length} fasilitas terdaftar` },
+                { id: 'add', label: '2. Tambah Fasilitas Baru', desc: 'Formulir fasilitas baru' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setFacilitiesSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    facilitiesSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${facilitiesSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+              {/* Form Tambah Fasilitas */}
+              {facilitiesSubTab === 'add' && (
+                <form onSubmit={handleCreateFacility} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
               <div className="text-xs font-bold text-slate-900">Fasilitas Baru:</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -2480,7 +2684,7 @@ React.useEffect(() => {
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setShowAddFacility(false)}
+                  onClick={() => setFacilitiesSubTab('list')}
                   className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
                 >
                   Batal
@@ -2496,6 +2700,7 @@ React.useEffect(() => {
           )}
 
           {/* List Fasilitas */}
+          {facilitiesSubTab === 'list' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {facilities.map(fac => {
               const isEditing = editingFacilityId === fac.id;
@@ -2609,13 +2814,17 @@ React.useEffect(() => {
               );
             })}
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: GURU & ASATIDZ */}
       {activeTab === 'teachers' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Kelola Data Asatidz &amp; Dewan Guru
@@ -2626,15 +2835,49 @@ React.useEffect(() => {
             </div>
 
             <button
-              onClick={() => setShowAddTeacher(!showAddTeacher)}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+              type="button"
+              onClick={() => setTeachersSubTab(teachersSubTab === 'list' ? 'add' : 'list')}
+              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Guru Baru</span>
+              <span>{teachersSubTab === 'list' ? 'Tambah Guru Baru' : 'Lihat Daftar Asatidz'}</span>
             </button>
           </div>
 
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Pendidik
+              </div>
+              {[
+                { id: 'list', label: '1. Daftar Dewan Asatidz', desc: `${teachers.length} guru terdaftar` },
+                { id: 'add', label: '2. Tambah Guru Baru', desc: 'Formulir pendidik baru' },
+                { id: 'header', label: '3. Judul & Header Halaman', desc: 'Tagline & deskripsi pembina' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setTeachersSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    teachersSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${teachersSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Header Teks Bagian Asatidz */}
+          {teachersSubTab === 'header' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100">
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-700">Tagline Bagian Guru &amp; Asatidz</label>
@@ -2677,9 +2920,10 @@ React.useEffect(() => {
               />
             </div>
           </div>
+          )}
 
           {/* Form Tambah Guru */}
-          {showAddTeacher && (
+          {teachersSubTab === 'add' && (
             <form onSubmit={handleCreateTeacher} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
               <div className="text-xs font-bold text-slate-900">Data Pendidik Baru:</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2743,7 +2987,7 @@ React.useEffect(() => {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddTeacher(false)}
+                  onClick={() => setTeachersSubTab('list')}
                   className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
                 >
                   Batal
@@ -2759,6 +3003,7 @@ React.useEffect(() => {
           )}
 
           {/* Grid Guru */}
+          {teachersSubTab === 'list' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {teachers.map(tc => {
               const isEditing = editingTeacherId === tc.id;
@@ -2883,6 +3128,10 @@ React.useEffect(() => {
               );
             })}
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
@@ -2911,8 +3160,8 @@ React.useEffect(() => {
 
       {/* TAB CONTENT: PENGUMUMAN */}
       {activeTab === 'announcements' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Kelola Pengumuman Sekolah
@@ -2923,16 +3172,48 @@ React.useEffect(() => {
             </div>
 
             <button
-              onClick={() => setShowAddAnnouncement(!showAddAnnouncement)}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+              type="button"
+              onClick={() => setAnnouncementsSubTab(announcementsSubTab === 'list' ? 'add' : 'list')}
+              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Pengumuman</span>
+              <span>{announcementsSubTab === 'list' ? 'Tambah Pengumuman' : 'Lihat Daftar Pengumuman'}</span>
             </button>
           </div>
 
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Pengumuman
+              </div>
+              {[
+                { id: 'list', label: '1. Daftar Pengumuman', desc: `${announcements.length} pengumuman terdata` },
+                { id: 'add', label: '2. Tambah Pengumuman', desc: 'Formulir pengumuman baru' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setAnnouncementsSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    announcementsSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${announcementsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Form Tambah */}
-          {showAddAnnouncement && (
+          {announcementsSubTab === 'add' && (
             <form onSubmit={handleCreateAnnouncement} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
               <div className="text-xs font-bold text-slate-900">Buat Pengumuman Baru:</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2975,7 +3256,7 @@ React.useEffect(() => {
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setShowAddAnnouncement(false)}
+                  onClick={() => setAnnouncementsSubTab('list')}
                   className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
                 >
                   Batal
@@ -2991,6 +3272,7 @@ React.useEffect(() => {
           )}
 
           {/* List Pengumuman */}
+          {announcementsSubTab === 'list' && (
           <div className="space-y-3">
             {announcements.map(ann => (
               <div
@@ -3038,13 +3320,17 @@ React.useEffect(() => {
               </div>
             ))}
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: BERITA */}
       {activeTab === 'news' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Berita &amp; Artikel Sekolah ({news.length})
@@ -3054,16 +3340,48 @@ React.useEffect(() => {
               </p>
             </div>
             <button
-              onClick={() => setShowAddNews(!showAddNews)}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+              type="button"
+              onClick={() => setNewsSubTab(newsSubTab === 'list' ? 'add' : 'list')}
+              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Berita Baru</span>
+              <span>{newsSubTab === 'list' ? 'Tambah Berita Baru' : 'Lihat Daftar Berita'}</span>
             </button>
           </div>
 
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Berita
+              </div>
+              {[
+                { id: 'list', label: '1. Daftar Berita & Artikel', desc: `${news.length} artikel terbit` },
+                { id: 'add', label: '2. Tulis Berita Baru', desc: 'Formulir posting artikel' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setNewsSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    newsSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${newsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Form Tambah Berita Baru */}
-          {showAddNews && (
+          {newsSubTab === 'add' && (
             <form onSubmit={handleCreateNews} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
               <div className="text-xs font-bold text-slate-900">Tulis Berita Baru:</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -3143,7 +3461,7 @@ React.useEffect(() => {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddNews(false)}
+                  onClick={() => setNewsSubTab('list')}
                   className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
                 >
                   Batal
@@ -3158,6 +3476,7 @@ React.useEffect(() => {
             </form>
           )}
 
+          {newsSubTab === 'list' && (
           <div className="space-y-3">
             {news.map(item => (
               <div key={item.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
@@ -3190,13 +3509,17 @@ React.useEffect(() => {
               </div>
             ))}
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: AGENDA */}
       {activeTab === 'events' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Agenda Kegiatan Sekolah ({events.length})
@@ -3206,16 +3529,48 @@ React.useEffect(() => {
               </p>
             </div>
             <button
-              onClick={() => setShowAddEvent(!showAddEvent)}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+              type="button"
+              onClick={() => setEventsSubTab(eventsSubTab === 'list' ? 'add' : 'list')}
+              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Agenda Baru</span>
+              <span>{eventsSubTab === 'list' ? 'Tambah Agenda Baru' : 'Lihat Jadwal Agenda'}</span>
             </button>
           </div>
 
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Agenda
+              </div>
+              {[
+                { id: 'list', label: '1. Jadwal Agenda', desc: `${events.length} agenda terdaftar` },
+                { id: 'add', label: '2. Tambah Agenda Baru', desc: 'Formulir kalender baru' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setEventsSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    eventsSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${eventsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Form Tambah Agenda Baru */}
-          {showAddEvent && (
+          {eventsSubTab === 'add' && (
             <form onSubmit={handleCreateEvent} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
               <div className="text-xs font-bold text-slate-900">Tambah Agenda Baru:</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -3282,7 +3637,7 @@ React.useEffect(() => {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddEvent(false)}
+                  onClick={() => setEventsSubTab('list')}
                   className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
                 >
                   Batal
@@ -3297,6 +3652,7 @@ React.useEffect(() => {
             </form>
           )}
 
+          {eventsSubTab === 'list' && (
           <div className="space-y-3">
             {events.map(ev => (
               <div key={ev.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
@@ -3325,13 +3681,49 @@ React.useEffect(() => {
               </div>
             ))}
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: INFAQ & DONASI */}
       {activeTab === 'infaq' && (
         <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Infaq & Donasi
+              </div>
+              {[
+                { id: 'bank_qris', label: '1. Rekening Bank & QRIS', desc: 'Pengaturan QRIS & Nomor Rekening' },
+                { id: 'records', label: '2. Riwayat Infaq Masuk', desc: `${infaqRecords.length} konfirmasi donasi` }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setInfaqSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    infaqSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${infaqSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Rekening & QRIS Form */}
+          {infaqSubTab === 'bank_qris' && (
           <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
             <div className="border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900">
@@ -3452,8 +3844,10 @@ React.useEffect(() => {
               </button>
             </div>
           </form>
+          )}
 
           {/* Tabel Riwayat Infaq */}
+          {infaqSubTab === 'records' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -3515,87 +3909,186 @@ React.useEffect(() => {
               </table>
             </div>
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
       {/* TAB CONTENT: KEAMANAN SANDI ADMIN */}
       {activeTab === 'security' && (
-        <form onSubmit={handleChangePassword} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6 max-w-xl">
-          <div className="space-y-1 border-b border-slate-100 pb-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="border-b border-slate-100 pb-4">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <KeyRound className="w-4 h-4 text-emerald-800" />
-              <span>Perbarui Kata Sandi Admin</span>
+              <span>Keamanan &amp; Hak Akses Panel Admin</span>
             </h3>
             <p className="text-xs text-slate-500">
-              Sandi tersimpan secara aman di peramban Anda dan tidak pernah diperlihatkan kepada pengunjung website.
+              Kelola keamanan akun staf TU dan kata sandi login panel CMS.
             </p>
           </div>
 
-          {pwdFeedback && (
-            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 font-semibold ${
-              pwdFeedback.success
-                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}>
-              {pwdFeedback.success ? <Check className="w-4 h-4 text-emerald-700 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
-              <span>{pwdFeedback.message}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Kata Sandi Saat Ini</label>
-              <input
-                type="password"
-                required
-                value={currentPasswordInput}
-                onChange={e => setCurrentPasswordInput(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-800"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Kata Sandi Baru (Minimal 6 karakter)</label>
-              <input
-                type="password"
-                required
-                value={newPasswordInput}
-                onChange={e => setNewPasswordInput(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-800"
-              />
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Keamanan
+              </div>
+              {[
+                { id: 'password', label: '1. Kata Sandi Admin', desc: 'Perbarui sandi login panel' },
+                { id: 'tips', label: '2. Tips Keamanan TU', desc: 'Panduan perlindungan data' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setSecuritySubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    securitySubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${securitySubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Konfirmasi Kata Sandi Baru</label>
-              <input
-                type="password"
-                required
-                value={confirmPasswordInput}
-                onChange={e => setConfirmPasswordInput(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-800"
-              />
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+              {securitySubTab === 'password' && (
+                <form onSubmit={handleChangePassword} className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-6 max-w-xl">
+                  <div className="space-y-1 border-b border-slate-200 pb-3">
+                    <h4 className="text-sm font-bold text-slate-900">Perbarui Kata Sandi Admin</h4>
+                    <p className="text-xs text-slate-500">
+                      Sandi tersimpan secara aman di peramban Anda dan tidak pernah diperlihatkan kepada pengunjung website.
+                    </p>
+                  </div>
+
+                  {pwdFeedback && (
+                    <div className={`p-3 rounded-xl text-xs flex items-center gap-2 font-semibold ${
+                      pwdFeedback.success
+                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-800 border border-rose-200'
+                    }`}>
+                      {pwdFeedback.success ? <Check className="w-4 h-4 text-emerald-700 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
+                      <span>{pwdFeedback.message}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Kata Sandi Saat Ini</label>
+                      <input
+                        type="password"
+                        required
+                        value={currentPasswordInput}
+                        onChange={e => setCurrentPasswordInput(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Kata Sandi Baru (Minimal 6 karakter)</label>
+                      <input
+                        type="password"
+                        required
+                        value={newPasswordInput}
+                        onChange={e => setNewPasswordInput(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Konfirmasi Kata Sandi Baru</label>
+                      <input
+                        type="password"
+                        required
+                        value={confirmPasswordInput}
+                        onChange={e => setConfirmPasswordInput(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Simpan Kata Sandi Baru</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {securitySubTab === 'tips' && (
+                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4 max-w-xl">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-800" />
+                    <span>Panduan Keamanan Akun Staf TU</span>
+                  </h4>
+                  <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
+                    <p>
+                      <strong>1. Rahasiakan Kata Sandi:</strong> Jangan pernah membagikan kata sandi admin ke pihak di luar pengurus yayasan atau staf tata usaha sekolah.
+                    </p>
+                    <p>
+                      <strong>2. Buat Cadangan Berkala:</strong> Unduh file cadangan database JSON secara rutin di menu <em>Publikasi Web & Database</em> untuk mengantisipasi insiden peramban atau pergantian laptop staf.
+                    </p>
+                    <p>
+                      <strong>3. Gunakan Sandi Kuat:</strong> Kombinasikan huruf besar, huruf kecil, dan angka dengan panjang minimal 8 karakter.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Simpan Kata Sandi Baru</span>
-            </button>
-          </div>
-        </form>
+        </div>
       )}
 
       {/* TAB CONTENT: PUBLIKASI WEB & DATABASE REALTIME */}
       {activeTab === 'publish_tutorial' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Publikasi &amp; Database
+              </div>
+              {[
+                { id: 'backup', label: '1. Cadangan & Pemulihan', desc: 'Unduh & pulihkan data JSON' },
+                { id: 'guide', label: '2. Panduan Go-Live / Hosting', desc: 'Deploy Netlify & Domain .sch.id' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setPublishSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    publishSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${publishSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Realtime Database & Backup/Restore Panel */}
+          {publishSubTab === 'backup' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="space-y-1">
@@ -3691,8 +4184,10 @@ React.useEffect(() => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Panduan Resmi Mempublish Web ke Internet */}
+          {publishSubTab === 'guide' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="border-b border-slate-100 pb-4">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
@@ -3781,6 +4276,10 @@ React.useEffect(() => {
               </div>
             </div>
           </div>
+          )}
+
+            </div>
+          </div>
         </div>
       )}
 
@@ -3831,7 +4330,40 @@ React.useEffect(() => {
       {/* TAB CONTENT: GOOGLE APPS SCRIPT DEPLOY GUIDE */}
       {activeTab === 'google' && (
         <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Sidebar Sub-Bab Kiri */}
+            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+                Sub-Bab Integrasi Google
+              </div>
+              {[
+                { id: 'config', label: '1. Parameter & Koneksi', desc: 'ID Spreadsheet, Drive & URL Web App' },
+                { id: 'actions', label: '2. Panduan Isi Spreadsheet', desc: 'Format & struktur 6 lembar sheet' },
+                { id: 'script_code', label: '3. Kode Code.gs Backend', desc: 'Salin kode Apps Script & deploy' }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setGoogleSubTab(sub.id as any)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                    googleSubTab === sub.id
+                      ? 'bg-emerald-900 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{sub.label}</span>
+                  <span className={`text-[10px] font-normal mt-0.5 ${googleSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    {sub.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Konten Kanan */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+
           {/* Main Google Integration Control Panel */}
+          {googleSubTab === 'config' && (
           <div className="bg-emerald-950 text-white rounded-3xl p-6 sm:p-8 border border-emerald-800/60 shadow-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
@@ -4039,8 +4571,10 @@ React.useEffect(() => {
               </a>
             </div>
           </div>
+          )}
 
           {/* Panduan Lengkap & Praktis: Cara Mengedit Isi Web Langsung di Google Spreadsheet */}
+          {googleSubTab === 'actions' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="border-b border-slate-100 pb-4">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -4191,6 +4725,10 @@ React.useEffect(() => {
               </p>
             </div>
           </div>
+          )}
+
+          {/* Kode Backend Google Apps Script */}
+          {googleSubTab === 'script_code' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="space-y-1">
@@ -4265,6 +4803,10 @@ React.useEffect(() => {
               <div className="max-h-72 overflow-y-auto bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-200 leading-relaxed">
                 <pre>{getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput)}</pre>
               </div>
+            </div>
+          </div>
+          )}
+
             </div>
           </div>
         </div>

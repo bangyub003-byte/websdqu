@@ -62,28 +62,39 @@ export const AdminSpmbTab: React.FC<AdminSpmbTabProps> = ({
         </div>
       </div>
 
-      {/* Sub-tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
-        {[
-          { id: 'iframe', label: '1. Iframe Portal PSB' },
-          { id: 'steps', label: `2. Alur Pendaftaran (${settings.spmbSteps?.length || 0})` },
-          { id: 'requirements', label: `3. Syarat & Berkas (${settings.spmbRequirements?.length || 0})` },
-          { id: 'faqs', label: `4. Tanya Jawab FAQ (${settings.spmbFaqs?.length || 0})` }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveSubTab(tab.id as any)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeSubTab === tab.id
-                ? 'bg-emerald-900 text-white shadow-xs'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* Container Layout: Sidebar Kiri + Konten Kanan */}
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* Sidebar Navigasi Sub-Bab Kiri */}
+        <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+          <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
+            Sub-Bab SPMB
+          </div>
+          {[
+            { id: 'iframe', label: '1. Iframe Portal PSB', desc: 'Embed formulir pendaftaran Netlify' },
+            { id: 'steps', label: `2. Alur Pendaftaran (${settings.spmbSteps?.length || 0})`, desc: 'Langkah registrasi hingga masuk' },
+            { id: 'requirements', label: `3. Syarat & Berkas (${settings.spmbRequirements?.length || 0})`, desc: 'Dokumen fisik & administrasi' },
+            { id: 'faqs', label: `4. Tanya Jawab FAQ (${settings.spmbFaqs?.length || 0})`, desc: 'Pertanyaan umum wali murid' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveSubTab(tab.id as any)}
+              className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                activeSubTab === tab.id
+                  ? 'bg-emerald-900 text-white shadow-xs'
+                  : 'text-slate-700 hover:bg-slate-200/60'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`text-[10px] font-normal mt-0.5 ${activeSubTab === tab.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                {tab.desc}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Panel Konten Kanan */}
+        <div className="flex-1 min-w-0 w-full space-y-6">
 
       {/* SUBTAB 1: IFRAME PORTAL PSB */}
       {activeSubTab === 'iframe' && (
@@ -346,6 +357,9 @@ export const AdminSpmbTab: React.FC<AdminSpmbTabProps> = ({
           </div>
         </div>
       )}
+
+        </div>
+      </div>
 
       {/* Save Button Bar */}
       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
