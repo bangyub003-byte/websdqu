@@ -263,6 +263,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     dataService.updateSettings(editSettings);
+    dataService.cancelScheduledPush(); // 👈 baris baru: batalkan kiriman otomatis biar tidak dobel
     setSettingsSaved(true);
     setCloudSyncMsg({ text: 'Menyimpan perubahan & menyinkronkan ke Google Cloud...' });
     const cloudRes = await dataService.pushToCloud();

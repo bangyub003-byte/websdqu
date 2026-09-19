@@ -289,7 +289,12 @@ class DataService {
       });
     }, 1200);
   }
-
+public cancelScheduledPush(): void {
+  if (this.cloudPushTimer) {
+    clearTimeout(this.cloudPushTimer);
+    this.cloudPushTimer = null;
+  }
+}
   public subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
