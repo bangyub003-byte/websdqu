@@ -985,18 +985,24 @@ public cancelScheduledPush(): void {
         let applied = false;
         let count = 0;
 
-        // 1. Cek lembar CMS_Data (jika script baru sudah diterapkan)
+        // 1. Cek lembar CMS_Data (mendukung data yang dipecah jadi beberapa baris/chunk)
 if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Data.length > 0) {
-  const cmsRow = json.data.CMS_Data[0];
-  const rawValue = cmsRow?.Value ?? cmsRow?.value; // dukung "Value" (header asli) & "value" (jaga-jaga)
-  if (rawValue) {
-    try {
-      const parsed = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+  try {
+    const rows = json.data.CMS_Data
+      .filter((r: any) => String(r.key ?? r.Key ?? '').startsWith('FULL_CMS_STATE'))
+      .sort((a: any, b: any) => {
+        const ai = parseInt(String(a.key ?? a.Key ?? '').split('_').pop() || '0', 10) || 0;
+        const bi = parseInt(String(b.key ?? b.Key ?? '').split('_').pop() || '0', 10) || 0;
+        return ai - bi;
+      });
+    const fullStr = rows.map((r: any) => String(r.value ?? r.Value ?? '')).join('');
+    if (fullStr) {
+      const parsed = JSON.parse(fullStr);
       this.applyLoadedState(parsed);
       applied = true;
-    } catch (err) {
-      console.warn('Gagal membaca lembar CMS_Data:', err);
     }
+  } catch (err) {
+    console.warn('Gagal membaca lembar CMS_Data:', err);
   }
 }
 

@@ -23,6 +23,7 @@ import { GOOGLE_CONFIG, APPS_SCRIPT_CODE, getAppsScriptCode } from '../../config
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import {
   ShieldCheck,
   Lock,
@@ -55,7 +56,9 @@ import {
   KeyRound,
   FileText,
   CheckCircle2,
-  MessageSquare
+  MessageSquare,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 
 interface AdminCMSViewProps {
@@ -950,6 +953,188 @@ React.useEffect(() => {
                 helperText="Format lanskap disarankan"
               />
             </div>
+
+            {/* FITUR 1: Pengelolaan Slideshow Foto Background Hero */}
+            {(() => {
+              const currentSlideshow: string[] = (editSettings.heroImages && editSettings.heroImages.length > 0)
+                ? editSettings.heroImages
+                : (editSettings.heroImageUrl ? [editSettings.heroImageUrl] : ["https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80"]);
+
+              return (
+                <div className="mt-8 pt-6 border-t border-slate-200 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-emerald-800" />
+                        <span>Slideshow Foto Background Hero Beranda ({currentSlideshow.length} Foto)</span>
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Koleksi foto ini akan otomatis berganti tiap 5 detik dengan transisi fade pada latar Hero beranda. Foto pertama (#1) otomatis menjadi fallback foto utama.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = [...currentSlideshow, "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80"];
+                        setEditSettings({
+                          ...editSettings,
+                          heroImages: updated,
+                          heroImageUrl: updated[0] || editSettings.heroImageUrl
+                        });
+                      }}
+                      className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tambah Foto Slideshow</span>
+                    </button>
+                  </div>
+
+                  {/* List of slideshow images */}
+                  <div className="space-y-3">
+                    {currentSlideshow.map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                            <img
+                              src={getOptimizedImageUrl(imgUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=300&q=80")}
+                              alt={`Slide ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=300&q=80";
+                              }}
+                            />
+                            <span className="absolute bottom-1 left-1 bg-black/75 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                              #{idx + 1}
+                            </span>
+                          </div>
+
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                                idx === 0 ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-200 text-slate-700'
+                              }`}>
+                                {idx === 0 ? 'Foto Utama & Fallback' : `Slide #${idx + 1}`}
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={imgUrl}
+                              onChange={(e) => {
+                                const newImages = [...currentSlideshow];
+                                newImages[idx] = e.target.value;
+                                setEditSettings({
+                                  ...editSettings,
+                                  heroImages: newImages,
+                                  heroImageUrl: newImages[0] || editSettings.heroImageUrl
+                                });
+                              }}
+                              placeholder="URL foto..."
+                              className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                          <label className="text-xs font-bold text-emerald-900 bg-white hover:bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-xl cursor-pointer transition-colors">
+                            <span>Ganti File</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleFileUpload(file, (uploadedUrl) => {
+                                    const newImages = [...currentSlideshow];
+                                    newImages[idx] = uploadedUrl;
+                                    setEditSettings({
+                                      ...editSettings,
+                                      heroImages: newImages,
+                                      heroImageUrl: newImages[0] || editSettings.heroImageUrl
+                                    });
+                                  }, `hero_slide_${idx + 1}`);
+                                }
+                              }}
+                            />
+                          </label>
+
+                          {/* Move Up */}
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              if (idx === 0) return;
+                              const newImages = [...currentSlideshow];
+                              const temp = newImages[idx - 1];
+                              newImages[idx - 1] = newImages[idx];
+                              newImages[idx] = temp;
+                              setEditSettings({
+                                ...editSettings,
+                                heroImages: newImages,
+                                heroImageUrl: newImages[0] || editSettings.heroImageUrl
+                              });
+                            }}
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+                            title="Pindah ke Atas"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Move Down */}
+                          <button
+                            type="button"
+                            disabled={idx === currentSlideshow.length - 1}
+                            onClick={() => {
+                              if (idx === currentSlideshow.length - 1) return;
+                              const newImages = [...currentSlideshow];
+                              const temp = newImages[idx + 1];
+                              newImages[idx + 1] = newImages[idx];
+                              newImages[idx] = temp;
+                              setEditSettings({
+                                ...editSettings,
+                                heroImages: newImages,
+                                heroImageUrl: newImages[0] || editSettings.heroImageUrl
+                              });
+                            }}
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+                            title="Pindah ke Bawah"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            disabled={currentSlideshow.length <= 1}
+                            onClick={() => {
+                              if (currentSlideshow.length <= 1) return;
+                              requestDelete('Hapus Foto Slideshow', `Hapus foto slide #${idx + 1}?`, () => {
+                                const newImages = currentSlideshow.filter((_, i) => i !== idx);
+                                setEditSettings({
+                                  ...editSettings,
+                                  heroImages: newImages,
+                                  heroImageUrl: newImages[0] || editSettings.heroImageUrl
+                                });
+                              });
+                            }}
+                            className="p-1.5 rounded-lg border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:opacity-30"
+                            title="Hapus Slide"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           )}
 
@@ -1023,6 +1208,64 @@ React.useEffect(() => {
                 onChange={e => setEditSettings({ ...editSettings, heroSubtitle: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs"
               />
+            </div>
+
+            {/* FITUR 2: Pengaturan Running Text (Marquee) Beranda */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                  <Megaphone className="w-4 h-4 text-emerald-800" />
+                  <span>Teks Berjalan Pengumuman Beranda (Running Text Marquee)</span>
+                </label>
+                <label className="flex items-center gap-2 text-xs font-bold text-emerald-900 cursor-pointer bg-white px-3 py-1 rounded-lg border border-emerald-200">
+                  <input
+                    type="checkbox"
+                    checked={editSettings.runningTextEnabled !== false}
+                    onChange={e => setEditSettings({ ...editSettings, runningTextEnabled: e.target.checked })}
+                    className="rounded text-emerald-800 focus:ring-emerald-700"
+                  />
+                  <span>Tampilkan di Beranda</span>
+                </label>
+              </div>
+
+              <textarea
+                rows={2}
+                value={editSettings.runningText ?? ''}
+                onChange={e => setEditSettings({ ...editSettings, runningText: e.target.value })}
+                placeholder="Tuliskan teks sorotan yang akan berjalan terus di bar bagian atas beranda..."
+                className="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-800"
+              />
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px]">
+                <span className="text-slate-500">
+                  *Teks akan berjalan terus secara kontinu dan otomatis berhenti saat pengunjung mengarahkan kursor.
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500 font-semibold">Template Cepat:</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditSettings({
+                      ...editSettings,
+                      runningText: "Penerimaan Santri Baru (PSB) Tahun Ajaran 2025/2026 Telah Dibuka! Segera amankan kuota ananda di SD Quran Unggulan Al-I'tisham Playen • Info Layanan SPMB: 0878-9012-3456 • Membina Generasi Qur'ani, Cerdas, dan Berakhlak Mulia.",
+                      runningTextEnabled: true
+                    })}
+                    className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold hover:bg-emerald-200 transition-colors"
+                  >
+                    PSB Baru
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditSettings({
+                      ...editSettings,
+                      runningText: "Alhamdulillah, Santri SDQU Al-I'tisham berhasil meraih Juara 1 Tahfidz Qur'an & Olimpiade Sains Tingkat Kabupaten Tahun 2025!",
+                      runningTextEnabled: true
+                    })}
+                    className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold hover:bg-amber-200 transition-colors"
+                  >
+                    Prestasi
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Sub-section: Teks Santri & Alumni (Editable / Can be cleared/deleted) */}

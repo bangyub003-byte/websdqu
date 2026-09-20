@@ -215,7 +215,10 @@ export interface SchoolSettings {
   subTagline: string;
   logoUrl?: string;
   heroImageUrl?: string;
+  heroImages?: string[];
   profileBannerImageUrl?: string;
+  runningText?: string;
+  runningTextEnabled?: boolean;
   npsn: string;
   accreditation: string;
   foundation: string;

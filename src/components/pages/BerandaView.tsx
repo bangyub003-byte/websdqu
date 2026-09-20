@@ -39,23 +39,68 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
   const [showVideoModal, setShowVideoModal] = useState(false);
   const activeAnnouncements = announcements.filter(a => a.isActive);
 
+  // FITUR 1: Array heroImages untuk Slideshow Otomatis dengan fallback heroImageUrl
+  const heroImagesList: string[] = React.useMemo(() => {
+    if (settings.heroImages && Array.isArray(settings.heroImages) && settings.heroImages.length > 0) {
+      const valid = settings.heroImages.filter(img => typeof img === 'string' && img.trim().length > 0);
+      if (valid.length > 0) return valid;
+    }
+    if (settings.heroImageUrl && settings.heroImageUrl.trim().length > 0) {
+      return [settings.heroImageUrl];
+    }
+    return ["https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80"];
+  }, [settings.heroImages, settings.heroImageUrl]);
+
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  // Otomatis berganti tiap 5 detik dengan transisi fade halus
+  React.useEffect(() => {
+    if (heroImagesList.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentHeroIndex(prev => (prev + 1) % heroImagesList.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroImagesList.length]);
+
+  // FITUR 2: Teks Berjalan (Running Text / Marquee)
+  const displayRunningText = settings.runningText || (activeAnnouncements.length > 0 ? activeAnnouncements[0].title : "Penerimaan Santri Baru (PSB) Tahun Ajaran 2025/2026 Telah Dibuka! Segera amankan kuota ananda di SD Quran Unggulan Al-I'tisham Playen • Info Layanan SPMB: 0878-9012-3456");
+  const isRunningTextVisible = settings.runningTextEnabled !== false && displayRunningText.trim().length > 0;
+
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
-      {/* Running / Top Announcement Bar if active */}
-      {activeAnnouncements.length > 0 && (
-        <div className="bg-emerald-950 text-emerald-100 py-2.5 px-4 text-xs font-medium border-b border-emerald-800/60">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="bg-amber-500 text-emerald-950 font-extrabold px-2 py-0.5 rounded-full text-[10px] tracking-wide shrink-0">
-                PENGUMUMAN
-              </span>
-              <span className="truncate">
-                {activeAnnouncements[0].title}
-              </span>
+      {/* FITUR 2: Running Text (Marquee) Bar dengan Pause saat Hover */}
+      {isRunningTextVisible && (
+        <div className="bg-emerald-950 text-emerald-100 py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-xs">
+          <div className="max-w-7xl mx-auto flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-amber-500 text-emerald-950 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] tracking-wide shrink-0 shadow-xs">
+              <Megaphone className="w-3 h-3" />
+              <span>INFO TERKINI</span>
             </div>
+            
+            <div className="overflow-hidden relative w-full group pause-on-hover">
+              <div className="flex w-max animate-marquee gap-10 whitespace-nowrap text-xs text-emerald-100">
+                <span className="flex items-center gap-3">
+                  <span>{displayRunningText}</span>
+                  <span className="text-amber-400 font-bold">•</span>
+                </span>
+                <span className="flex items-center gap-3">
+                  <span>{displayRunningText}</span>
+                  <span className="text-amber-400 font-bold">•</span>
+                </span>
+                <span className="flex items-center gap-3">
+                  <span>{displayRunningText}</span>
+                  <span className="text-amber-400 font-bold">•</span>
+                </span>
+                <span className="flex items-center gap-3">
+                  <span>{displayRunningText}</span>
+                  <span className="text-amber-400 font-bold">•</span>
+                </span>
+              </div>
+            </div>
+
             <button
               onClick={() => setActivePage('spmb')}
-              className="text-amber-400 hover:text-amber-300 font-bold shrink-0 flex items-center gap-1 text-xs"
+              className="text-amber-400 hover:text-amber-300 font-bold shrink-0 flex items-center gap-1 text-xs pl-2 border-l border-emerald-800"
             >
               <span>Pelajari</span>
               <ArrowRight className="w-3 h-3" />
@@ -67,17 +112,44 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
       {/* HERO SECTION */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[480px] sm:min-h-[540px] lg:min-h-[600px] flex items-center p-5 sm:p-10 lg:p-14 shadow-2xl">
-          {/* Background image overlay with soft focus */}
-          <img
-            src={getOptimizedImageUrl(settings.heroImageUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80")}
-            alt="Hero Background"
-            referrerPolicy="no-referrer"
-            className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity pointer-events-none"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80";
-            }}
-          />
+          {/* FITUR 1: Background images cross-fade slideshow */}
+          {heroImagesList.map((imgUrl, idx) => {
+            const isActive = idx === currentHeroIndex;
+            return (
+              <img
+                key={`${imgUrl}-${idx}`}
+                src={getOptimizedImageUrl(imgUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80")}
+                alt={`Hero Slide ${idx + 1}`}
+                referrerPolicy="no-referrer"
+                className={`absolute inset-0 w-full h-full object-cover mix-blend-luminosity pointer-events-none transition-opacity duration-1000 ease-in-out ${
+                  isActive ? 'opacity-30' : 'opacity-0'
+                }`}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80";
+                }}
+              />
+            );
+          })}
+
+          {/* Indikator Slide Foto (jika lebih dari 1 foto) */}
+          {heroImagesList.length > 1 && (
+            <div className="absolute bottom-4 right-6 z-20 hidden sm:flex items-center gap-1.5 bg-emerald-950/70 backdrop-blur-xs px-3 py-1.5 rounded-full border border-white/20 shadow-lg">
+              <span className="text-[10px] text-emerald-200 font-bold mr-1">Slide</span>
+              {heroImagesList.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCurrentHeroIndex(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === currentHeroIndex ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  }`}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/80 to-transparent pointer-events-none" />
 
           {/* Hero Content Grid */}
@@ -565,64 +637,75 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS).map(item => {
-            const displayQuote = item.quote || item.content;
-            const displayImg = item.imageUrl || item.avatar;
-            const isHttpImg = displayImg && (displayImg.startsWith('http') || displayImg.startsWith('/'));
+        {/* FITUR 2: Testimoni Auto-Scroll Carousel dengan Pause saat Hover */}
+        <div className="relative overflow-hidden py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 group pause-on-hover">
+          {/* Gradient Masks di sisi kiri & kanan */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-24 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-24 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
 
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-6"
-              >
-                <div className="space-y-4">
-                  {/* 5 Stars & Quote Icon */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {[...Array(item.rating || 5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
-                      ))}
+          <div className="flex gap-6 animate-carousel w-max">
+            {([...(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS), ...(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS), ...(settings.testimonials && settings.testimonials.length > 0 ? settings.testimonials : INITIAL_TESTIMONIALS)]).map((item, idx) => {
+              const displayQuote = item.quote || item.content;
+              const displayImg = item.imageUrl || item.avatar;
+              const isHttpImg = displayImg && (displayImg.startsWith('http') || displayImg.startsWith('/'));
+
+              return (
+                <div
+                  key={`${item.id}-${idx}`}
+                  className="w-[300px] sm:w-[380px] lg:w-[420px] shrink-0 bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6 select-none"
+                >
+                  <div className="space-y-4">
+                    {/* 5 Stars & Quote Icon */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-amber-500">
+                        {[...Array(item.rating || 5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                        ))}
+                      </div>
+                      <Quote className="w-6 h-6 text-slate-300" />
                     </div>
-                    <Quote className="w-6 h-6 text-slate-300" />
-                  </div>
 
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
-                    "{displayQuote}"
-                  </p>
-                </div>
-
-                {/* Author */}
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  {isHttpImg ? (
-                    <img
-                      src={getOptimizedImageUrl(displayImg, "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80")}
-                      alt={item.name}
-                      referrerPolicy="no-referrer"
-                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80";
-                      }}
-                    />
-                  ) : (
-                    <div className={`w-10 h-10 rounded-full ${item.avatarColor || 'bg-emerald-700'} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
-                      {item.avatar || (item.name ? item.name.substring(0, 2).toUpperCase() : 'WS')}
-                    </div>
-                  )}
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">
-                      {item.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      {item.role} {item.studentInfo ? `• ${item.studentInfo}` : ''}
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic line-clamp-4">
+                      "{displayQuote}"
                     </p>
                   </div>
+
+                  {/* Author */}
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                    {isHttpImg ? (
+                      <img
+                        src={getOptimizedImageUrl(displayImg, "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80")}
+                        alt={item.name}
+                        referrerPolicy="no-referrer"
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80";
+                        }}
+                      />
+                    ) : (
+                      <div className={`w-10 h-10 rounded-full ${item.avatarColor || 'bg-emerald-700'} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
+                        {item.avatar || (item.name ? item.name.substring(0, 2).toUpperCase() : 'WS')}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-bold text-slate-900 truncate">
+                        {item.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {item.role} {item.studentInfo ? `• ${item.studentInfo}` : ''}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
+        <p className="text-[11px] text-slate-400 text-center pt-2 italic">
+          *Arahkan kursor atau sentuh kartu testimoni untuk menjeda pergerakan otomatis.
+        </p>
       </section>
 
       {/* CALL TO ACTION BANNER (Dark Green Box) */}

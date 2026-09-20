@@ -15,7 +15,14 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   subTagline: "Sekolah khusus di bidang pendidikan Agama Islam dan pembentukan karakter islami usia Sekolah Dasar di dusun Banaran, Playen, Gunungkidul. Memadukan tahfidz Al-Qur'an, kurikulum terpadu, dan program 4 bahasa.",
   logoUrl: "",
   heroImageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80",
+  heroImages: [
+    "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80"
+  ],
   profileBannerImageUrl: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600&q=80",
+  runningText: "Penerimaan Santri Baru (PSB) Tahun Ajaran 2025/2026 Telah Dibuka! Segera amankan kuota ananda di SD Quran Unggulan Al-I'tisham Playen • Info Layanan & Konsultasi SPMB: 0878-9012-3456 • Membina Generasi Qur'ani, Cerdas, dan Berakhlak Mulia.",
+  runningTextEnabled: true,
   npsn: "69985270",
   accreditation: "BAN-PDM Terakreditasi",
   skAkreditasi: "Sertifikat Akreditasi BAN-PDM 2023",
