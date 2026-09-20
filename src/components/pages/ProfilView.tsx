@@ -129,7 +129,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* SEJARAH & LATAR BELAKANG */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="sejarah" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Photos Grid (5 cols) */}
@@ -186,7 +186,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* VISI & MISI SEKOLAH */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="visi-misi" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200/80 shadow-xl space-y-10">
           
           <div className="text-center space-y-2 max-w-2xl mx-auto">
@@ -234,7 +234,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* 7 PROGRAM UNGGULAN */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="program-unggulan" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 border border-emerald-800 shadow-xl space-y-8">
           <div className="space-y-2 max-w-2xl">
             <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
@@ -264,7 +264,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* PRESTASI SEKOLAH & SISWA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section id="prestasi" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <div className="text-xs font-bold text-amber-700 tracking-wider uppercase">
             REKAM JEJAK KEBERHASILAN
@@ -404,7 +404,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* DEWAN PENDIDIK & ASATIDZ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="dewan-guru" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center mb-10">
           <div className="lg:col-span-8 space-y-2">
             <div className="text-xs font-bold text-emerald-800 tracking-wider uppercase">
@@ -468,7 +468,7 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
       </section>
 
       {/* LEGALITAS & AKREDITASI */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="legalitas" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {(settings.legalitasList && settings.legalitasList.length > 0 ? settings.legalitasList : [
             {
