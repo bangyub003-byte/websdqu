@@ -17,6 +17,7 @@ export default function App() {
   const [activePage, setActivePage] = useState<ActivePage>('beranda');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [kegiatanTab, setKegiatanTab] = useState<'semua' | 'harian' | 'berkala' | 'ekskul'>('semua');
 
   // Subscribe to reactive data store
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function App() {
         setActivePage={handlePageChange}
         settings={data.settings}
         isAdminLoggedIn={isAdminLoggedIn}
+        onSelectKegiatanTab={setKegiatanTab}
       />
 
       {/* Main Content Area with Dynamic Page View */}
@@ -102,6 +104,8 @@ export default function App() {
             setActivePage={handlePageChange}
             settings={data.settings}
             events={data.events}
+            selectedTab={kegiatanTab}
+            onTabChange={setKegiatanTab}
           />
         )}
 

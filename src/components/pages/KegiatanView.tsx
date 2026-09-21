@@ -22,14 +22,29 @@ interface KegiatanViewProps {
   setActivePage: (page: ActivePage) => void;
   settings: SchoolSettings;
   events: EventItem[];
+  selectedTab?: 'semua' | 'harian' | 'berkala' | 'ekskul';
+  onTabChange?: (tab: 'semua' | 'harian' | 'berkala' | 'ekskul') => void;
 }
 
 export const KegiatanView: React.FC<KegiatanViewProps> = ({
   setActivePage,
   settings,
-  events
+  events,
+  selectedTab,
+  onTabChange
 }) => {
-  const [activeTab, setActiveTab] = useState<'semua' | 'harian' | 'berkala' | 'ekskul'>('semua');
+  const [activeTab, setActiveTab] = useState<'semua' | 'harian' | 'berkala' | 'ekskul'>(selectedTab || 'semua');
+
+  React.useEffect(() => {
+    if (selectedTab) {
+      setActiveTab(selectedTab);
+    }
+  }, [selectedTab]);
+
+  const handleTabClick = (tab: 'semua' | 'harian' | 'berkala' | 'ekskul') => {
+    setActiveTab(tab);
+    if (onTabChange) onTabChange(tab);
+  };
 
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
@@ -76,9 +91,9 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
         </div>
 
         {/* Filter Navigation Tabs */}
-        <div className="flex flex-wrap items-center gap-2 mt-8 pt-4 border-t border-slate-200">
+        <div id="kegiatan-filter-nav" className="flex flex-wrap items-center gap-2 mt-8 pt-4 border-t border-slate-200">
           <button
-            onClick={() => setActiveTab('semua')}
+            onClick={() => handleTabClick('semua')}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
               activeTab === 'semua'
                 ? 'bg-emerald-900 text-white shadow-xs'
@@ -88,7 +103,7 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
             Semua Kegiatan
           </button>
           <button
-            onClick={() => setActiveTab('harian')}
+            onClick={() => handleTabClick('harian')}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
               activeTab === 'harian'
                 ? 'bg-emerald-900 text-white shadow-xs'
@@ -98,7 +113,7 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
             Harian &amp; Mingguan
           </button>
           <button
-            onClick={() => setActiveTab('berkala')}
+            onClick={() => handleTabClick('berkala')}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
               activeTab === 'berkala'
                 ? 'bg-emerald-900 text-white shadow-xs'
@@ -108,7 +123,7 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
             Program Unggulan Berkala
           </button>
           <button
-            onClick={() => setActiveTab('ekskul')}
+            onClick={() => handleTabClick('ekskul')}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
               activeTab === 'ekskul'
                 ? 'bg-emerald-900 text-white shadow-xs'
@@ -130,10 +145,10 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStats?.stat1Val || "07.00"}
+                  {settings.kegiatanStatsRibbon?.stat1Val || (settings as any).kegiatanStats?.stat1Val || "07.00"}
                 </div>
                 <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStats?.stat1Label || "Mulai Halaqah Pagi"}
+                  {settings.kegiatanStatsRibbon?.stat1Label || (settings as any).kegiatanStats?.stat1Label || "Mulai Halaqah Pagi"}
                 </div>
               </div>
             </div>
@@ -144,10 +159,10 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStats?.stat2Val || "30 Juz"}
+                  {settings.kegiatanStatsRibbon?.stat2Val || (settings as any).kegiatanStats?.stat2Val || "30 Juz"}
                 </div>
                 <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad"}
+                  {settings.kegiatanStatsRibbon?.stat2Label || (settings as any).kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad"}
                 </div>
               </div>
             </div>
@@ -158,10 +173,10 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStats?.stat3Val || "100%"}
+                  {settings.kegiatanStatsRibbon?.stat3Val || (settings as any).kegiatanStats?.stat3Val || "100%"}
                 </div>
                 <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah"}
+                  {settings.kegiatanStatsRibbon?.stat3Label || (settings as any).kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah"}
                 </div>
               </div>
             </div>
@@ -172,10 +187,10 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStats?.stat4Val || "24/7"}
+                  {settings.kegiatanStatsRibbon?.stat4Val || (settings as any).kegiatanStats?.stat4Val || "24/7"}
                 </div>
                 <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStats?.stat4Label || "Pendampingan Karakter"}
+                  {settings.kegiatanStatsRibbon?.stat4Label || (settings as any).kegiatanStats?.stat4Label || "Pendampingan Karakter"}
                 </div>
               </div>
             </div>

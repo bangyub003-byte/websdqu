@@ -63,10 +63,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
   const isRunningTextVisible = settings.runningTextEnabled !== false && displayRunningText.trim().length > 0;
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-12">
-      {/* FITUR 2: Running Text (Marquee) Bar dengan Pause saat Hover */}
+    <div className="space-y-10 sm:space-y-16 pb-12">
+      {/* FITUR 2: Running Text (Marquee) Bar - Sticky di Bawah Navbar saat Scroll */}
       {isRunningTextVisible && (
-        <div className="bg-emerald-950 text-emerald-100 py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-xs">
+        <div className="sticky top-16 sm:top-20 z-40 bg-emerald-950/95 backdrop-blur-md text-emerald-100 py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-md transition-all">
           <div className="max-w-7xl mx-auto flex items-center gap-3">
             <div className="flex items-center gap-1.5 bg-amber-500 text-emerald-950 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] tracking-wide shrink-0 shadow-xs">
               <Megaphone className="w-3 h-3" />
@@ -106,8 +106,8 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
       )}
 
       {/* HERO SECTION */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[480px] sm:min-h-[540px] lg:min-h-[600px] flex items-center p-5 sm:p-10 lg:p-14 shadow-2xl">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[560px] flex items-center p-5 sm:p-8 lg:p-12 shadow-2xl">
           {/* FITUR 1: Background images cross-fade slideshow */}
           {heroImagesList.map((imgUrl, idx) => {
             const isActive = idx === currentHeroIndex;
@@ -152,7 +152,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center w-full">
             
             {/* Left Headline (7 cols) */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-emerald-800/80 border border-emerald-600/50 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -160,7 +160,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </div>
 
               {/* Title - Responsive & Balanced on Mobile */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.2] font-['Plus_Jakarta_Sans',sans-serif]">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.25] font-['Plus_Jakarta_Sans',sans-serif] break-words">
                 {settings.heroHeadline || (
                   <>
                     Mencetak Generasi <span className="text-amber-400">Qur'ani</span>, Berakhlak Mulia &amp; <span className="text-emerald-300">Unggul Prestasi</span>.
@@ -169,7 +169,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               </h1>
 
               {/* Subtitle */}
-              <p className="text-slate-200 text-xs sm:text-sm lg:text-base leading-relaxed max-w-2xl font-normal">
+              <p className="text-slate-200 text-xs sm:text-sm lg:text-base leading-relaxed max-w-2xl font-normal break-words">
                 {settings.heroSubtitle}
               </p>
 
@@ -214,7 +214,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
             </div>
 
             {/* Right Floating Card (5 cols) - Fully Editable by Admin */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            <div className="lg:col-span-5 flex justify-center lg:justify-end w-full mt-4 lg:mt-0">
               <div className="bg-white text-slate-900 rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 max-w-md w-full space-y-4 sm:space-y-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-300">
                 
                 {/* Accreditation Header */}

@@ -148,75 +148,130 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
 
           {/* 4 Statistik Kegiatan */}
           <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-800" />
-                  <span>Statistik Ringkas Halaman Kegiatan (Pita Angka)</span>
-                </h4>
-                <p className="text-[11px] text-slate-500">
-                  4 angka statistik yang tampil di bawah header kegiatan.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const updated = [...(settings.kegiatanStats || []), { value: '100%', label: 'Label Statistik' }];
-                  onUpdateSettings({ ...settings, kegiatanStats: updated });
-                }}
-                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Stat</span>
-              </button>
+            <div>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-800" />
+                <span>Statistik Ringkas Halaman Kegiatan (4 Pita Angka)</span>
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Edit 4 kartu statistik tetap di bawah header halaman Kegiatan publik ("07.00 Mulai Halaqah Pagi", "30 Juz Bimbingan Tajwid Sanad", "100% Praktik Lapangan Sunnah", "24/7 Pendampingan Karakter").
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {(settings.kegiatanStats || []).map((st, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2 relative">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400">Stat #{idx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = settings.kegiatanStats?.filter((_, i) => i !== idx);
-                        onUpdateSettings({ ...settings, kegiatanStats: updated });
-                      }}
-                      className="text-rose-500 hover:text-rose-700"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Angka / Nilai</label>
-                    <input
-                      type="text"
-                      value={st.value}
-                      onChange={e => {
-                        const updated = [...(settings.kegiatanStats || [])];
-                        updated[idx] = { ...updated[idx], value: e.target.value };
-                        onUpdateSettings({ ...settings, kegiatanStats: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-emerald-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Label Keterangan</label>
-                    <input
-                      type="text"
-                      value={st.label}
-                      onChange={e => {
-                        const updated = [...(settings.kegiatanStats || [])];
-                        updated[idx] = { ...updated[idx], label: e.target.value };
-                        onUpdateSettings({ ...settings, kegiatanStats: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                    />
-                  </div>
+            {(() => {
+              const currentRibbon = {
+                stat1Val: settings.kegiatanStatsRibbon?.stat1Val || (settings as any).kegiatanStats?.stat1Val || "07.00",
+                stat1Label: settings.kegiatanStatsRibbon?.stat1Label || (settings as any).kegiatanStats?.stat1Label || "Mulai Halaqah Pagi",
+                stat2Val: settings.kegiatanStatsRibbon?.stat2Val || (settings as any).kegiatanStats?.stat2Val || "30 Juz",
+                stat2Label: settings.kegiatanStatsRibbon?.stat2Label || (settings as any).kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad",
+                stat3Val: settings.kegiatanStatsRibbon?.stat3Val || (settings as any).kegiatanStats?.stat3Val || "100%",
+                stat3Label: settings.kegiatanStatsRibbon?.stat3Label || (settings as any).kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah",
+                stat4Val: settings.kegiatanStatsRibbon?.stat4Val || (settings as any).kegiatanStats?.stat4Val || "24/7",
+                stat4Label: settings.kegiatanStatsRibbon?.stat4Label || (settings as any).kegiatanStats?.stat4Label || "Pendampingan Karakter",
+              };
+
+              const updateSlot = (field: string, val: string) => {
+                const updated = {
+                  ...currentRibbon,
+                  [field]: val
+                };
+                onUpdateSettings({
+                  ...settings,
+                  kegiatanStatsRibbon: updated,
+                  kegiatanStats: updated as any
+                });
+              };
+
+              const slots = [
+                {
+                  num: 1,
+                  valKey: 'stat1Val',
+                  labelKey: 'stat1Label',
+                  val: currentRibbon.stat1Val,
+                  label: currentRibbon.stat1Label,
+                  placeholderVal: '07.00',
+                  placeholderLabel: 'Mulai Halaqah Pagi',
+                  desc: 'Slot 1: Waktu Mulai Halaqah'
+                },
+                {
+                  num: 2,
+                  valKey: 'stat2Val',
+                  labelKey: 'stat2Label',
+                  val: currentRibbon.stat2Val,
+                  label: currentRibbon.stat2Label,
+                  placeholderVal: '30 Juz',
+                  placeholderLabel: 'Bimbingan Tajwid Sanad',
+                  desc: 'Slot 2: Target Bimbingan Tajwid'
+                },
+                {
+                  num: 3,
+                  valKey: 'stat3Val',
+                  labelKey: 'stat3Label',
+                  val: currentRibbon.stat3Val,
+                  label: currentRibbon.stat3Label,
+                  placeholderVal: '100%',
+                  placeholderLabel: 'Praktik Lapangan Sunnah',
+                  desc: 'Slot 3: Praktik Lapangan Sunnah'
+                },
+                {
+                  num: 4,
+                  valKey: 'stat4Val',
+                  labelKey: 'stat4Label',
+                  val: currentRibbon.stat4Val,
+                  label: currentRibbon.stat4Label,
+                  placeholderVal: '24/7',
+                  placeholderLabel: 'Pendampingan Karakter',
+                  desc: 'Slot 4: Pembiasaan Karakter'
+                }
+              ];
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {slots.map(s => (
+                    <div key={s.num} className="p-3.5 rounded-xl bg-white border border-slate-200/90 space-y-2.5 shadow-2xs">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                        <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wider">
+                          Kartu Statistik #{s.num}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                          Slot Tetap
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600 block">
+                          Angka / Nilai *
+                        </label>
+                        <input
+                          type="text"
+                          value={s.val}
+                          onChange={e => updateSlot(s.valKey, e.target.value)}
+                          placeholder={s.placeholderVal}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-extrabold text-emerald-900 bg-white focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600 block">
+                          Label Keterangan *
+                        </label>
+                        <input
+                          type="text"
+                          value={s.label}
+                          onChange={e => updateSlot(s.labelKey, e.target.value)}
+                          placeholder={s.placeholderLabel}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="text-[10px] text-slate-400 font-medium pt-0.5">
+                        {s.desc}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}

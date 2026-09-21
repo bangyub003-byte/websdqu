@@ -23,6 +23,7 @@ import { GOOGLE_CONFIG, APPS_SCRIPT_CODE, getAppsScriptCode } from '../../config
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
+import { AdminProfilTab } from '../admin/AdminProfilTab';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import {
   ShieldCheck,
@@ -95,6 +96,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [activeTab, setActiveTab] = useState<
     | 'overview'
     | 'general_branding'
+    | 'profil'
     | 'vision_missions'
     | 'programs_achievements'
     | 'facilities'
@@ -729,9 +731,7 @@ React.useEffect(() => {
         {[
           { id: 'overview', label: 'Ringkasan', icon: Database },
           { id: 'general_branding', label: 'Pengaturan & Hero Beranda', icon: Settings },
-          { id: 'vision_missions', label: 'Visi, Misi & Sejarah', icon: BookOpen },
-          { id: 'programs_achievements', label: 'Program & Prestasi', icon: Trophy },
-          { id: 'teachers', label: `Guru & Asatidz (${teachers.length})`, icon: Users },
+          { id: 'profil', label: `Profil Sekolah (${teachers.length})`, icon: BookOpen },
           { id: 'kegiatan', label: 'Kegiatan & Ekskul', icon: Calendar },
           { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
           { id: 'spmb', label: 'Alur & SPMB', icon: CheckCircle2 },
@@ -1614,88 +1614,129 @@ React.useEffect(() => {
           {/* Section: 4 Statistik Utama Beranda (Pita Angka) */}
           {brandingSubTab === 'hero_stats' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  <span>4 Angka Statistik Utama Beranda</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Ubah angka, judul, dan penjelasan 4 kartu statistik di bawah hero (1.200+ Santri, 28 Asatidz, 100% Target Mutqin, 80+ Prestasi).
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const updated = [...(editSettings.berandaStats || []), { value: '100+', label: 'Stat Baru', sublabel: 'Keterangan tambahan stat' }];
-                  setEditSettings({ ...editSettings, berandaStats: updated });
-                }}
-                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Stat</span>
-              </button>
+            <div>
+              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-emerald-800" />
+                <span>4 Angka Statistik Utama Beranda (Pita Angka Hero)</span>
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Edit angka dan teks label untuk 4 slot kartu statistik tetap yang tampil pada pita hijau di bawah hero Beranda.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {(editSettings.berandaStats || []).map((st, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400">Stat #{idx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = editSettings.berandaStats?.filter((_, i) => i !== idx);
-                        setEditSettings({ ...editSettings, berandaStats: updated });
-                      }}
-                      className="text-rose-500 hover:text-rose-700"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Angka / Nilai</label>
-                    <input
-                      type="text"
-                      value={st.value}
-                      onChange={e => {
-                        const updated = [...(editSettings.berandaStats || [])];
-                        updated[idx] = { ...updated[idx], value: e.target.value };
-                        setEditSettings({ ...editSettings, berandaStats: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-emerald-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Judul Label</label>
-                    <input
-                      type="text"
-                      value={st.label}
-                      onChange={e => {
-                        const updated = [...(editSettings.berandaStats || [])];
-                        updated[idx] = { ...updated[idx], label: e.target.value };
-                        setEditSettings({ ...editSettings, berandaStats: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Penjelasan Sublabel</label>
-                    <input
-                      type="text"
-                      value={st.sublabel || ''}
-                      onChange={e => {
-                        const updated = [...(editSettings.berandaStats || [])];
-                        updated[idx] = { ...updated[idx], sublabel: e.target.value };
-                        setEditSettings({ ...editSettings, berandaStats: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                    />
-                  </div>
+            {(() => {
+              const currentRibbon = {
+                stat1Val: editSettings.heroStatsRibbon?.stat1Val || '1.200+',
+                stat1Label: editSettings.heroStatsRibbon?.stat1Label || 'Santri Aktif & Alumni',
+                stat2Val: editSettings.heroStatsRibbon?.stat2Val || '100%',
+                stat2Label: editSettings.heroStatsRibbon?.stat2Label || 'Target Tahfidz Mutqin',
+                stat3Val: editSettings.heroStatsRibbon?.stat3Val || '45+',
+                stat3Label: editSettings.heroStatsRibbon?.stat3Label || 'Asatidz Bersanad',
+                stat4Val: editSettings.heroStatsRibbon?.stat4Val || '25+',
+                stat4Label: editSettings.heroStatsRibbon?.stat4Label || 'Prestasi Tingkat DIY & Nas',
+              };
+
+              const updateSlot = (field: string, val: string) => {
+                const updated = {
+                  ...currentRibbon,
+                  [field]: val
+                };
+                setEditSettings({
+                  ...editSettings,
+                  heroStatsRibbon: updated
+                });
+              };
+
+              const slots = [
+                {
+                  num: 1,
+                  valKey: 'stat1Val',
+                  labelKey: 'stat1Label',
+                  val: currentRibbon.stat1Val,
+                  label: currentRibbon.stat1Label,
+                  placeholderVal: '1.200+',
+                  placeholderLabel: 'Santri Aktif & Alumni',
+                  desc: 'Slot 1: Total Santri & Alumni'
+                },
+                {
+                  num: 2,
+                  valKey: 'stat2Val',
+                  labelKey: 'stat2Label',
+                  val: currentRibbon.stat2Val,
+                  label: currentRibbon.stat2Label,
+                  placeholderVal: '100%',
+                  placeholderLabel: 'Target Tahfidz Mutqin',
+                  desc: 'Slot 2: Target Mutqin Tahfidz'
+                },
+                {
+                  num: 3,
+                  valKey: 'stat3Val',
+                  labelKey: 'stat3Label',
+                  val: currentRibbon.stat3Val,
+                  label: currentRibbon.stat3Label,
+                  placeholderVal: '45+',
+                  placeholderLabel: 'Asatidz Bersanad',
+                  desc: 'Slot 3: Dewan Asatidz / Pengajar'
+                },
+                {
+                  num: 4,
+                  valKey: 'stat4Val',
+                  labelKey: 'stat4Label',
+                  val: currentRibbon.stat4Val,
+                  label: currentRibbon.stat4Label,
+                  placeholderVal: '25+',
+                  placeholderLabel: 'Prestasi Tingkat DIY & Nas',
+                  desc: 'Slot 4: Capaian Prestasi'
+                }
+              ];
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {slots.map(s => (
+                    <div key={s.num} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3 shadow-2xs">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wider">
+                          Kartu Statistik #{s.num}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                          Slot Tetap
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700 block">
+                          Angka / Nilai *
+                        </label>
+                        <input
+                          type="text"
+                          value={s.val}
+                          onChange={e => updateSlot(s.valKey, e.target.value)}
+                          placeholder={s.placeholderVal}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-extrabold text-emerald-900 bg-white focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700 block">
+                          Teks Label Keterangan *
+                        </label>
+                        <input
+                          type="text"
+                          value={s.label}
+                          onChange={e => updateSlot(s.labelKey, e.target.value)}
+                          placeholder={s.placeholderLabel}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="text-[10px] text-slate-400 font-medium pt-0.5">
+                        {s.desc}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
           )}
 
@@ -1740,27 +1781,71 @@ React.useEffect(() => {
               />
             </div>
 
-            {/* 4 Cards Why Choose Us */}
+            {/* Cards Why Choose Us with Full CRUD */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-slate-700 block">4 Pilar Keunggulan Utama</label>
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block">Pilar Keunggulan ({editSettings.berandaWhyUsItems?.length || 0} Pilar)</label>
+                  <p className="text-[11px] text-slate-500">Poin-poin pilar keunggulan pada bagian "Mengapa Memilih Kami".</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = [
+                      ...(editSettings.berandaWhyUsItems || []),
+                      {
+                        title: 'Pilar Baru',
+                        desc: 'Penjelasan keunggulan yang didapatkan santri.',
+                        badge: 'KEUNGGULAN'
+                      }
+                    ];
+                    setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                  }}
+                  className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Pilar</span>
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(editSettings.berandaWhyUsItems || []).map((item, idx) => (
                   <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded">Pilar #{idx + 1}</span>
-                      <input
-                        type="text"
-                        value={item.badge || ''}
-                        onChange={e => {
-                          const updated = [...(editSettings.berandaWhyUsItems || [])];
-                          updated[idx] = { ...updated[idx], badge: e.target.value };
-                          setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
-                        }}
-                        placeholder="Badge"
-                        className="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-300 text-right w-24"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={item.badge || ''}
+                          onChange={e => {
+                            const updated = [...(editSettings.berandaWhyUsItems || [])];
+                            updated[idx] = { ...updated[idx], badge: e.target.value };
+                            setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                          }}
+                          placeholder="Badge"
+                          className="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-300 text-right w-28 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            requestDelete(
+                              'Hapus Pilar Keunggulan',
+                              `Apakah Anda yakin ingin menghapus pilar "${item.title || `Pilar #${idx + 1}`}"?`,
+                              () => {
+                                const updated = editSettings.berandaWhyUsItems?.filter((_, i) => i !== idx);
+                                setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
+                              }
+                            );
+                          }}
+                          className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors"
+                          title="Hapus Pilar"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Judul Pilar</label>
                       <input
                         type="text"
                         value={item.title}
@@ -1770,10 +1855,11 @@ React.useEffect(() => {
                           setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
                         }}
                         placeholder="Judul Pilar"
-                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold bg-white"
                       />
                     </div>
                     <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Deskripsi Keunggulan</label>
                       <textarea
                         rows={2}
                         value={item.desc}
@@ -1783,7 +1869,7 @@ React.useEffect(() => {
                           setEditSettings({ ...editSettings, berandaWhyUsItems: updated });
                         }}
                         placeholder="Deskripsi keunggulan..."
-                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs"
+                        className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs bg-white"
                       />
                     </div>
                   </div>
@@ -2026,780 +2112,20 @@ React.useEffect(() => {
         </form>
       )}
 
-      {/* TAB CONTENT: VISI, MISI & SEJARAH */}
-      {activeTab === 'vision_missions' && (
-        <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Kelola Visi, Misi &amp; Sejarah Lembaga
-              </h3>
-              <p className="text-xs text-slate-500">
-                Teks ini tampil langsung di halaman Profil Sekolah.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {settingsSaved && (
-                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-300 flex items-center gap-1.5">
-                  <Check className="w-4 h-4" />
-                  <span>Berhasil Disimpan!</span>
-                </span>
-              )}
-              <button
-                type="submit"
-                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Visi &amp; Sejarah</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Sub-Bab Layout: Sidebar Kiri + Konten Kanan */}
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Profil
-              </div>
-              {[
-                { id: 'vision_mission', label: '1. Visi & Misi Lembaga', desc: 'Visi utama & daftar butir misi' },
-                { id: 'history', label: '2. Latar Belakang & Sejarah', desc: 'Profil singkat & 3 paragraf sejarah' },
-                { id: 'core_values', label: '3. Karakter & Core Values', desc: '4 pilar nilai karakter santri' },
-                { id: 'legalitas', label: '4. Legalitas & Izin SK Resmi', desc: 'Payung hukum, SK Kemenag & izin' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setVisionSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    visionSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${visionSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Visi & Misi */}
-          {visionSubTab === 'vision_mission' && (
-          <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-900 uppercase tracking-wider text-emerald-900">
-              Visi Utama Lembaga
-            </label>
-            <textarea
-              rows={2}
-              value={editSettings.vision}
-              onChange={e => setEditSettings({ ...editSettings, vision: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-emerald-800"
-            />
-          </div>
-
-          {/* Misi */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-900 uppercase tracking-wider text-emerald-900">
-                Misi Strategis Lembaga ({editSettings.missions?.length || 0} Poin)
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  const updated = [...(editSettings.missions || []), ''];
-                  setEditSettings({ ...editSettings, missions: updated });
-                }}
-                className="bg-emerald-900 hover:bg-emerald-800 text-white text-[11px] font-bold px-3 py-1 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                <span>Tambah Misi</span>
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {editSettings.missions?.map((misi, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <span className="w-7 h-7 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-bold flex items-center justify-center shrink-0">
-                    {idx + 1}
-                  </span>
-                  <input
-                    type="text"
-                    value={misi}
-                    onChange={e => {
-                      const updated = [...editSettings.missions];
-                      updated[idx] = e.target.value;
-                      setEditSettings({ ...editSettings, missions: updated });
-                    }}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-800"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = editSettings.missions.filter((_, i) => i !== idx);
-                      setEditSettings({ ...editSettings, missions: updated });
-                    }}
-                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
-                    title="Hapus Misi"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          </div>
-          )}
-
-          {/* Sejarah */}
-          {visionSubTab === 'history' && (
-          <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-900 uppercase tracking-wider text-emerald-900 block">
-              Latar Belakang &amp; Sejarah Sekolah
-            </label>
-
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-700">Profil Singkat:</span>
-              <textarea
-                rows={2}
-                value={editSettings.shortProfile}
-                onChange={e => setEditSettings({ ...editSettings, shortProfile: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-700">Sejarah Paragraf 1:</span>
-              <textarea
-                rows={3}
-                value={editSettings.historyPart1}
-                onChange={e => setEditSettings({ ...editSettings, historyPart1: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-700">Sejarah Paragraf 2:</span>
-              <textarea
-                rows={3}
-                value={editSettings.historyPart2}
-                onChange={e => setEditSettings({ ...editSettings, historyPart2: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-700">Sejarah Paragraf 3 (Opsional):</span>
-              <textarea
-                rows={2}
-                value={editSettings.historyPart3}
-                onChange={e => setEditSettings({ ...editSettings, historyPart3: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-              />
-            </div>
-          </div>
-          )}
-
-          {/* Section: 4 Nilai Utama Sekolah (Core Values) */}
-          {visionSubTab === 'core_values' && (
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
-              <span>4 Nilai Utama &amp; Karakter Santri (Core Values)</span>
-            </h4>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Tagline Bagian</label>
-                <input
-                  type="text"
-                  value={editSettings.coreValuesHeaderTagline || ''}
-                  onChange={e => setEditSettings({ ...editSettings, coreValuesHeaderTagline: e.target.value })}
-                  placeholder="NILAI &amp; BUDAYA SEKOLAH"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Judul Bagian</label>
-                <input
-                  type="text"
-                  value={editSettings.coreValuesHeaderTitle || ''}
-                  onChange={e => setEditSettings({ ...editSettings, coreValuesHeaderTitle: e.target.value })}
-                  placeholder="Empat Pilar Karakter Lulusan"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(editSettings.coreValues || []).map((cv, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded">
-                      Pilar #{idx + 1}
-                    </span>
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      value={cv.title}
-                      onChange={e => {
-                        const updated = [...(editSettings.coreValues || [])];
-                        updated[idx] = { ...updated[idx], title: e.target.value };
-                        setEditSettings({ ...editSettings, coreValues: updated });
-                      }}
-                      placeholder="Judul Nilai"
-                      className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold"
-                    />
-                  </div>
-                  <div>
-                    <textarea
-                      rows={2}
-                      value={cv.desc}
-                      onChange={e => {
-                        const updated = [...(editSettings.coreValues || [])];
-                        updated[idx] = { ...updated[idx], desc: e.target.value };
-                        setEditSettings({ ...editSettings, coreValues: updated });
-                      }}
-                      placeholder="Penjelasan nilai..."
-                      className="w-full px-2.5 py-1 rounded-lg border border-slate-300 text-xs"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          )}
-
-          {/* Section: Legalitas & Izin Operasional Sekolah */}
-          {visionSubTab === 'legalitas' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText className="w-4 h-4" />
-                  <span>Legalitas &amp; Surat Izin Operasional Resmi</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Daftar SK dan izin resmi dari Kemenag, Kemendikbud, dan Yayasan yang tampil di halaman Profil.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const newItem: LegalitasItem = {
-                    id: 'leg-' + Date.now(),
-                    title: 'Surat Izin Operasional',
-                    nomor: 'SK-Nomor-...',
-                    instansi: 'Instansi Penerbit',
-                    tanggal: 'Tahun ...'
-                  };
-                  setEditSettings({
-                    ...editSettings,
-                    legalitas: [...(editSettings.legalitas || []), newItem]
-                  });
-                }}
-                className="text-xs font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Legalitas</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Tagline Legalitas</label>
-                <input
-                  type="text"
-                  value={editSettings.legalitasHeaderTagline || ''}
-                  onChange={e => setEditSettings({ ...editSettings, legalitasHeaderTagline: e.target.value })}
-                  placeholder="PAYUNG HUKUM &amp; KELAYAKAN"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Judul Bagian Legalitas</label>
-                <input
-                  type="text"
-                  value={editSettings.legalitasHeaderTitle || ''}
-                  onChange={e => setEditSettings({ ...editSettings, legalitasHeaderTitle: e.target.value })}
-                  placeholder="Legalitas Resmi &amp; Akreditasi Lembaga"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {(editSettings.legalitas || []).map((leg, idx) => (
-                <div key={leg.id || idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">{leg.title || `Dokumen #${idx + 1}`}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = editSettings.legalitas?.filter((_, i) => i !== idx);
-                        setEditSettings({ ...editSettings, legalitas: updated });
-                      }}
-                      className="text-rose-500 hover:text-rose-700 p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input
-                      type="text"
-                      value={leg.title}
-                      onChange={e => {
-                        const updated = [...(editSettings.legalitas || [])];
-                        updated[idx] = { ...updated[idx], title: e.target.value };
-                        setEditSettings({ ...editSettings, legalitas: updated });
-                      }}
-                      placeholder="Nama Dokumen"
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
-                    />
-                    <input
-                      type="text"
-                      value={leg.nomor}
-                      onChange={e => {
-                        const updated = [...(editSettings.legalitas || [])];
-                        updated[idx] = { ...updated[idx], nomor: e.target.value };
-                        setEditSettings({ ...editSettings, legalitas: updated });
-                      }}
-                      placeholder="Nomor SK / Izin"
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
-                    />
-                    <input
-                      type="text"
-                      value={leg.instansi}
-                      onChange={e => {
-                        const updated = [...(editSettings.legalitas || [])];
-                        updated[idx] = { ...updated[idx], instansi: e.target.value };
-                        setEditSettings({ ...editSettings, legalitas: updated });
-                      }}
-                      placeholder="Penerbit SK"
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          )}
-
-              <div className="flex justify-end pt-4 border-t border-slate-100">
-                <button
-                  type="submit"
-                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Simpan Visi, Misi &amp; Sejarah</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* TAB CONTENT: PROGRAM UNGGULAN, EKSKUL & PRESTASI */}
-      {activeTab === 'programs_achievements' && (
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Program
-              </div>
-              {[
-                { id: 'featured', label: '1. 7 Program Unggulan', desc: 'Program keunggulan sekolah' },
-                { id: 'extracurriculars', label: '2. Ekstrakurikuler', desc: '5 pilihan kegiatan ekskul' },
-                { id: 'achievements', label: '3. Rekam Prestasi', desc: 'Capaian lomba & kejuaraan' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setProgramsSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    programsSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${programsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* 7 Program Unggulan */}
-          {programsSubTab === 'featured' && (
-          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  7 Program Unggulan Sekolah
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Program keunggulan yang ditampilkan pada Beranda dan Profil.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const updated = [...(editSettings.featuredPrograms || []), ''];
-                  setEditSettings({ ...editSettings, featuredPrograms: updated });
-                }}
-                className="bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Program</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {editSettings.featuredPrograms?.map((prog, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 font-bold text-xs flex items-center justify-center shrink-0">
-                    {idx + 1}
-                  </span>
-                  <input
-                    type="text"
-                    value={prog}
-                    onChange={e => {
-                      const updated = [...editSettings.featuredPrograms];
-                      updated[idx] = e.target.value;
-                      setEditSettings({ ...editSettings, featuredPrograms: updated });
-                    }}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-800"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = editSettings.featuredPrograms.filter((_, i) => i !== idx);
-                      setEditSettings({ ...editSettings, featuredPrograms: updated });
-                    }}
-                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Program Unggulan</span>
-              </button>
-            </div>
-          </form>
-          )}
-
-          {/* 5 Ekstrakurikuler Pilihan */}
-          {programsSubTab === 'extracurriculars' && (
-          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Ekstrakurikuler Pilihan (5 Ekskul)
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Kelola nama dan deskripsi kegiatan ekskul pada halaman Kegiatan.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newItem: ExtracurricularItem = {
-                    id: 'ekskul-' + Date.now(),
-                    name: 'Ekskul Baru',
-                    desc: 'Deskripsi kegiatan ekstrakurikuler'
-                  };
-                  setEditSettings({
-                    ...editSettings,
-                    extracurriculars: [...(editSettings.extracurriculars || []), newItem]
-                  });
-                }}
-                className="bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Ekskul</span>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {editSettings.extracurriculars?.map((ekskul, idx) => (
-                <div key={ekskul.id || idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <input
-                      type="text"
-                      value={ekskul.name}
-                      onChange={e => {
-                        const updated = [...editSettings.extracurriculars];
-                        updated[idx].name = e.target.value;
-                        setEditSettings({ ...editSettings, extracurriculars: updated });
-                      }}
-                      className="font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-300 w-full max-w-sm"
-                      placeholder="Nama Ekskul"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = editSettings.extracurriculars.filter((_, i) => i !== idx);
-                        setEditSettings({ ...editSettings, extracurriculars: updated });
-                      }}
-                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <textarea
-                    rows={2}
-                    value={ekskul.desc}
-                    onChange={e => {
-                      const updated = [...editSettings.extracurriculars];
-                      updated[idx].desc = e.target.value;
-                      setEditSettings({ ...editSettings, extracurriculars: updated });
-                    }}
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
-                    placeholder="Deskripsi ekskul..."
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Ekstrakurikuler</span>
-              </button>
-            </div>
-          </form>
-          )}
-
-          {/* Prestasi Sekolah & Siswa */}
-          {programsSubTab === 'achievements' && (
-          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Rekam Jejak Prestasi Sekolah &amp; Siswa
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Data capaian ASPD, MTQ, O2SN, FLS2N serta upload foto thumbnail dokumentasi piala/piagam prestasi.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newItem: AchievementItem = {
-                    id: 'ach-' + Date.now(),
-                    category: 'ASPD',
-                    year: '2024',
-                    kapanewon: 'Peringkat 1',
-                    kabupaten: 'Peringkat Unggul',
-                    description: 'Keterangan capaian prestasi',
-                    imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80'
-                  };
-                  setEditSettings({
-                    ...editSettings,
-                    achievements: [...(editSettings.achievements || []), newItem]
-                  });
-                }}
-                className="bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Prestasi</span>
-              </button>
-            </div>
-
-            {/* Header Teks Bagian Prestasi */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100">
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-700">Tagline Bagian Prestasi</label>
-                <input
-                  type="text"
-                  value={editSettings.prestasiHeaderTagline || ''}
-                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderTagline: e.target.value })}
-                  placeholder="JEJAK KEUNGGULAN &amp; PRESTASI"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-700">Judul Bagian Prestasi</label>
-                <input
-                  type="text"
-                  value={editSettings.prestasiHeaderTitle || ''}
-                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderTitle: e.target.value })}
-                  placeholder="Capaian Membanggakan Santri &amp; Sekolah"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white"
-                />
-              </div>
-              <div className="sm:col-span-2 space-y-1">
-                <label className="text-[11px] font-bold text-slate-700">Deskripsi Bagian Prestasi</label>
-                <textarea
-                  rows={2}
-                  value={editSettings.prestasiHeaderDesc || ''}
-                  onChange={e => setEditSettings({ ...editSettings, prestasiHeaderDesc: e.target.value })}
-                  placeholder="Deskripsi pengantar capaian prestasi santri Al I'tisham..."
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {editSettings.achievements?.map((ach, idx) => (
-                <div key={ach.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">Kategori</label>
-                      <select
-                        value={ach.category}
-                        onChange={e => {
-                          const updated = [...editSettings.achievements];
-                          updated[idx].category = e.target.value as any;
-                          setEditSettings({ ...editSettings, achievements: updated });
-                        }}
-                        className="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                      >
-                        <option value="ASPD">ASPD</option>
-                        <option value="MTQ">MTQ</option>
-                        <option value="O2SN">O2SN</option>
-                        <option value="FLS2N">FLS2N</option>
-                        <option value="Lainnya">Lainnya</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">Tahun</label>
-                      <input
-                        type="text"
-                        value={ach.year}
-                        onChange={e => {
-                          const updated = [...editSettings.achievements];
-                          updated[idx].year = e.target.value;
-                          setEditSettings({ ...editSettings, achievements: updated });
-                        }}
-                        className="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">Capaian Kapanewon</label>
-                      <input
-                        type="text"
-                        value={ach.kapanewon || ''}
-                        onChange={e => {
-                          const updated = [...editSettings.achievements];
-                          updated[idx].kapanewon = e.target.value;
-                          setEditSettings({ ...editSettings, achievements: updated });
-                        }}
-                        placeholder="Contoh: Juara 1"
-                        className="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="w-full">
-                        <label className="text-[10px] font-bold text-slate-600 block">Capaian Kabupaten</label>
-                        <input
-                          type="text"
-                          value={ach.kabupaten || ''}
-                          onChange={e => {
-                            const updated = [...editSettings.achievements];
-                            updated[idx].kabupaten = e.target.value;
-                            setEditSettings({ ...editSettings, achievements: updated });
-                          }}
-                          placeholder="Contoh: Peringkat 2"
-                          className="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = editSettings.achievements.filter((_, i) => i !== idx);
-                          setEditSettings({ ...editSettings, achievements: updated });
-                        }}
-                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg mt-3"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-600 block">Deskripsi Prestasi</label>
-                    <textarea
-                      rows={1}
-                      value={ach.description}
-                      onChange={e => {
-                        const updated = [...editSettings.achievements];
-                        updated[idx].description = e.target.value;
-                        setEditSettings({ ...editSettings, achievements: updated });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                    />
-                  </div>
-
-                  {/* Thumbnail Uploader for Achievement */}
-                  <div>
-                    <ThumbnailUploader
-                      label={`Foto Dokumentasi Prestasi (${ach.category} - ${ach.year})`}
-                      value={ach.imageUrl || ''}
-                      onChange={url => {
-                        const updated = [...editSettings.achievements];
-                        updated[idx] = { ...updated[idx], imageUrl: url };
-                        setEditSettings({ ...editSettings, achievements: updated });
-                      }}
-                      onUploadFile={(file, label) =>
-                        handleFileUpload(file, url => {
-                          const updated = [...editSettings.achievements];
-                          updated[idx] = { ...updated[idx], imageUrl: url };
-                          setEditSettings({ ...editSettings, achievements: updated });
-                        }, label)
-                      }
-                      aspectRatio="video"
-                      fit="cover"
-                      helperText="Pilih atau upload foto piala, sertifikat, atau santri berprestasi"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Rekam Prestasi</span>
-              </button>
-            </div>
-          </form>
-          )}
-
-            </div>
-          </div>
-        </div>
+      {/* TAB CONTENT: PROFIL SEKOLAH TERPADU (6 SUB-BAB SESUAI DROPDOWN PUBLIK) */}
+      {(activeTab === 'profil' || activeTab === 'vision_missions' || activeTab === 'programs_achievements' || activeTab === 'teachers') && (
+        <AdminProfilTab
+          settings={editSettings}
+          onUpdateSettings={setEditSettings}
+          teachers={teachers}
+          onAddTeacher={dataService.addTeacher}
+          onUpdateTeacher={dataService.updateTeacher}
+          onDeleteTeacher={dataService.deleteTeacher}
+          handleFileUpload={handleFileUpload}
+          requestDelete={requestDelete}
+          settingsSaved={settingsSaved}
+          onSave={handleSaveSettings}
+        />
       )}
 
       {/* TAB CONTENT: FASILITAS (6 FASILITAS) */}
@@ -3064,319 +2390,7 @@ React.useEffect(() => {
         </div>
       )}
 
-      {/* TAB CONTENT: GURU & ASATIDZ */}
-      {activeTab === 'teachers' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Kelola Data Asatidz &amp; Dewan Guru
-              </h3>
-              <p className="text-xs text-slate-500">
-                Data akan tampil langsung pada halaman Profil Sekolah dengan foto thumbnail dan gelar pendidik.
-              </p>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => setTeachersSubTab(teachersSubTab === 'list' ? 'add' : 'list')}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{teachersSubTab === 'list' ? 'Tambah Guru Baru' : 'Lihat Daftar Asatidz'}</span>
-            </button>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Pendidik
-              </div>
-              {[
-                { id: 'list', label: '1. Daftar Dewan Asatidz', desc: `${teachers.length} guru terdaftar` },
-                { id: 'add', label: '2. Tambah Guru Baru', desc: 'Formulir pendidik baru' },
-                { id: 'header', label: '3. Judul & Header Halaman', desc: 'Tagline & deskripsi pembina' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setTeachersSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    teachersSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${teachersSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Header Teks Bagian Asatidz */}
-          {teachersSubTab === 'header' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-700">Tagline Bagian Guru &amp; Asatidz</label>
-              <input
-                type="text"
-                value={editSettings.teachersHeaderTagline || ''}
-                onChange={e => setEditSettings({ ...editSettings, teachersHeaderTagline: e.target.value })}
-                placeholder="TENAGA PENDIDIK &amp; ASATIDZ"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-700">Judul Bagian Guru &amp; Asatidz</label>
-              <input
-                type="text"
-                value={editSettings.teachersHeaderTitle || ''}
-                onChange={e => setEditSettings({ ...editSettings, teachersHeaderTitle: e.target.value })}
-                placeholder="Dibina oleh Asatidz Berpengalaman &amp; Berijazah Sanad"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white"
-              />
-            </div>
-            <div className="sm:col-span-2 space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-slate-700">Deskripsi Bagian Guru &amp; Asatidz</label>
-                <button
-                  type="button"
-                  onClick={handleSaveSettings}
-                  className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 underline"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Simpan Teks Header Guru</span>
-                </button>
-              </div>
-              <textarea
-                rows={2}
-                value={editSettings.teachersHeaderDesc || ''}
-                onChange={e => setEditSettings({ ...editSettings, teachersHeaderDesc: e.target.value })}
-                placeholder="Dewan asatidz yang mengampu di SD Qur'an Unggulan Al I'tisham..."
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-              />
-            </div>
-          </div>
-          )}
-
-          {/* Form Tambah Guru */}
-          {teachersSubTab === 'add' && (
-            <form onSubmit={handleCreateTeacher} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <div className="text-xs font-bold text-slate-900">Data Pendidik Baru:</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Nama Lengkap &amp; Gelar *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newTeacherName}
-                    onChange={e => setNewTeacherName(e.target.value)}
-                    placeholder="Contoh: Ustadzah Maryam, S.Pd.I."
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Jabatan / Amanah</label>
-                  <input
-                    type="text"
-                    value={newTeacherRole}
-                    onChange={e => setNewTeacherRole(e.target.value)}
-                    placeholder="Contoh: Guru Kelas 1 / Koordinator Al-Qur'an"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Spesialisasi</label>
-                  <input
-                    type="text"
-                    value={newTeacherSpecialty}
-                    onChange={e => setNewTeacherSpecialty(e.target.value)}
-                    placeholder="Sanad Hafsh 30 Juz"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Pendidikan Terakhir</label>
-                  <input
-                    type="text"
-                    value={newTeacherEducation}
-                    onChange={e => setNewTeacherEducation(e.target.value)}
-                    placeholder="S1 Pendidikan Agama Islam"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <ThumbnailUploader
-                    label="Foto Ustadz / Guru (Thumbnail)"
-                    value={newTeacherImage}
-                    onChange={setNewTeacherImage}
-                    onUploadFile={(file, label) => handleFileUpload(file, setNewTeacherImage, label)}
-                    aspectRatio="avatar"
-                    fit="cover"
-                    helperText="Pilih foto guru dari galeri HP atau komputer"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setTeachersSubTab('list')}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
-                >
-                  Simpan Data Asatidz
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Grid Guru */}
-          {teachersSubTab === 'list' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {teachers.map(tc => {
-              const isEditing = editingTeacherId === tc.id;
-              return (
-                <div key={tc.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                  {isEditing ? (
-                    <div className="space-y-3">
-                      <div className="text-xs font-bold text-emerald-950 border-b border-slate-200 pb-1 flex items-center justify-between">
-                        <span>Edit Data Asatidz</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditingTeacherId(null)}
-                          className="text-slate-400 hover:text-slate-600 text-[10px]"
-                        >
-                          Batal
-                        </button>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-600">Nama Lengkap &amp; Gelar</label>
-                        <input
-                          type="text"
-                          value={editTeacherName}
-                          onChange={e => setEditTeacherName(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600">Jabatan / Peran</label>
-                          <input
-                            type="text"
-                            value={editTeacherRole}
-                            onChange={e => setEditTeacherRole(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600">Pendidikan</label>
-                          <input
-                            type="text"
-                            value={editTeacherEducation}
-                            onChange={e => setEditTeacherEducation(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-600">Spesialisasi / Keahlian</label>
-                        <input
-                          type="text"
-                          value={editTeacherSpecialty}
-                          onChange={e => setEditTeacherSpecialty(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
-                        />
-                      </div>
-
-                      <ThumbnailUploader
-                        label="Foto Guru (Thumbnail)"
-                        value={editTeacherImage}
-                        onChange={setEditTeacherImage}
-                        onUploadFile={(file, label) => handleFileUpload(file, setEditTeacherImage, label)}
-                        aspectRatio="avatar"
-                        fit="cover"
-                        helperText="Ganti foto ustadz/guru dari galeri"
-                      />
-
-                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => setEditingTeacherId(null)}
-                          className="px-3 py-1 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
-                        >
-                          Batal
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSaveEditTeacher(tc.id)}
-                          className="px-3 py-1 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800 flex items-center gap-1"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Simpan</span>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={tc.imageUrl}
-                          alt={tc.name}
-                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-slate-900 truncate">{tc.name}</h4>
-                          <p className="text-[11px] text-emerald-800 font-semibold truncate">{tc.role}</p>
-                          <p className="text-[10px] text-slate-500 truncate">{tc.education} • {tc.specialty}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => startEditTeacher(tc)}
-                          className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg"
-                          title="Edit Data Guru"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTeacher(tc.id)}
-                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
-                          title="Hapus Data Guru"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          )}
-
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* TAB CONTENT: KEGIATAN & EKSKUL */}
       {activeTab === 'kegiatan' && (
