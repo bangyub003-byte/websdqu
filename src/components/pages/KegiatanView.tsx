@@ -46,6 +46,30 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
     if (onTabChange) onTabChange(tab);
   };
 
+  const [showAllAgenda, setShowAllAgenda] = useState(false);
+
+  const uniqueEvents = React.useMemo(() => {
+    const seenIds = new Set<string>();
+    const seenTitles = new Set<string>();
+    const result: EventItem[] = [];
+
+    (events || []).forEach((ev, idx) => {
+      const id = ev.id || `event-${idx}`;
+      const normalizedTitle = (ev.title || '').trim().toLowerCase();
+
+      // Filter duplicate IDs and duplicate titles
+      if (!seenIds.has(id) && (!normalizedTitle || !seenTitles.has(normalizedTitle))) {
+        seenIds.add(id);
+        if (normalizedTitle) seenTitles.add(normalizedTitle);
+        result.push({ ...ev, id });
+      }
+    });
+
+    return result;
+  }, [events]);
+
+  const displayedEvents = showAllAgenda ? uniqueEvents : uniqueEvents.slice(0, 4);
+
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
       
@@ -523,25 +547,27 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {events.map(event => (
+          {displayedEvents.map((event, idx) => (
             <div
-              key={event.id}
-              className="bg-white rounded-3xl p-6 border-2 border-slate-200 hover:border-emerald-800/40 shadow-xs hover:shadow-md transition-all space-y-3"
+              key={`${event.id}-${idx}`}
+              className="bg-white rounded-3xl p-6 border-2 border-slate-200 hover:border-emerald-800/40 shadow-xs hover:shadow-md transition-all space-y-3 flex flex-col justify-between"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
-                  {event.month}
-                </span>
-                <Calendar className="w-4 h-4 text-slate-400" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                    {event.month}
+                  </span>
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                </div>
+
+                <h4 className="text-base font-bold text-slate-900 leading-snug">
+                  {event.title}
+                </h4>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {event.description}
+                </p>
               </div>
-
-              <h4 className="text-base font-bold text-slate-900 leading-snug">
-                {event.title}
-              </h4>
-
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {event.description}
-              </p>
 
               <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
                 <div className="flex items-center gap-1.5">
@@ -556,6 +582,19 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
             </div>
           ))}
         </div>
+
+        {uniqueEvents.length > 4 && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAllAgenda(!showAllAgenda)}
+              className="px-6 py-2.5 rounded-full border border-emerald-800/80 hover:bg-emerald-900 hover:text-white text-emerald-900 text-xs font-bold transition-all shadow-xs flex items-center gap-2 bg-white"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{showAllAgenda ? 'Tampilkan Lebih Sedikit' : `Lihat Semua Agenda (${uniqueEvents.length})`}</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* BOTTOM CTA */}

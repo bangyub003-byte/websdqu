@@ -18,6 +18,7 @@ export default function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [kegiatanTab, setKegiatanTab] = useState<'semua' | 'harian' | 'berkala' | 'ekskul'>('semua');
+  const [fasilitasCategory, setFasilitasCategory] = useState<'semua' | 'ibadah' | 'belajar' | 'olahraga'>('semua');
 
   // Subscribe to reactive data store
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function App() {
         settings={data.settings}
         isAdminLoggedIn={isAdminLoggedIn}
         onSelectKegiatanTab={setKegiatanTab}
+        onSelectFasilitasCategory={setFasilitasCategory}
       />
 
       {/* Main Content Area with Dynamic Page View */}
@@ -114,6 +116,8 @@ export default function App() {
             setActivePage={handlePageChange}
             settings={data.settings}
             facilities={data.facilities}
+            selectedCategory={fasilitasCategory}
+            onCategoryChange={setFasilitasCategory}
           />
         )}
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SchoolSettings, ActivityItem, ExtracurricularItem } from '../../types';
+import { SchoolSettings, ActivityItem, ExtracurricularItem, EventItem } from '../../types';
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import {
   Calendar,
@@ -10,7 +10,11 @@ import {
   Check,
   Sparkles,
   Download,
-  FileText
+  FileText,
+  Edit2,
+  MapPin,
+  Tag,
+  X
 } from 'lucide-react';
 
 interface AdminKegiatanTabProps {
@@ -20,6 +24,10 @@ interface AdminKegiatanTabProps {
   requestDelete: (title: string, message: string, onConfirm: () => void) => void;
   settingsSaved: boolean;
   onSave: (e: React.FormEvent) => void;
+  events?: EventItem[];
+  onAddEvent?: (item: Omit<EventItem, 'id'>) => void;
+  onUpdateEvent?: (id: string, updated: Partial<EventItem>) => void;
+  onDeleteEvent?: (id: string, title: string) => void;
 }
 
 export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
@@ -28,9 +36,86 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
   handleFileUpload,
   requestDelete,
   settingsSaved,
-  onSave
+  onSave,
+  events = [],
+  onAddEvent,
+  onUpdateEvent,
+  onDeleteEvent
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'header' | 'harian' | 'berkala' | 'ekskul' | 'kalender'>('header');
+  const [activeSubTab, setActiveSubTab] = useState<'header' | 'harian' | 'berkala' | 'ekskul' | 'agenda' | 'kalender'>('header');
+
+  // State untuk CRUD Agenda Kegiatan
+  const [agendaMode, setAgendaMode] = useState<'list' | 'add' | 'edit'>('list');
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventMonth, setEventMonth] = useState('');
+  const [eventDateRange, setEventDateRange] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventCategory, setEventCategory] = useState('Tahfidz');
+  const [eventDescription, setEventDescription] = useState('');
+
+  const resetEventForm = () => {
+    setEditingEventId(null);
+    setEventTitle('');
+    setEventMonth('');
+    setEventDateRange('');
+    setEventLocation('');
+    setEventCategory('Tahfidz');
+    setEventDescription('');
+    setAgendaMode('list');
+  };
+
+  const startAddEvent = () => {
+    setEditingEventId(null);
+    setEventTitle('');
+    setEventMonth('MARET 2025');
+    setEventDateRange('');
+    setEventLocation("Aula Utama Kampus 1 SDQU Al I'tisham Playen");
+    setEventCategory('Tahfidz');
+    setEventDescription('');
+    setAgendaMode('add');
+  };
+
+  const startEditEvent = (ev: EventItem) => {
+    setEditingEventId(ev.id);
+    setEventTitle(ev.title || '');
+    setEventMonth(ev.month || '');
+    setEventDateRange(ev.dateRange || '');
+    setEventLocation(ev.location || '');
+    setEventCategory(ev.category || 'Tahfidz');
+    setEventDescription(ev.description || '');
+    setAgendaMode('edit');
+  };
+
+  const handleSaveEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventTitle.trim()) return;
+
+    if (agendaMode === 'edit' && editingEventId) {
+      if (onUpdateEvent) {
+        onUpdateEvent(editingEventId, {
+          title: eventTitle.trim(),
+          month: eventMonth.trim(),
+          dateRange: eventDateRange.trim(),
+          location: eventLocation.trim(),
+          category: eventCategory,
+          description: eventDescription.trim()
+        });
+      }
+    } else if (agendaMode === 'add') {
+      if (onAddEvent) {
+        onAddEvent({
+          title: eventTitle.trim(),
+          month: eventMonth.trim(),
+          dateRange: eventDateRange.trim(),
+          location: eventLocation.trim(),
+          category: eventCategory,
+          description: eventDescription.trim()
+        });
+      }
+    }
+    resetEventForm();
+  };
 
   return (
     <form onSubmit={onSave} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-8">
@@ -78,7 +163,8 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
             { id: 'harian', label: `2. Jadwal Harian (${settings.dailyActivities?.length || 0})`, desc: 'Rutinitas jam masuk hingga pulang' },
             { id: 'berkala', label: `3. Program Berkala (${settings.periodicPrograms?.length || 0})`, desc: 'Pekan, bulanan & semester' },
             { id: 'ekskul', label: `4. Ekstrakurikuler (${settings.extracurriculars?.length || 0})`, desc: 'Bakat santri, olahraga & seni' },
-            { id: 'kalender', label: '5. Unduh Kalender', desc: 'Tautan file kalender akademik' }
+            { id: 'agenda', label: `5. Agenda Kegiatan (${events?.length || 0})`, desc: 'Kelola agenda semester berjalan (CRUD)' },
+            { id: 'kalender', label: '6. Unduh Kalender', desc: 'Tautan file kalender akademik' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -730,7 +816,240 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
         </div>
       )}
 
-      {/* SUBTAB 5: KALENDER */}
+      {/* SUBTAB 5: AGENDA KEGIATAN (CRUD) */}
+      {activeSubTab === 'agenda' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-emerald-800" />
+                <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider">
+                  Agenda Kegiatan Semester Berjalan ({events.length} Terdaftar)
+                </h4>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Kelola jadwal tasmi', mukhayyam, ujian, parenting, dan agenda penting sekolah.
+              </p>
+            </div>
+
+            {agendaMode === 'list' && (
+              <button
+                type="button"
+                onClick={startAddEvent}
+                className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto shrink-0 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Tambah Agenda Baru</span>
+              </button>
+            )}
+          </div>
+
+          {/* Form Tambah / Edit Agenda */}
+          {(agendaMode === 'add' || agendaMode === 'edit') && (
+            <div className="p-5 rounded-2xl bg-emerald-50/60 border-2 border-emerald-600/30 space-y-4">
+              <div className="flex items-center justify-between border-b border-emerald-200/60 pb-3">
+                <div className="flex items-center gap-2">
+                  {agendaMode === 'add' ? (
+                    <Plus className="w-4 h-4 text-emerald-800" />
+                  ) : (
+                    <Edit2 className="w-4 h-4 text-emerald-800" />
+                  )}
+                  <h5 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider">
+                    {agendaMode === 'add' ? 'Form Tambah Agenda Baru' : 'Form Edit Agenda Kegiatan'}
+                  </h5>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetEventForm}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Nama Agenda / Judul Kegiatan *</label>
+                  <input
+                    type="text"
+                    required
+                    value={eventTitle}
+                    onChange={e => setEventTitle(e.target.value)}
+                    placeholder="Contoh: Mukhayyam Al-Qur'an 3 Hari Wanagama"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Bulan / Label Waktu</label>
+                  <input
+                    type="text"
+                    value={eventMonth}
+                    onChange={e => setEventMonth(e.target.value)}
+                    placeholder="Contoh: MARET 2025"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white uppercase font-bold text-emerald-900"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Tanggal / Rentang Hari</label>
+                  <input
+                    type="text"
+                    value={eventDateRange}
+                    onChange={e => setEventDateRange(e.target.value)}
+                    placeholder="Contoh: 15 - 16 Maret 2025"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Kategori Kegiatan</label>
+                  <select
+                    value={eventCategory}
+                    onChange={e => setEventCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white font-medium"
+                  >
+                    <option value="Tahfidz">Tahfidz &amp; Al-Qur'an</option>
+                    <option value="Akademik">Akademik &amp; Sains</option>
+                    <option value="Parenting">Parenting &amp; Kajian</option>
+                    <option value="Dakwah">Dakwah &amp; Syiar</option>
+                    <option value="Kepanduan">Kepanduan &amp; HW</option>
+                    <option value="Wisuda">Wisuda &amp; Tasmi'</option>
+                    <option value="Sosial">Sosial &amp; Ramadhan</option>
+                    <option value="Umum">Umum</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Lokasi / Tempat</label>
+                  <input
+                    type="text"
+                    value={eventLocation}
+                    onChange={e => setEventLocation(e.target.value)}
+                    placeholder="Contoh: Aula Utama Kampus SDQU Playen"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Deskripsi / Catatan Agenda</label>
+                  <textarea
+                    rows={2}
+                    value={eventDescription}
+                    onChange={e => setEventDescription(e.target.value)}
+                    placeholder="Keterangan singkat mengenai agenda santri ini..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-emerald-200/60">
+                <button
+                  type="button"
+                  onClick={resetEventForm}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEvent}
+                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{agendaMode === 'add' ? 'Simpan Agenda Baru' : 'Simpan Perubahan Agenda'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Daftar Agenda Cards */}
+          {agendaMode === 'list' && (
+            <div className="space-y-3">
+              {events.length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-xs text-slate-500 font-medium">Belum ada agenda kegiatan yang terdaftar.</p>
+                  <button
+                    type="button"
+                    onClick={startAddEvent}
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-900"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah agenda pertama</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {events.map((ev, idx) => (
+                    <div
+                      key={ev.id || idx}
+                      className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-emerald-500/40 transition-all flex flex-col justify-between"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            {ev.category || 'Tahfidz'}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            {ev.month || '2025'}
+                          </span>
+                        </div>
+
+                        <h5 className="text-sm font-bold text-slate-900 leading-snug">
+                          {ev.title}
+                        </h5>
+
+                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                          {ev.description || 'Tidak ada keterangan tambahan.'}
+                        </p>
+
+                        <div className="space-y-1 pt-1 text-[11px] text-slate-500 border-t border-slate-100">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span className="font-medium text-slate-700">{ev.dateRange || '-'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span className="truncate">{ev.location || "SDQU Al I'tisham Playen"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => startEditEvent(ev)}
+                          className="p-1.5 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                          title="Edit agenda"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (onDeleteEvent) {
+                              onDeleteEvent(ev.id, ev.title);
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                          title="Hapus agenda"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SUBTAB 6: KALENDER */}
       {activeSubTab === 'kalender' && (
         <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
           <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-2">

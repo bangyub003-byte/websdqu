@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   ActivePage,
   Announcement,
+  BankAccountItem,
   EventItem,
   FacilityItem,
   InfaqRecord,
@@ -59,7 +60,9 @@ import {
   CheckCircle2,
   MessageSquare,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  CreditCard,
+  X
 } from 'lucide-react';
 
 interface AdminCMSViewProps {
@@ -120,7 +123,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [brandingSubTab, setBrandingSubTab] = useState<'logo_banner' | 'identity' | 'contact_psb' | 'hero_stats' | 'why_us' | 'testimonials_cta'>('logo_banner');
   const [visionSubTab, setVisionSubTab] = useState<'vision_mission' | 'history' | 'core_values' | 'legalitas'>('vision_mission');
   const [programsSubTab, setProgramsSubTab] = useState<'featured' | 'extracurriculars' | 'achievements'>('featured');
-  const [facilitiesSubTab, setFacilitiesSubTab] = useState<'list' | 'add'>('list');
+  const [facilitiesSubTab, setFacilitiesSubTab] = useState<'list' | 'add' | 'categories'>('list');
   const [teachersSubTab, setTeachersSubTab] = useState<'list' | 'add' | 'header'>('list');
   const [announcementsSubTab, setAnnouncementsSubTab] = useState<'list' | 'add'>('list');
   const [newsSubTab, setNewsSubTab] = useState<'list' | 'add'>('list');
@@ -143,12 +146,7 @@ React.useEffect(() => {
     message: string;
     actionLabel?: string;
     onConfirm: () => void;
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {}
-  });
+  } | null>(null);
 
   const requestDelete = (title: string, message: string, onConfirm: () => void) => {
     setDeleteModal({
@@ -157,7 +155,7 @@ React.useEffect(() => {
       message,
       onConfirm: () => {
         onConfirm();
-        setDeleteModal(prev => ({ ...prev, isOpen: false }));
+        setDeleteModal(null);
       }
     });
   };
@@ -227,6 +225,135 @@ React.useEffect(() => {
 
   // Copy Code State
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Dynamic Bank Accounts Management State
+  const [bankModalOpen, setBankModalOpen] = useState(false);
+  const [editingBankId, setEditingBankId] = useState<string | null>(null);
+  const [bankFormName, setBankFormName] = useState('');
+  const [bankFormNumber, setBankFormNumber] = useState('');
+  const [bankFormHolder, setBankFormHolder] = useState('');
+  const [bankFormBranch, setBankFormBranch] = useState('');
+
+  const openAddBankModal = () => {
+    setEditingBankId(null);
+    setBankFormName('');
+    setBankFormNumber('');
+    setBankFormHolder('');
+    setBankFormBranch('');
+    setBankModalOpen(true);
+  };
+
+  const openEditBankModal = (item: BankAccountItem) => {
+    setEditingBankId(item.id);
+    setBankFormName(item.bankName);
+    setBankFormNumber(item.accountNumber);
+    setBankFormHolder(item.holderName);
+    setBankFormBranch(item.branch || '');
+    setBankModalOpen(true);
+  };
+
+  const handleSaveBankAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bankFormName.trim() || !bankFormNumber.trim() || !bankFormHolder.trim()) {
+      alert('Mohon isi nama bank, nomor rekening, dan nama pemilik rekening.');
+      return;
+    }
+
+    const currentList: BankAccountItem[] = (editSettings.bankAccounts && editSettings.bankAccounts.length > 0)
+      ? [...editSettings.bankAccounts]
+      : [
+          ...(editSettings.bankBsi?.accountNumber ? [{
+            id: 'bank-bsi',
+            bankName: editSettings.bankBsi.bankName || 'Bank Syariah Indonesia (BSI)',
+            accountNumber: editSettings.bankBsi.accountNumber || '',
+            holderName: editSettings.bankBsi.holderName || '',
+            branch: editSettings.bankBsi.branch || ''
+          }] : []),
+          ...(editSettings.bankBpd?.accountNumber ? [{
+            id: 'bank-bpd',
+            bankName: editSettings.bankBpd.bankName || 'Bank BPD DIY Syariah',
+            accountNumber: editSettings.bankBpd.accountNumber || '',
+            holderName: editSettings.bankBpd.holderName || '',
+            branch: editSettings.bankBpd.branch || ''
+          }] : [])
+        ];
+
+    let updatedList: BankAccountItem[];
+    if (editingBankId) {
+      updatedList = currentList.map(item => item.id === editingBankId ? {
+        ...item,
+        bankName: bankFormName.trim(),
+        accountNumber: bankFormNumber.trim(),
+        holderName: bankFormHolder.trim(),
+        branch: bankFormBranch.trim()
+      } : item);
+    } else {
+      const newAcc: BankAccountItem = {
+        id: 'bank-' + Date.now(),
+        bankName: bankFormName.trim(),
+        accountNumber: bankFormNumber.trim(),
+        holderName: bankFormHolder.trim(),
+        branch: bankFormBranch.trim()
+      };
+      updatedList = [...currentList, newAcc];
+    }
+
+    const updatedSettings: SchoolSettings = {
+      ...editSettings,
+      bankAccounts: updatedList,
+      bankBsi: updatedList[0] ? {
+        bankName: updatedList[0].bankName,
+        accountNumber: updatedList[0].accountNumber,
+        holderName: updatedList[0].holderName,
+        branch: updatedList[0].branch || ''
+      } : editSettings.bankBsi,
+      bankBpd: updatedList[1] ? {
+        bankName: updatedList[1].bankName,
+        accountNumber: updatedList[1].accountNumber,
+        holderName: updatedList[1].holderName,
+        branch: updatedList[1].branch || ''
+      } : editSettings.bankBpd
+    };
+
+    setEditSettings(updatedSettings);
+    dataService.updateSettings(updatedSettings);
+    setBankModalOpen(false);
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 3000);
+  };
+
+  const handleDeleteBankAccount = (id: string, bankName: string) => {
+    requestDelete(
+      'Hapus Rekening Bank',
+      `Apakah Anda yakin ingin menghapus rekening ${bankName}? Rekening ini tidak akan ditampilkan lagi di halaman donasi publik.`,
+      () => {
+        const currentList: BankAccountItem[] = (editSettings.bankAccounts && editSettings.bankAccounts.length > 0)
+          ? editSettings.bankAccounts
+          : [];
+        const updatedList = currentList.filter(item => item.id !== id);
+        const updatedSettings: SchoolSettings = {
+          ...editSettings,
+          bankAccounts: updatedList,
+          bankBsi: updatedList[0] ? {
+            bankName: updatedList[0].bankName,
+            accountNumber: updatedList[0].accountNumber,
+            holderName: updatedList[0].holderName,
+            branch: updatedList[0].branch || ''
+          } : undefined,
+          bankBpd: updatedList[1] ? {
+            bankName: updatedList[1].bankName,
+            accountNumber: updatedList[1].accountNumber,
+            holderName: updatedList[1].holderName,
+            branch: updatedList[1].branch || ''
+          } : undefined
+        };
+        setEditSettings(updatedSettings);
+        dataService.updateSettings(updatedSettings);
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    );
+  };
 
   // Google Apps Script Integration State
   const [appsScriptUrlInput, setAppsScriptUrlInput] = useState(dataService.getAppsScriptUrl());
@@ -1613,28 +1740,85 @@ React.useEffect(() => {
 
           {/* Section: 4 Statistik Utama Beranda (Pita Angka) */}
           {brandingSubTab === 'hero_stats' && (
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-800" />
-                <span>4 Angka Statistik Utama Beranda (Pita Angka Hero)</span>
-              </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Edit angka dan teks label untuk 4 slot kartu statistik tetap yang tampil pada pita hijau di bawah hero Beranda.
-              </p>
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50/80 p-4 rounded-2xl border border-emerald-200">
+              <div>
+                <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-emerald-800" />
+                  <span>4 Angka Statistik Utama Beranda (Pita Angka Hero)</span>
+                </h4>
+                <p className="text-xs text-emerald-900/80 mt-0.5">
+                  Struktur tetap 4 slot kartu statistik pada pita hijau di bawah hero Beranda. Anda dapat mengedit teks &amp; nilai, atau mengosongkan/mereset masing-masing slot.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditSettings({
+                      ...editSettings,
+                      heroStatsRibbon: {
+                        stat1Val: '1.200+',
+                        stat1Label: 'Santri Aktif & Alumni',
+                        stat2Val: '100%',
+                        stat2Label: 'Target Tahfidz Mutqin',
+                        stat3Val: '45+',
+                        stat3Label: 'Asatidz Bersanad',
+                        stat4Val: '25+',
+                        stat4Label: 'Prestasi Tingkat DIY & Nas',
+                      }
+                    });
+                  }}
+                  className="px-3 py-1.5 text-xs font-bold text-emerald-900 bg-white hover:bg-emerald-100 rounded-xl border border-emerald-300 flex items-center gap-1.5 shadow-2xs transition-colors"
+                  title="Kembalikan semua 4 slot ke nilai awal standar"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset Semua Default</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditSettings({
+                      ...editSettings,
+                      heroStatsRibbon: {
+                        stat1Val: '',
+                        stat1Label: '',
+                        stat2Val: '',
+                        stat2Label: '',
+                        stat3Val: '',
+                        stat3Label: '',
+                        stat4Val: '',
+                        stat4Label: '',
+                      }
+                    });
+                  }}
+                  className="px-3 py-1.5 text-xs font-bold text-rose-700 bg-white hover:bg-rose-50 rounded-xl border border-rose-200 flex items-center gap-1.5 shadow-2xs transition-colors"
+                  title="Kosongkan semua slot pita agar disembunyikan dari Beranda"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Kosongkan Semua</span>
+                </button>
+              </div>
             </div>
 
             {(() => {
               const currentRibbon = {
-                stat1Val: editSettings.heroStatsRibbon?.stat1Val || '1.200+',
-                stat1Label: editSettings.heroStatsRibbon?.stat1Label || 'Santri Aktif & Alumni',
-                stat2Val: editSettings.heroStatsRibbon?.stat2Val || '100%',
-                stat2Label: editSettings.heroStatsRibbon?.stat2Label || 'Target Tahfidz Mutqin',
-                stat3Val: editSettings.heroStatsRibbon?.stat3Val || '45+',
-                stat3Label: editSettings.heroStatsRibbon?.stat3Label || 'Asatidz Bersanad',
-                stat4Val: editSettings.heroStatsRibbon?.stat4Val || '25+',
-                stat4Label: editSettings.heroStatsRibbon?.stat4Label || 'Prestasi Tingkat DIY & Nas',
+                stat1Val: editSettings.heroStatsRibbon?.stat1Val !== undefined ? editSettings.heroStatsRibbon.stat1Val : '1.200+',
+                stat1Label: editSettings.heroStatsRibbon?.stat1Label !== undefined ? editSettings.heroStatsRibbon.stat1Label : 'Santri Aktif & Alumni',
+                stat2Val: editSettings.heroStatsRibbon?.stat2Val !== undefined ? editSettings.heroStatsRibbon.stat2Val : '100%',
+                stat2Label: editSettings.heroStatsRibbon?.stat2Label !== undefined ? editSettings.heroStatsRibbon.stat2Label : 'Target Tahfidz Mutqin',
+                stat3Val: editSettings.heroStatsRibbon?.stat3Val !== undefined ? editSettings.heroStatsRibbon.stat3Val : '45+',
+                stat3Label: editSettings.heroStatsRibbon?.stat3Label !== undefined ? editSettings.heroStatsRibbon.stat3Label : 'Asatidz Bersanad',
+                stat4Val: editSettings.heroStatsRibbon?.stat4Val !== undefined ? editSettings.heroStatsRibbon.stat4Val : '25+',
+                stat4Label: editSettings.heroStatsRibbon?.stat4Label !== undefined ? editSettings.heroStatsRibbon.stat4Label : 'Prestasi Tingkat DIY & Nas',
               };
+
+              const defaultSlots = [
+                { num: 1, val: '1.200+', label: 'Santri Aktif & Alumni', valKey: 'stat1Val', labelKey: 'stat1Label', desc: 'Slot 1: Total Santri & Alumni' },
+                { num: 2, val: '100%', label: 'Target Tahfidz Mutqin', valKey: 'stat2Val', labelKey: 'stat2Label', desc: 'Slot 2: Target Mutqin Tahfidz' },
+                { num: 3, val: '45+', label: 'Asatidz Bersanad', valKey: 'stat3Val', labelKey: 'stat3Label', desc: 'Slot 3: Dewan Asatidz / Pengajar' },
+                { num: 4, val: '25+', label: 'Prestasi Tingkat DIY & Nas', valKey: 'stat4Val', labelKey: 'stat4Label', desc: 'Slot 4: Capaian Prestasi' }
+              ];
 
               const updateSlot = (field: string, val: string) => {
                 const updated = {
@@ -1647,93 +1831,161 @@ React.useEffect(() => {
                 });
               };
 
-              const slots = [
-                {
-                  num: 1,
-                  valKey: 'stat1Val',
-                  labelKey: 'stat1Label',
-                  val: currentRibbon.stat1Val,
-                  label: currentRibbon.stat1Label,
-                  placeholderVal: '1.200+',
-                  placeholderLabel: 'Santri Aktif & Alumni',
-                  desc: 'Slot 1: Total Santri & Alumni'
-                },
-                {
-                  num: 2,
-                  valKey: 'stat2Val',
-                  labelKey: 'stat2Label',
-                  val: currentRibbon.stat2Val,
-                  label: currentRibbon.stat2Label,
-                  placeholderVal: '100%',
-                  placeholderLabel: 'Target Tahfidz Mutqin',
-                  desc: 'Slot 2: Target Mutqin Tahfidz'
-                },
-                {
-                  num: 3,
-                  valKey: 'stat3Val',
-                  labelKey: 'stat3Label',
-                  val: currentRibbon.stat3Val,
-                  label: currentRibbon.stat3Label,
-                  placeholderVal: '45+',
-                  placeholderLabel: 'Asatidz Bersanad',
-                  desc: 'Slot 3: Dewan Asatidz / Pengajar'
-                },
-                {
-                  num: 4,
-                  valKey: 'stat4Val',
-                  labelKey: 'stat4Label',
-                  val: currentRibbon.stat4Val,
-                  label: currentRibbon.stat4Label,
-                  placeholderVal: '25+',
-                  placeholderLabel: 'Prestasi Tingkat DIY & Nas',
-                  desc: 'Slot 4: Capaian Prestasi'
-                }
-              ];
+              const clearSlot = (valKey: string, labelKey: string) => {
+                setEditSettings({
+                  ...editSettings,
+                  heroStatsRibbon: {
+                    ...currentRibbon,
+                    [valKey]: '',
+                    [labelKey]: ''
+                  }
+                });
+              };
+
+              const resetSlot = (valKey: string, labelKey: string, defVal: string, defLabel: string) => {
+                setEditSettings({
+                  ...editSettings,
+                  heroStatsRibbon: {
+                    ...currentRibbon,
+                    [valKey]: defVal,
+                    [labelKey]: defLabel
+                  }
+                });
+              };
+
+              const slots = defaultSlots.map(s => ({
+                ...s,
+                currentVal: (currentRibbon as any)[s.valKey] || '',
+                currentLabel: (currentRibbon as any)[s.labelKey] || '',
+                isEmpty: !((currentRibbon as any)[s.valKey] || '').trim() && !((currentRibbon as any)[s.labelKey] || '').trim()
+              }));
 
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {slots.map(s => (
-                    <div key={s.num} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3 shadow-2xs">
-                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                        <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wider">
-                          Kartu Statistik #{s.num}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200">
-                          Slot Tetap
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-700 block">
-                          Angka / Nilai *
-                        </label>
-                        <input
-                          type="text"
-                          value={s.val}
-                          onChange={e => updateSlot(s.valKey, e.target.value)}
-                          placeholder={s.placeholderVal}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-extrabold text-emerald-900 bg-white focus:ring-2 focus:ring-emerald-800"
-                        />
-                      </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {slots.map(s => (
+                      <div
+                        key={s.num}
+                        className={`p-4 rounded-2xl border transition-all space-y-3 shadow-2xs ${
+                          s.isEmpty
+                            ? 'bg-slate-50/70 border-dashed border-slate-300 opacity-80'
+                            : 'bg-white border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-emerald-900 text-white text-[10px] font-extrabold flex items-center justify-center">
+                              {s.num}
+                            </span>
+                            <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wider">
+                              Slot #{s.num}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              s.isEmpty
+                                ? 'bg-rose-50 text-rose-600 border-rose-200'
+                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            }`}
+                          >
+                            {s.isEmpty ? 'Dikosongkan' : 'Aktif'}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-700 block">
+                            Angka / Nilai
+                          </label>
+                          <input
+                            type="text"
+                            value={s.currentVal}
+                            onChange={e => updateSlot(s.valKey, e.target.value)}
+                            placeholder={s.val}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-extrabold text-emerald-950 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-800"
+                          />
+                        </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-700 block">
-                          Teks Label Keterangan *
-                        </label>
-                        <input
-                          type="text"
-                          value={s.label}
-                          onChange={e => updateSlot(s.labelKey, e.target.value)}
-                          placeholder={s.placeholderLabel}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:ring-2 focus:ring-emerald-800"
-                        />
-                      </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-700 block">
+                            Teks Label Keterangan
+                          </label>
+                          <input
+                            type="text"
+                            value={s.currentLabel}
+                            onChange={e => updateSlot(s.labelKey, e.target.value)}
+                            placeholder={s.label}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-800"
+                          />
+                        </div>
 
-                      <div className="text-[10px] text-slate-400 font-medium pt-0.5">
-                        {s.desc}
+                        <div className="text-[10px] text-slate-400 font-medium">
+                          {s.desc}
+                        </div>
+
+                        {/* Kontrol Edit / Kosongkan / Reset untuk slot ini */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => clearSlot(s.valKey, s.labelKey)}
+                            disabled={s.isEmpty}
+                            className={`text-[11px] font-bold flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
+                              s.isEmpty
+                                ? 'text-slate-300 cursor-not-allowed'
+                                : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50'
+                            }`}
+                            title="Hapus / kosongkan angka dan label slot ini agar tidak tampil di beranda"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Kosongkan</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => resetSlot(s.valKey, s.labelKey, s.val, s.label)}
+                            className="text-[11px] font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                            title="Kembalikan nilai awal bawaan slot ini"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Reset Default</span>
+                          </button>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Live Preview Pita Beranda */}
+                  <div className="p-4 rounded-2xl bg-emerald-950 text-white space-y-2.5 shadow-md">
+                    <div className="flex items-center justify-between text-[11px] text-emerald-300">
+                      <span className="font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Pratinjau Tampilan Pengunjung (Pita Beranda)</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                        {slots.filter(s => !s.isEmpty).length} dari 4 slot aktif
+                      </span>
                     </div>
-                  ))}
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-emerald-900/80 pt-1">
+                      {slots.map(s => (
+                        <div key={s.num} className="pt-2 sm:pt-0 sm:px-3 first:px-0">
+                          {s.isEmpty ? (
+                            <div className="text-[11px] text-emerald-600/70 italic py-2">
+                              (Slot #{s.num} disembunyikan)
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="text-xl font-extrabold text-white">
+                                {s.currentVal || s.val}
+                              </div>
+                              <div className="text-xs text-emerald-300 font-medium">
+                                {s.currentLabel || s.label}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })()}
@@ -2159,7 +2411,8 @@ React.useEffect(() => {
               </div>
               {[
                 { id: 'list', label: '1. Daftar Fasilitas', desc: `${facilities.length} fasilitas terdaftar` },
-                { id: 'add', label: '2. Tambah Fasilitas Baru', desc: 'Formulir fasilitas baru' }
+                { id: 'add', label: '2. Tambah Fasilitas Baru', desc: 'Formulir fasilitas baru' },
+                { id: 'categories', label: '3. Pengantar 3 Kategori', desc: 'Judul, narasi & foto 3 kategori' }
               ].map(sub => (
                 <button
                   key={sub.id}
@@ -2385,6 +2638,334 @@ React.useEffect(() => {
           </div>
           )}
 
+          {/* Form Pengantar 3 Kategori & Header Fasilitas */}
+          {facilitiesSubTab === 'categories' && (
+            <form onSubmit={handleSaveSettings} className="space-y-6">
+              {/* Header Info */}
+              <div className="p-5 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 space-y-4">
+                <div>
+                  <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                    <Building className="w-4 h-4 text-emerald-800" />
+                    <span>Header &amp; Pengantar Halaman Fasilitas</span>
+                  </h4>
+                  <p className="text-xs text-emerald-900/80 mt-0.5">
+                    Teks pengantar di bagian paling atas halaman Fasilitas publik beserta 2 angka statistik ringkasnya.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700">Badge / Tagline Atas</label>
+                    <input
+                      type="text"
+                      value={editSettings.fasilitasBadge || ''}
+                      onChange={e => setEditSettings({ ...editSettings, fasilitasBadge: e.target.value })}
+                      placeholder="SARANA &amp; PRASARANA MODERN"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                    />
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold text-slate-700">Judul Utama Halaman Fasilitas</label>
+                    <input
+                      type="text"
+                      value={editSettings.fasilitasTitle || ''}
+                      onChange={e => setEditSettings({ ...editSettings, fasilitasTitle: e.target.value })}
+                      placeholder="Fasilitas Pendukung Belajar &amp; Tahfidz yang Asri"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Deskripsi Subtitle Pengantar</label>
+                  <textarea
+                    rows={2}
+                    value={editSettings.fasilitasSubtitle || ''}
+                    onChange={e => setEditSettings({ ...editSettings, fasilitasSubtitle: e.target.value })}
+                    placeholder="Menghadirkan lingkungan belajar yang aman, nyaman, dan sejuk di Playen..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-emerald-200/60">
+                  <div className="p-3 bg-white rounded-xl border border-emerald-200 space-y-2">
+                    <span className="text-[11px] font-bold text-emerald-950">Statistik Cepat #1</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat1Val || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat1Val: e.target.value })}
+                        placeholder="100%"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                      />
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat1Label || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat1Label: e.target.value })}
+                        placeholder="Milik Sendiri"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat1Sub || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat1Sub: e.target.value })}
+                        placeholder="Lahan Wakaf"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-xl border border-emerald-200 space-y-2">
+                    <span className="text-[11px] font-bold text-emerald-950">Statistik Cepat #2</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat2Val || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat2Val: e.target.value })}
+                        placeholder="2.500 m²"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                      />
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat2Label || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat2Label: e.target.value })}
+                        placeholder="Luas Kampus"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={editSettings.fasilitasStat2Sub || ''}
+                        onChange={e => setEditSettings({ ...editSettings, fasilitasStat2Sub: e.target.value })}
+                        placeholder="Asri & Terpadu"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kategori 1 */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-900 text-white text-xs font-bold flex items-center justify-center">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                        Kategori 1: Sarana Ibadah &amp; Al-Qur'an
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Masjid, area wudhu, halaqah tahfidz Qur'an.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditSettings({
+                        ...editSettings,
+                        facilityCat1Title: "Sarana Ibadah & Al-Qur'an",
+                        facilityCat1Desc: "Pusat pembinaan ruhiyah santri berupa masjid yang sejuk dan bersih, area wudhu higienis terpisah ikhwan-akhwat, serta ruang halaqah tahfidzul Qur'an yang kondusif untuk kelancaran talaqqi dan muroja'ah.",
+                        facilityCat1Image: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=80"
+                      });
+                    }}
+                    className="text-[11px] font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-100/60 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Default</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Judul Kategori 1 *</label>
+                  <input
+                    type="text"
+                    value={editSettings.facilityCat1Title || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat1Title: e.target.value })}
+                    placeholder="Sarana Ibadah & Al-Qur'an"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Deskripsi Narasi Pengantar Kategori 1 *</label>
+                  <textarea
+                    rows={3}
+                    value={editSettings.facilityCat1Desc || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat1Desc: e.target.value })}
+                    placeholder="Deskripsi pengantar kategori ibadah..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <ThumbnailUploader
+                  label="Foto Utama / Banner Kategori 1"
+                  value={editSettings.facilityCat1Image || ''}
+                  onChange={val => setEditSettings({ ...editSettings, facilityCat1Image: val })}
+                  onUploadFile={(file, label) => handleFileUpload(file, val => setEditSettings({ ...editSettings, facilityCat1Image: val }), label)}
+                  aspectRatio="video"
+                  fit="cover"
+                  helperText="Foto representatif yang tampil di samping teks narasi kategori 1"
+                />
+              </div>
+
+              {/* Kategori 2 */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-amber-700 text-white text-xs font-bold flex items-center justify-center">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                        Kategori 2: Ruang Belajar &amp; Pembiasaan
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Ruang kelas, perpustakaan, lab komputer, aula serbaguna.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditSettings({
+                        ...editSettings,
+                        facilityCat2Title: "Ruang Belajar & Pembiasaan",
+                        facilityCat2Desc: "Ruang kelas representatif dengan ventilasi optimal dan pencahayaan asri, laboratorium komputer untuk literasi digital santri, aula serbaguna, serta media peraga pembelajaran konkret dan interaktif.",
+                        facilityCat2Image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80"
+                      });
+                    }}
+                    className="text-[11px] font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-100/60 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Default</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Judul Kategori 2 *</label>
+                  <input
+                    type="text"
+                    value={editSettings.facilityCat2Title || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat2Title: e.target.value })}
+                    placeholder="Ruang Belajar & Pembiasaan"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Deskripsi Narasi Pengantar Kategori 2 *</label>
+                  <textarea
+                    rows={3}
+                    value={editSettings.facilityCat2Desc || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat2Desc: e.target.value })}
+                    placeholder="Deskripsi pengantar ruang kelas dan belajar..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <ThumbnailUploader
+                  label="Foto Utama / Banner Kategori 2"
+                  value={editSettings.facilityCat2Image || ''}
+                  onChange={val => setEditSettings({ ...editSettings, facilityCat2Image: val })}
+                  onUploadFile={(file, label) => handleFileUpload(file, val => setEditSettings({ ...editSettings, facilityCat2Image: val }), label)}
+                  aspectRatio="video"
+                  fit="cover"
+                  helperText="Foto representatif yang tampil di samping teks narasi kategori 2"
+                />
+              </div>
+
+              {/* Kategori 3 */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-teal-800 text-white text-xs font-bold flex items-center justify-center">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                        Kategori 3: Olahraga, Seni &amp; Pendukung
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Lapangan olahraga, area panahan, UKS, kantin sehat, lingkungan asri.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditSettings({
+                        ...editSettings,
+                        facilityCat3Title: "Olahraga, Seni & Pendukung",
+                        facilityCat3Desc: "Halaman terbuka hijau yang luas untuk apel, olahraga futsal, latihan memanah sunnah, kepanduan Hizbul Wathan/Pramuka, serta ekosistem lingkungan asri ramah anak yang bebas polusi.",
+                        facilityCat3Image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80"
+                      });
+                    }}
+                    className="text-[11px] font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-100/60 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Default</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Judul Kategori 3 *</label>
+                  <input
+                    type="text"
+                    value={editSettings.facilityCat3Title || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat3Title: e.target.value })}
+                    placeholder="Olahraga, Seni & Pendukung"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Deskripsi Narasi Pengantar Kategori 3 *</label>
+                  <textarea
+                    rows={3}
+                    value={editSettings.facilityCat3Desc || ''}
+                    onChange={e => setEditSettings({ ...editSettings, facilityCat3Desc: e.target.value })}
+                    placeholder="Deskripsi pengantar olahraga dan sarana pendukung..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                  />
+                </div>
+
+                <ThumbnailUploader
+                  label="Foto Utama / Banner Kategori 3"
+                  value={editSettings.facilityCat3Image || ''}
+                  onChange={val => setEditSettings({ ...editSettings, facilityCat3Image: val })}
+                  onUploadFile={(file, label) => handleFileUpload(file, val => setEditSettings({ ...editSettings, facilityCat3Image: val }), label)}
+                  aspectRatio="video"
+                  fit="cover"
+                  helperText="Foto representatif yang tampil di samping teks narasi kategori 3"
+                />
+              </div>
+
+              {/* Tombol Simpan */}
+              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                {settingsSaved ? (
+                  <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-800" />
+                    <span>Pengantar kategori fasilitas berhasil disimpan &amp; disinkronkan!</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-500">
+                    *Klik tombol simpan untuk memperbarui halaman Fasilitas publik secara langsung.
+                  </span>
+                )}
+
+                <button
+                  type="submit"
+                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Pengantar Fasilitas</span>
+                </button>
+              </div>
+            </form>
+          )}
+
             </div>
           </div>
         </div>
@@ -2401,6 +2982,22 @@ React.useEffect(() => {
           requestDelete={requestDelete}
           onSave={handleSaveSettings}
           settingsSaved={settingsSaved}
+          events={events}
+          onAddEvent={(newEvent) => {
+            dataService.addEvent(newEvent);
+          }}
+          onUpdateEvent={(id, updated) => {
+            dataService.updateEvent(id, updated);
+          }}
+          onDeleteEvent={(id, title) => {
+            requestDelete(
+              `Hapus Agenda "${title}"`,
+              `Apakah Anda yakin ingin menghapus agenda kegiatan "${title}"? Tindakan ini tidak dapat dibatalkan.`,
+              () => {
+                dataService.deleteEvent(id);
+              }
+            );
+          }}
         />
       )}
 
@@ -2911,8 +3508,8 @@ React.useEffect(() => {
 
           {eventsSubTab === 'list' && (
           <div className="space-y-3">
-            {events.map(ev => (
-              <div key={ev.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
+            {events.map((ev, idx) => (
+              <div key={`${ev.id}-${idx}`} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
@@ -2981,6 +3578,7 @@ React.useEffect(() => {
 
           {/* Rekening & QRIS Form */}
           {infaqSubTab === 'bank_qris' && (
+          <>
           <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
             <div className="border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900">
@@ -3040,55 +3638,117 @@ React.useEffect(() => {
               </div>
             </div>
 
-            {/* Bank Accounts */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-teal-800 uppercase">Rekening BSI</span>
-                <input
-                  type="text"
-                  value={editSettings.bankBsi?.accountNumber || ''}
-                  onChange={e => setEditSettings({
-                    ...editSettings,
-                    bankBsi: { ...editSettings.bankBsi, accountNumber: e.target.value }
-                  })}
-                  placeholder="Nomor Rekening BSI"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold bg-white"
-                />
-                <input
-                  type="text"
-                  value={editSettings.bankBsi?.holderName || ''}
-                  onChange={e => setEditSettings({
-                    ...editSettings,
-                    bankBsi: { ...editSettings.bankBsi, holderName: e.target.value }
-                  })}
-                  placeholder="Atas Nama"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                />
+            {/* Dynamic Bank Accounts Manager */}
+            <div className="space-y-4 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-emerald-800" />
+                    Daftar Rekening Bank Penyaluran Donasi
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Rekening resmi yang ditampilkan di halaman Infaq &amp; Wakaf website. Anda dapat menambah, mengubah, atau menghapus rekening secara fleksibel.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openAddBankModal}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors shrink-0 shadow-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Rekening Baru</span>
+                </button>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-xs font-bold text-purple-900 uppercase">Rekening BPD DIY Syariah</span>
-                <input
-                  type="text"
-                  value={editSettings.bankBpd?.accountNumber || ''}
-                  onChange={e => setEditSettings({
-                    ...editSettings,
-                    bankBpd: { ...editSettings.bankBpd, accountNumber: e.target.value }
-                  })}
-                  placeholder="Nomor Rekening BPD"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold bg-white"
-                />
-                <input
-                  type="text"
-                  value={editSettings.bankBpd?.holderName || ''}
-                  onChange={e => setEditSettings({
-                    ...editSettings,
-                    bankBpd: { ...editSettings.bankBpd, holderName: e.target.value }
-                  })}
-                  placeholder="Atas Nama"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                />
-              </div>
+              {(() => {
+                const currentAccounts: BankAccountItem[] = (editSettings.bankAccounts && editSettings.bankAccounts.length > 0)
+                  ? editSettings.bankAccounts
+                  : [
+                      ...(editSettings.bankBsi?.accountNumber ? [{
+                        id: 'bank-bsi',
+                        bankName: editSettings.bankBsi.bankName || 'Bank Syariah Indonesia (BSI)',
+                        accountNumber: editSettings.bankBsi.accountNumber || '',
+                        holderName: editSettings.bankBsi.holderName || "a.n. YAYASAN AL I'TISHAM PLAYEN",
+                        branch: editSettings.bankBsi.branch || 'Kode Bank: 451'
+                      }] : []),
+                      ...(editSettings.bankBpd?.accountNumber ? [{
+                        id: 'bank-bpd',
+                        bankName: editSettings.bankBpd.bankName || 'Bank BPD DIY Syariah',
+                        accountNumber: editSettings.bankBpd.accountNumber || '',
+                        holderName: editSettings.bankBpd.holderName || "a.n. SDQ UNGGULAN AL I'TISHAM",
+                        branch: editSettings.bankBpd.branch || 'Capem Gunungkidul'
+                      }] : [])
+                    ];
+
+                if (currentAccounts.length === 0) {
+                  return (
+                    <div className="p-8 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-slate-500 space-y-2">
+                      <CreditCard className="w-8 h-8 text-slate-400 mx-auto" />
+                      <p className="text-xs font-semibold">Belum ada rekening bank yang dikonfigurasi.</p>
+                      <p className="text-[11px] text-slate-400">Klik "Tambah Rekening Baru" untuk menambahkan rekening pertama.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {currentAccounts.map((account, idx) => (
+                      <div
+                        key={account.id || idx}
+                        className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-colors flex flex-col justify-between gap-3"
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-[10px]">
+                                {idx + 1}
+                              </span>
+                              <span className="text-xs font-bold text-slate-900 truncate">
+                                {account.bankName}
+                              </span>
+                            </div>
+                            {account.branch && (
+                              <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                {account.branch}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 space-y-0.5">
+                            <div className="text-sm font-mono font-bold text-slate-900 tracking-wider">
+                              {account.accountNumber}
+                            </div>
+                            <div className="text-[11px] text-slate-600 font-medium truncate">
+                              a.n. {account.holderName}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/60">
+                          <button
+                            type="button"
+                            onClick={() => openEditBankModal(account)}
+                            className="px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-emerald-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg flex items-center gap-1 transition-colors"
+                            title="Edit Rekening"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBankAccount(account.id, account.bankName)}
+                            className="px-2.5 py-1 text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 transition-colors"
+                            title="Hapus Rekening"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex justify-end pt-2">
@@ -3097,10 +3757,101 @@ React.useEffect(() => {
                 className="bg-emerald-900 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
               >
                 <Save className="w-4 h-4" />
-                <span>Simpan Rekening &amp; QRIS</span>
+                <span>Simpan Pengaturan Infaq &amp; QRIS</span>
               </button>
             </div>
           </form>
+
+          {/* Modal Input/Edit Rekening Bank */}
+          {bankModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2 text-slate-900">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-base font-bold">
+                      {editingBankId ? 'Edit Rekening Bank' : 'Tambah Rekening Bank Baru'}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setBankModalOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveBankAccount} className="space-y-3.5 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700">Nama Bank *</label>
+                    <input
+                      type="text"
+                      required
+                      value={bankFormName}
+                      onChange={e => setBankFormName(e.target.value)}
+                      placeholder="Contoh: Bank Syariah Indonesia (BSI)"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700">Nomor Rekening *</label>
+                    <input
+                      type="text"
+                      required
+                      value={bankFormNumber}
+                      onChange={e => setBankFormNumber(e.target.value)}
+                      placeholder="Contoh: 712-345-6789"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700">Atas Nama Pemilik Rekening *</label>
+                    <input
+                      type="text"
+                      required
+                      value={bankFormHolder}
+                      onChange={e => setBankFormHolder(e.target.value)}
+                      placeholder="Contoh: a.n. YAYASAN AL I'TISHAM PLAYEN"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700">Kantor Cabang / Keterangan (Opsional)</label>
+                    <input
+                      type="text"
+                      value={bankFormBranch}
+                      onChange={e => setBankFormBranch(e.target.value)}
+                      placeholder="Contoh: Capem Gunungkidul atau Kode Bank: 451"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setBankModalOpen(false)}
+                      className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white font-bold transition-colors shadow-xs"
+                    >
+                      Simpan Rekening
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+          </>
           )}
 
           {/* Tabel Riwayat Infaq */}
@@ -3541,7 +4292,7 @@ React.useEffect(() => {
       )}
 
       {/* MODAL KONFIRMASI HAPUS NON-BLOCKING (Mencegah kendala confirm() di iframe) */}
-      {deleteModal && (
+      {deleteModal && deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 border border-slate-200 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">

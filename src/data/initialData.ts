@@ -166,6 +166,22 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   heroCardCurriculumTitle: "Kurikulum Terintegrasi",
   heroCardCurriculumSubtitle: "Kemendikbud • Kemenag • Pesantren",
   heroCardButtonText: "Kenali Lebih Dekat Sekolah Kami",
+  bankAccounts: [
+    {
+      id: "bank-bsi",
+      bankName: "Bank Syariah Indonesia (BSI)",
+      accountNumber: "7211-9876-54",
+      holderName: "YAYASAN AL I'TISHAM PLAYEN",
+      branch: "Kantor Cabang Wonosari (Kode: 451)"
+    },
+    {
+      id: "bank-bpd",
+      bankName: "Bank BPD DIY Syariah",
+      accountNumber: "801-211-009876",
+      holderName: "SDQ UNGGULAN AL I'TISHAM",
+      branch: "Capem Gunungkidul (Kode: 112)"
+    }
+  ],
   bankBsi: {
     bankName: "Bank Syariah Indonesia (BSI)",
     accountNumber: "7211-9876-54",
@@ -439,6 +455,19 @@ export const INITIAL_SETTINGS: SchoolSettings = {
       description: "Pusat ruhaniyah sekolah yang bersih dan sejuk untuk pembiasaan shalat berjamaah, halaqah Qur'an, dan tasmi'."
     }
   ],
+
+  // 3 Kategori Pengantar Fasilitas
+  facilityCat1Title: "Sarana Ibadah & Al-Qur'an",
+  facilityCat1Desc: "Pusat pembinaan ruhiyah santri berupa masjid yang sejuk dan bersih, area wudhu higienis terpisah ikhwan-akhwat, serta ruang halaqah tahfidzul Qur'an yang kondusif untuk kelancaran talaqqi dan muroja'ah.",
+  facilityCat1Image: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=80",
+
+  facilityCat2Title: "Ruang Belajar & Pembiasaan",
+  facilityCat2Desc: "Ruang kelas representatif dengan ventilasi optimal dan pencahayaan asri, laboratorium komputer untuk literasi digital santri, aula serbaguna, serta media peraga pembelajaran konkret dan interaktif.",
+  facilityCat2Image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
+
+  facilityCat3Title: "Olahraga, Seni & Pendukung",
+  facilityCat3Desc: "Halaman terbuka hijau yang luas untuk apel, olahraga futsal, latihan memanah sunnah, kepanduan Hizbul Wathan/Pramuka, serta ekosistem lingkungan asri ramah anak yang bebas polusi.",
+  facilityCat3Image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80",
 
   // Infaq
   infaqBadge: "INFAQ, WAKAF & SEDEKAH PENDIDIKAN",

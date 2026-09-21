@@ -63,10 +63,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
   const isRunningTextVisible = settings.runningTextEnabled !== false && displayRunningText.trim().length > 0;
 
   return (
-    <div className="space-y-10 sm:space-y-16 pb-12">
+    <div className="space-y-6 sm:space-y-10 pb-10">
       {/* FITUR 2: Running Text (Marquee) Bar - Sticky di Bawah Navbar saat Scroll */}
       {isRunningTextVisible && (
-        <div className="sticky top-16 sm:top-20 z-40 bg-emerald-950/95 backdrop-blur-md text-emerald-100 py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-md transition-all">
+        <div className="sticky top-16 sm:top-20 z-40 bg-emerald-950/95 backdrop-blur-md text-emerald-100 py-2 sm:py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-md transition-all">
           <div className="max-w-7xl mx-auto flex items-center gap-3">
             <div className="flex items-center gap-1.5 bg-amber-500 text-emerald-950 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] tracking-wide shrink-0 shadow-xs">
               <Megaphone className="w-3 h-3" />
@@ -105,10 +105,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
         </div>
       )}
 
-      {/* HERO SECTION */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[440px] sm:min-h-[500px] lg:min-h-[560px] flex items-center p-5 sm:p-8 lg:p-12 shadow-2xl">
-          {/* FITUR 1: Background images cross-fade slideshow */}
+      {/* HERO SECTION - Presisi & Ringkas Vertikal */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white min-h-[320px] sm:min-h-[360px] lg:min-h-[390px] flex items-center p-4 sm:p-6 lg:py-7 lg:px-8 shadow-xl">
+          {/* Background images cross-fade slideshow - Foto tetap full-width & lebih jelas terlihat */}
           {heroImagesList.map((imgUrl, idx) => {
             const isActive = idx === currentHeroIndex;
             return (
@@ -117,8 +117,8 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 src={getOptimizedImageUrl(imgUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1600&q=80")}
                 alt={`Hero Slide ${idx + 1}`}
                 referrerPolicy="no-referrer"
-                className={`absolute inset-0 w-full h-full object-cover mix-blend-luminosity pointer-events-none transition-opacity duration-1000 ease-in-out ${
-                  isActive ? 'opacity-30' : 'opacity-0'
+                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-1000 ease-in-out ${
+                  isActive ? 'opacity-40' : 'opacity-0'
                 }`}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
@@ -130,15 +130,15 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
 
           {/* Indikator Slide Foto (jika lebih dari 1 foto) */}
           {heroImagesList.length > 1 && (
-            <div className="absolute bottom-4 right-6 z-20 hidden sm:flex items-center gap-1.5 bg-emerald-950/70 backdrop-blur-xs px-3 py-1.5 rounded-full border border-white/20 shadow-lg">
-              <span className="text-[10px] text-emerald-200 font-bold mr-1">Slide</span>
+            <div className="absolute bottom-3 right-5 z-20 hidden sm:flex items-center gap-1.5 bg-emerald-950/70 backdrop-blur-xs px-2.5 py-1 rounded-full border border-white/20 shadow-sm">
+              <span className="text-[9px] text-emerald-200 font-bold mr-0.5">Slide</span>
               {heroImagesList.map((_, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setCurrentHeroIndex(i)}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === currentHeroIndex ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                    i === currentHeroIndex ? 'w-4 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
                   }`}
                   aria-label={`Slide ${i + 1}`}
                 />
@@ -146,21 +146,22 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
             </div>
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/80 to-transparent pointer-events-none" />
+          {/* Gradien Overlay Presisi (Foto tetap jelas di kanan, teks tajam kontras di kiri) */}
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/75 to-emerald-950/30 pointer-events-none" />
 
           {/* Hero Content Grid */}
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center w-full">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center w-full">
             
-            {/* Left Headline (7 cols) */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-emerald-800/80 border border-emerald-600/50 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold text-emerald-200 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            {/* Left Headline (7 cols) - Ringkas 1-2 baris */}
+            <div className="lg:col-span-7 space-y-2.5 sm:space-y-3.5">
+              {/* Badge Kecil */}
+              <div className="inline-flex items-center gap-1.5 bg-emerald-800/80 border border-emerald-600/50 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold text-emerald-200 backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                 <span>{settings.heroBadge}</span>
               </div>
 
-              {/* Title - Responsive & Balanced on Mobile */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.25] font-['Plus_Jakarta_Sans',sans-serif] break-words">
+              {/* Title - Headline 1-2 baris presisi */}
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-extrabold tracking-tight text-white leading-snug font-['Plus_Jakarta_Sans',sans-serif] break-words">
                 {settings.heroHeadline || (
                   <>
                     Mencetak Generasi <span className="text-amber-400">Qur'ani</span>, Berakhlak Mulia &amp; <span className="text-emerald-300">Unggul Prestasi</span>.
@@ -168,65 +169,95 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 )}
               </h1>
 
-              {/* Subtitle */}
-              <p className="text-slate-200 text-xs sm:text-sm lg:text-base leading-relaxed max-w-2xl font-normal break-words">
+              {/* Subtitle - 1 paragraf pendek */}
+              <p className="text-slate-200 text-xs sm:text-sm leading-relaxed max-w-xl font-normal line-clamp-2 break-words">
                 {settings.heroSubtitle}
               </p>
 
-              {/* CTA Buttons */}
-              <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-4">
+              {/* CTA Buttons - Lebih Ringkas */}
+              <div className="pt-0.5 flex flex-wrap items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setActivePage('spmb')}
-                  className="bg-[#d97706] hover:bg-[#b45309] text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 transform hover:-translate-y-0.5"
+                  className="bg-[#d97706] hover:bg-[#b45309] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1.5 transform hover:-translate-y-0.5"
                 >
                   <span>Daftar SPMB Online</span>
-                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
 
                 <button
                   onClick={() => setShowVideoModal(true)}
-                  className="bg-white/15 hover:bg-white/25 text-white border border-white/25 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-md transition-all flex items-center gap-2"
+                  className="bg-white/15 hover:bg-white/25 text-white border border-white/25 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-md transition-all flex items-center gap-1.5"
                 >
-                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
+                  <BookOpen className="w-3.5 h-3.5 text-amber-300" />
                   <span>{settings.heroSecondaryBtnText || "Kenali Selayang Pandang"}</span>
                 </button>
               </div>
 
-              {/* Bottom Social Proof Badge - Editable & Hideable by Admin */}
+              {/* Bottom Social Proof Badge - Responsive on mobile */}
               {settings.heroAlumniStat && settings.heroAlumniStat.trim().length > 0 && (
-                <div className="pt-2 sm:pt-4 flex items-center gap-2.5 sm:gap-3 text-[11px] sm:text-xs text-slate-300">
-                  <div className="flex -space-x-1.5 sm:-space-x-2 shrink-0">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-700 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                <div className="pt-1 flex flex-row items-center gap-2 text-[10px] sm:text-xs text-slate-300">
+                  <div className="flex -space-x-1 shrink-0">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-700 border-2 border-emerald-950 flex items-center justify-center font-extrabold text-[7px] sm:text-[8px] text-white shadow-xs" title="Target 30 Juz">
                       30J
                     </div>
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-600 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-600 border-2 border-emerald-950 flex items-center justify-center font-extrabold text-[7px] sm:text-[8px] text-white shadow-xs" title="Akreditasi A Unggul">
                       ★A
                     </div>
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-teal-600 border-2 border-emerald-950 flex items-center justify-center font-bold text-[9px] text-white">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal-600 border-2 border-emerald-950 flex items-center justify-center font-extrabold text-[7px] sm:text-[8px] text-white shadow-xs" title="Rasio 1:12">
                       1:12
                     </div>
                   </div>
-                  <span className="font-medium text-slate-300 leading-snug">
+                  <span className="font-medium text-emerald-100/90 leading-tight text-[10px] sm:text-xs">
                     {settings.heroAlumniStat}
                   </span>
                 </div>
               )}
+
+              {/* Mobile Compact Accreditation Badge */}
+              <div className="lg:hidden w-full pt-1">
+                <div className="bg-emerald-900/80 border border-emerald-700/60 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between gap-2.5 text-white shadow-md">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-amber-400 text-emerald-950 flex items-center justify-center shrink-0 font-extrabold text-xs shadow-xs">
+                      {settings.heroCardStatNumber || "15+"}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-white flex items-center gap-1 truncate">
+                        <span>{settings.heroCardBadge || "AKREDITASI A UNGGUL"}</span>
+                        <span className="text-[9px] bg-amber-400/20 text-amber-300 font-bold px-1.5 py-0.2 rounded">
+                          ★ {settings.heroCardRating || "4.9/5.0"}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-emerald-200/90 truncate">
+                        {settings.heroCardCurriculumSubtitle || "Kemendikbud • Kemenag • Pesantren"}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActivePage('profil')}
+                    className="shrink-0 text-[10px] font-bold text-amber-300 hover:text-amber-200 flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2 py-1 rounded-md transition-colors"
+                  >
+                    <span>Profil</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Right Floating Card (5 cols) - Fully Editable by Admin */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end w-full mt-4 lg:mt-0">
-              <div className="bg-white text-slate-900 rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 max-w-md w-full space-y-4 sm:space-y-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-300">
+            {/* Right Floating Card (5 cols) - Sleek & Compact on Desktop */}
+            <div className="hidden lg:flex lg:col-span-5 justify-center lg:justify-end w-full">
+              <div className="bg-white/95 backdrop-blur-sm text-slate-900 rounded-2xl p-4 sm:p-5 shadow-xl border border-white/20 max-w-sm w-full space-y-3 transform lg:rotate-1 hover:rotate-0 transition-transform duration-300">
                 
                 {/* Accreditation Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                    <span className="text-[11px] sm:text-xs font-bold tracking-wider text-emerald-900 uppercase">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    <span className="text-[10px] font-bold tracking-wider text-emerald-900 uppercase">
                       {settings.heroCardBadge || "AKREDITASI A UNGGUL"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-amber-500 text-xs font-extrabold bg-amber-50 px-2 py-0.5 rounded-md">
-                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                    <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
                     <span>{settings.heroCardRating || "4.9 / 5.0"}</span>
                   </div>
                 </div>
@@ -234,28 +265,28 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 {/* Big Number */}
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-emerald-950 tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-emerald-950 tracking-tight">
                       {settings.heroCardStatNumber || "15+"}
                     </span>
-                    <span className="text-sm sm:text-base font-bold text-slate-700">
+                    <span className="text-xs sm:text-sm font-bold text-slate-700">
                       {settings.heroCardStatLabel || "Tahun Pengabdian"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 mt-1 leading-relaxed line-clamp-2">
                     {settings.heroCardDescription || "Membangun peradaban mulia dari Playen, menyemaikan tahfidz & hafizhah mutqin berintelektual sains modern sejak tahun 2010."}
                   </p>
                 </div>
 
                 {/* Curriculums Integrated Box */}
-                <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-2xl p-3.5 sm:p-4 flex items-center gap-3">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0">
-                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="bg-emerald-50/80 border border-emerald-200/60 rounded-xl p-2.5 flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4" />
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-emerald-950">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold text-emerald-950 truncate">
                       {settings.heroCardCurriculumTitle || "Kurikulum Terintegrasi"}
                     </div>
-                    <div className="text-[11px] text-emerald-800 font-medium">
+                    <div className="text-[10px] text-emerald-800 font-medium truncate">
                       {settings.heroCardCurriculumSubtitle || "Kemendikbud • Kemenag • Pesantren"}
                     </div>
                   </div>
@@ -264,10 +295,10 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 {/* Direct Action Link */}
                 <button
                   onClick={() => setActivePage('profil')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                 >
                   <span>{settings.heroCardButtonText || "Kenali Lebih Dekat Sekolah Kami"}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-emerald-800" />
+                  <ArrowRight className="w-3 h-3 text-emerald-800" />
                 </button>
               </div>
             </div>
@@ -277,73 +308,64 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
       </section>
 
       {/* STATS RIBBON (Dark Forest Green #064e3b) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-emerald-950 rounded-2xl sm:rounded-3xl text-white p-6 sm:p-8 shadow-xl">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/80">
-            
-            {/* Stat 1 */}
-            <div className="flex items-center gap-3 sm:gap-4 pt-4 first:pt-0 lg:pt-0 lg:px-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  {settings.heroStatsRibbon?.stat1Val || "1.200+"}
-                </div>
-                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  {settings.heroStatsRibbon?.stat1Label || "Santri Aktif & Alumni"}
-                </div>
+      {(() => {
+        const stats = [
+          {
+            icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />,
+            val: settings.heroStatsRibbon?.stat1Val !== undefined ? settings.heroStatsRibbon.stat1Val : "1.200+",
+            label: settings.heroStatsRibbon?.stat1Label !== undefined ? settings.heroStatsRibbon.stat1Label : "Santri Aktif & Alumni"
+          },
+          {
+            icon: <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
+            val: settings.heroStatsRibbon?.stat2Val !== undefined ? settings.heroStatsRibbon.stat2Val : "100%",
+            label: settings.heroStatsRibbon?.stat2Label !== undefined ? settings.heroStatsRibbon.stat2Label : "Target Tahfidz Mutqin"
+          },
+          {
+            icon: <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />,
+            val: settings.heroStatsRibbon?.stat3Val !== undefined ? settings.heroStatsRibbon.stat3Val : "45+",
+            label: settings.heroStatsRibbon?.stat3Label !== undefined ? settings.heroStatsRibbon.stat3Label : "Asatidz Bersanad"
+          },
+          {
+            icon: <Award className="w-5 h-5 sm:w-6 sm:h-6" />,
+            val: settings.heroStatsRibbon?.stat4Val !== undefined ? settings.heroStatsRibbon.stat4Val : "25+",
+            label: settings.heroStatsRibbon?.stat4Label !== undefined ? settings.heroStatsRibbon.stat4Label : "Prestasi Tingkat DIY & Nas"
+          }
+        ].filter(s => s.val.trim() !== '' || s.label.trim() !== '');
+
+        if (stats.length === 0) return null;
+
+        const gridCols = stats.length === 1 
+          ? 'grid-cols-1' 
+          : stats.length === 2 
+            ? 'grid-cols-2' 
+            : stats.length === 3 
+              ? 'grid-cols-1 sm:grid-cols-3' 
+              : 'grid-cols-2 lg:grid-cols-4';
+
+        return (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-emerald-950 rounded-2xl sm:rounded-3xl text-white p-6 sm:p-8 shadow-xl">
+              <div className={`grid ${gridCols} gap-6 sm:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/80`}>
+                {stats.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3 sm:gap-4 pt-4 first:pt-0 lg:pt-0 lg:px-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+                        {item.val}
+                      </div>
+                      <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
+                        {item.label}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Stat 2 */}
-            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  {settings.heroStatsRibbon?.stat2Val || "100%"}
-                </div>
-                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  {settings.heroStatsRibbon?.stat2Label || "Target Tahfidz Mutqin"}
-                </div>
-              </div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
-                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  {settings.heroStatsRibbon?.stat3Val || "45+"}
-                </div>
-                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  {settings.heroStatsRibbon?.stat3Label || "Asatidz Bersanad"}
-                </div>
-              </div>
-            </div>
-
-            {/* Stat 4 */}
-            <div className="flex items-center gap-3 sm:gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-700/50">
-                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-                  {settings.heroStatsRibbon?.stat4Val || "25+"}
-                </div>
-                <div className="text-[11px] sm:text-xs text-emerald-300 font-medium">
-                  {settings.heroStatsRibbon?.stat4Label || "Prestasi Tingkat DIY & Nas"}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* WHY CHOOSE US (MENGAPA MEMPERCAYAKAN) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

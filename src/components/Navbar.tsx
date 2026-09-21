@@ -27,20 +27,40 @@ const KEGIATAN_SUB_ITEMS: { id: 'semua' | 'harian' | 'berkala' | 'ekskul'; label
   { id: 'ekskul', label: 'Ekstrakurikuler Pilihan' }
 ];
 
+const FASILITAS_SUB_ITEMS: { id: 'semua' | 'ibadah' | 'belajar' | 'olahraga'; label: string }[] = [
+  { id: 'semua', label: 'Semua Fasilitas' },
+  { id: 'ibadah', label: "Sarana Ibadah & Al-Qur'an" },
+  { id: 'belajar', label: 'Ruang Belajar & Pembiasaan' },
+  { id: 'olahraga', label: 'Olahraga, Seni & Pendukung' }
+];
+
+interface NavbarProps {
+  activePage: ActivePage;
+  setActivePage: (page: ActivePage) => void;
+  settings: SchoolSettings;
+  isAdminLoggedIn?: boolean;
+  onSelectKegiatanTab?: (tab: 'semua' | 'harian' | 'berkala' | 'ekskul') => void;
+  onSelectFasilitasCategory?: (category: 'semua' | 'ibadah' | 'belajar' | 'olahraga') => void;
+}
+
 export const Navbar: React.FC<NavbarProps> = ({
   activePage,
   setActivePage,
   settings,
   isAdminLoggedIn = false,
-  onSelectKegiatanTab
+  onSelectKegiatanTab,
+  onSelectFasilitasCategory
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopProfilOpen, setDesktopProfilOpen] = useState(false);
   const [mobileProfilOpen, setMobileProfilOpen] = useState(false);
   const [desktopKegiatanOpen, setDesktopKegiatanOpen] = useState(false);
   const [mobileKegiatanOpen, setMobileKegiatanOpen] = useState(false);
+  const [desktopFasilitasOpen, setDesktopFasilitasOpen] = useState(false);
+  const [mobileFasilitasOpen, setMobileFasilitasOpen] = useState(false);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
   const desktopKegiatanDropdownRef = useRef<HTMLDivElement>(null);
+  const desktopFasilitasDropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems: { id: ActivePage; label: string }[] = [
     { id: 'beranda', label: 'Beranda' },
@@ -60,6 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (desktopKegiatanDropdownRef.current && !desktopKegiatanDropdownRef.current.contains(e.target as Node)) {
         setDesktopKegiatanOpen(false);
       }
+      if (desktopFasilitasDropdownRef.current && !desktopFasilitasDropdownRef.current.contains(e.target as Node)) {
+        setDesktopFasilitasOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -72,6 +95,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileProfilOpen(false);
     setDesktopKegiatanOpen(false);
     setMobileKegiatanOpen(false);
+    setDesktopFasilitasOpen(false);
+    setMobileFasilitasOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -82,6 +107,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileProfilOpen(false);
     setDesktopKegiatanOpen(false);
     setMobileKegiatanOpen(false);
+    setDesktopFasilitasOpen(false);
+    setMobileFasilitasOpen(false);
 
     // Allow DOM to update and mount ProfilView if not already on profil
     setTimeout(() => {
@@ -102,10 +129,38 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileProfilOpen(false);
     setDesktopKegiatanOpen(false);
     setMobileKegiatanOpen(false);
+    setDesktopFasilitasOpen(false);
+    setMobileFasilitasOpen(false);
 
     // Allow DOM to update and navigate to Kegiatan with selected category
     setTimeout(() => {
       const element = document.getElementById('kegiatan-filter-nav');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 120);
+  };
+
+  const handleFasilitasCategoryClick = (subId: 'semua' | 'ibadah' | 'belajar' | 'olahraga') => {
+    if (onSelectFasilitasCategory) {
+      onSelectFasilitasCategory(subId);
+    }
+    setActivePage('fasilitas');
+    setMobileMenuOpen(false);
+    setDesktopProfilOpen(false);
+    setMobileProfilOpen(false);
+    setDesktopKegiatanOpen(false);
+    setMobileKegiatanOpen(false);
+    setDesktopFasilitasOpen(false);
+    setMobileFasilitasOpen(false);
+
+    // Allow DOM to update and navigate to Fasilitas with selected category
+    setTimeout(() => {
+      const element = subId === 'semua' 
+        ? document.getElementById('fasilitas-header-section') 
+        : document.getElementById(`fasilitas-cat-${subId}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
@@ -265,6 +320,61 @@ export const Navbar: React.FC<NavbarProps> = ({
                 );
               }
 
+              if (item.id === 'fasilitas') {
+                return (
+                  <div
+                    key={item.id}
+                    ref={desktopFasilitasDropdownRef}
+                    className="relative"
+                    onMouseEnter={() => setDesktopFasilitasOpen(true)}
+                    onMouseLeave={() => setDesktopFasilitasOpen(false)}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('fasilitas')}
+                      className={`px-4 py-2 rounded-full text-xs font-semibold tracking-normal transition-all duration-200 flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-emerald-900 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-emerald-900 hover:bg-slate-200/60'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                          desktopFasilitasOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {/* Dropdown Menu Fasilitas */}
+                    {desktopFasilitasOpen && (
+                      <div className="absolute top-full left-0 pt-2 w-64 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div className="bg-white rounded-2xl shadow-xl border border-emerald-100/80 py-2 overflow-hidden ring-1 ring-black/5">
+                          <div className="px-3.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800/80 border-b border-slate-100 mb-1 flex items-center justify-between">
+                            <span>Kategori Fasilitas</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          </div>
+                          {FASILITAS_SUB_ITEMS.map(sub => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleFasilitasCategoryClick(sub.id);
+                              }}
+                              className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-emerald-950 hover:bg-emerald-50/80 flex items-center justify-between group transition-colors"
+                            >
+                              <span className="group-hover:translate-x-0.5 transition-transform">{sub.label}</span>
+                              <ArrowRight className="w-3 h-3 text-slate-300 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <button
                   key={item.id}
@@ -339,6 +449,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => {
                       setMobileProfilOpen(!mobileProfilOpen);
                       setMobileKegiatanOpen(false);
+                      setMobileFasilitasOpen(false);
                     }}
                     className={`py-2.5 px-4 rounded-xl text-center text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                       isActive || mobileProfilOpen
@@ -360,6 +471,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => {
                       setMobileKegiatanOpen(!mobileKegiatanOpen);
                       setMobileProfilOpen(false);
+                      setMobileFasilitasOpen(false);
                     }}
                     className={`py-2.5 px-4 rounded-xl text-center text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                       isActive || mobileKegiatanOpen
@@ -369,6 +481,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <span>{item.label}</span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${mobileKegiatanOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                );
+              }
+
+              if (item.id === 'fasilitas') {
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setMobileFasilitasOpen(!mobileFasilitasOpen);
+                      setMobileProfilOpen(false);
+                      setMobileKegiatanOpen(false);
+                    }}
+                    className={`py-2.5 px-4 rounded-xl text-center text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
+                      isActive || mobileFasilitasOpen
+                        ? 'bg-emerald-900 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${mobileFasilitasOpen ? 'rotate-180' : ''}`} />
                   </button>
                 );
               }
@@ -437,6 +571,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                     key={sub.id}
                     type="button"
                     onClick={() => handleKegiatanCategoryClick(sub.id)}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white hover:text-emerald-950 flex items-center justify-between transition-colors bg-white/70 shadow-2xs"
+                  >
+                    <span>{sub.label}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sub-Menu Fasilitas di Mobile */}
+          {mobileFasilitasOpen && (
+            <div className="bg-emerald-50/70 rounded-2xl p-3 border border-emerald-200/70 space-y-1.5 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between px-2 pb-1.5 border-b border-emerald-200/80 text-[11px] font-bold text-emerald-950">
+                <span>Pilih Kategori Fasilitas:</span>
+                <button
+                  type="button"
+                  onClick={() => handleNavClick('fasilitas')}
+                  className="text-[10px] text-emerald-700 hover:text-emerald-900 underline font-semibold"
+                >
+                  Buka Halaman Utama &rarr;
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 pt-1">
+                {FASILITAS_SUB_ITEMS.map(sub => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => handleFasilitasCategoryClick(sub.id)}
                     className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white hover:text-emerald-950 flex items-center justify-between transition-colors bg-white/70 shadow-2xs"
                   >
                     <span>{sub.label}</span>

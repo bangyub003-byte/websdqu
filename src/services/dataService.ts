@@ -1,5 +1,6 @@
 import {
   Announcement,
+  BankAccountItem,
   EventItem,
   FacilityItem,
   GalleryItem,
@@ -119,6 +120,63 @@ function dedupeById<T extends { id: string }>(items: T[]): T[] {
   });
   return Array.from(map.values());
 }
+
+/**
+ * Migrasi rekening bank: Otomatis konversi format lama (bankBsi / bankBpd)
+ * menjadi array fleksibel bankAccounts agar data rekening yang ada tidak hilang.
+ */
+export function migrateBankAccounts(
+  bankAccounts?: BankAccountItem[],
+  bankBsi?: { bankName?: string; accountNumber?: string; holderName?: string; branch?: string },
+  bankBpd?: { bankName?: string; accountNumber?: string; holderName?: string; branch?: string }
+): BankAccountItem[] {
+  if (Array.isArray(bankAccounts) && bankAccounts.length > 0) {
+    return bankAccounts;
+  }
+
+  const migrated: BankAccountItem[] = [];
+  if (bankBsi && (bankBsi.accountNumber || bankBsi.holderName || bankBsi.bankName)) {
+    migrated.push({
+      id: 'bank-bsi',
+      bankName: bankBsi.bankName || 'Bank Syariah Indonesia (BSI)',
+      accountNumber: bankBsi.accountNumber || '7211-9876-54',
+      holderName: bankBsi.holderName || "YAYASAN AL I'TISHAM PLAYEN",
+      branch: bankBsi.branch || 'Kantor Cabang Wonosari (Kode: 451)'
+    });
+  }
+  if (bankBpd && (bankBpd.accountNumber || bankBpd.holderName || bankBpd.bankName)) {
+    migrated.push({
+      id: 'bank-bpd',
+      bankName: bankBpd.bankName || 'Bank BPD DIY Syariah',
+      accountNumber: bankBpd.accountNumber || '801-211-009876',
+      holderName: bankBpd.holderName || "SDQ UNGGULAN AL I'TISHAM",
+      branch: bankBpd.branch || 'Capem Gunungkidul (Kode: 112)'
+    });
+  }
+
+  if (migrated.length === 0) {
+    return (INITIAL_SETTINGS.bankAccounts && INITIAL_SETTINGS.bankAccounts.length > 0)
+      ? INITIAL_SETTINGS.bankAccounts
+      : [
+          {
+            id: 'bank-bsi',
+            bankName: 'Bank Syariah Indonesia (BSI)',
+            accountNumber: '7211-9876-54',
+            holderName: "YAYASAN AL I'TISHAM PLAYEN",
+            branch: 'Kantor Cabang Wonosari (Kode: 451)'
+          },
+          {
+            id: 'bank-bpd',
+            bankName: 'Bank BPD DIY Syariah',
+            accountNumber: '801-211-009876',
+            holderName: "SDQ UNGGULAN AL I'TISHAM",
+            branch: 'Capem Gunungkidul (Kode: 112)'
+          }
+        ];
+  }
+  return migrated;
+}
+
 type Listener = () => void;
 
 class DataService {
@@ -140,10 +198,17 @@ class DataService {
   constructor() {
     // Load from localStorage or initialize with initialData
     const loadedSettings = this.load<SchoolSettings>(STORAGE_KEYS.SETTINGS, INITIAL_SETTINGS);
+    const resolvedBankAccounts = migrateBankAccounts(
+      loadedSettings?.bankAccounts,
+      loadedSettings?.bankBsi,
+      loadedSettings?.bankBpd
+    );
+
     // Ensure all new fields exist if loaded from older structure
     this.settings = {
       ...INITIAL_SETTINGS,
       ...loadedSettings,
+      bankAccounts: resolvedBankAccounts,
       heroAlumniStat: loadedSettings?.heroAlumniStat !== undefined ? loadedSettings.heroAlumniStat : INITIAL_SETTINGS.heroAlumniStat,
       heroCardBadge: loadedSettings?.heroCardBadge || INITIAL_SETTINGS.heroCardBadge,
       heroCardRating: loadedSettings?.heroCardRating || INITIAL_SETTINGS.heroCardRating,
@@ -172,14 +237,23 @@ class DataService {
       achievements: loadedSettings?.achievements?.length ? loadedSettings.achievements : INITIAL_SETTINGS.achievements,
       missions: loadedSettings?.missions?.length ? loadedSettings.missions : INITIAL_SETTINGS.missions
     };
-    this.announcements = this.load(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
-    this.news = this.load(STORAGE_KEYS.NEWS, INITIAL_NEWS);
-    this.events = this.load(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
-    this.teachers = this.load(STORAGE_KEYS.TEACHERS, INITIAL_TEACHERS);
-    this.facilities = this.load(STORAGE_KEYS.FACILITIES, INITIAL_FACILITIES);
-    this.gallery = this.load(STORAGE_KEYS.GALLERY, INITIAL_GALLERY);
-    this.ppdb = this.load(STORAGE_KEYS.PPDB, INITIAL_PPDB);
-    this.infaqConfirmations = this.load(STORAGE_KEYS.INFAQ, []);
+    this.announcements = dedupeById(this.load(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS));
+    this.news = dedupeById(this.load(STORAGE_KEYS.NEWS, INITIAL_NEWS));
+    this.events = dedupeById(this.load(STORAGE_KEYS.EVENTS, INITIAL_EVENTS));
+    this.teachers = dedupeById(this.load(STORAGE_KEYS.TEACHERS, INITIAL_TEACHERS));
+    this.facilities = dedupeById(this.load(STORAGE_KEYS.FACILITIES, INITIAL_FACILITIES));
+    this.gallery = dedupeById(this.load(STORAGE_KEYS.GALLERY, INITIAL_GALLERY));
+    this.ppdb = dedupeById(this.load(STORAGE_KEYS.PPDB, INITIAL_PPDB));
+    this.infaqConfirmations = dedupeById(this.load(STORAGE_KEYS.INFAQ, []));
+
+    // Sanitasi penyimpanan lokal dari duplikasi id yang mungkin tersimpan sebelumnya
+    this.saveLocalOnly(STORAGE_KEYS.EVENTS, this.events);
+    this.saveLocalOnly(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
+    this.saveLocalOnly(STORAGE_KEYS.NEWS, this.news);
+    this.saveLocalOnly(STORAGE_KEYS.TEACHERS, this.teachers);
+    this.saveLocalOnly(STORAGE_KEYS.FACILITIES, this.facilities);
+    this.saveLocalOnly(STORAGE_KEYS.GALLERY, this.gallery);
+    this.saveLocalOnly(STORAGE_KEYS.PPDB, this.ppdb);
     const savedUrl = localStorage.getItem(STORAGE_KEYS.APPS_SCRIPT_URL);
     this.appsScriptUrl = (savedUrl && savedUrl.trim() !== '') ? savedUrl.trim() : GOOGLE_CONFIG.APPS_SCRIPT_DEFAULT_URL;
     if (!savedUrl && this.appsScriptUrl) {
@@ -226,12 +300,14 @@ class DataService {
   public reloadFromStorage(): void {
     const loadedSettings = this.load<SchoolSettings>(STORAGE_KEYS.SETTINGS, INITIAL_SETTINGS);
     this.settings = { ...INITIAL_SETTINGS, ...loadedSettings };
-    this.announcements = this.load(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
-    this.news = this.load(STORAGE_KEYS.NEWS, INITIAL_NEWS);
-    this.events = this.load(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
-    this.teachers = this.load(STORAGE_KEYS.TEACHERS, INITIAL_TEACHERS);
-    this.facilities = this.load(STORAGE_KEYS.FACILITIES, INITIAL_FACILITIES);
-    this.infaqConfirmations = this.load(STORAGE_KEYS.INFAQ, []);
+    this.announcements = dedupeById(this.load(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS));
+    this.news = dedupeById(this.load(STORAGE_KEYS.NEWS, INITIAL_NEWS));
+    this.events = dedupeById(this.load(STORAGE_KEYS.EVENTS, INITIAL_EVENTS));
+    this.teachers = dedupeById(this.load(STORAGE_KEYS.TEACHERS, INITIAL_TEACHERS));
+    this.facilities = dedupeById(this.load(STORAGE_KEYS.FACILITIES, INITIAL_FACILITIES));
+    this.gallery = dedupeById(this.load(STORAGE_KEYS.GALLERY, INITIAL_GALLERY));
+    this.ppdb = dedupeById(this.load(STORAGE_KEYS.PPDB, INITIAL_PPDB));
+    this.infaqConfirmations = dedupeById(this.load(STORAGE_KEYS.INFAQ, []));
   }
 
   private load<T>(key: string, fallback: T): T {
@@ -316,35 +392,35 @@ public cancelScheduledPush(): void {
   }
 
   public getAnnouncements(): Announcement[] {
-    return [...this.announcements];
+    return dedupeById(this.announcements);
   }
 
   public getNews(): NewsItem[] {
-    return [...this.news];
+    return dedupeById(this.news);
   }
 
   public getEvents(): EventItem[] {
-    return [...this.events];
+    return dedupeById(this.events);
   }
 
   public getTeachers(): TeacherItem[] {
-    return [...this.teachers];
+    return dedupeById(this.teachers);
   }
 
   public getFacilities(): FacilityItem[] {
-    return [...this.facilities];
+    return dedupeById(this.facilities);
   }
 
   public getGallery(): GalleryItem[] {
-    return [...this.gallery];
+    return dedupeById(this.gallery);
   }
 
   public getPPDB(): PPDBApplicant[] {
-    return [...this.ppdb];
+    return dedupeById(this.ppdb);
   }
 
   public getInfaqConfirmations(): InfaqConfirmation[] {
-    return [...this.infaqConfirmations];
+    return dedupeById(this.infaqConfirmations);
   }
 
   public getAppsScriptUrl(): string {
@@ -367,7 +443,28 @@ public cancelScheduledPush(): void {
 
   // --- SETTERS & CRUD ---
   public updateSettings(newSettings: SchoolSettings): void {
-    this.settings = newSettings;
+    const bankAccounts = migrateBankAccounts(
+      newSettings.bankAccounts,
+      newSettings.bankBsi,
+      newSettings.bankBpd
+    );
+    this.settings = {
+      ...newSettings,
+      bankAccounts,
+      // Pertahankan backward compatibility untuk field bankBsi & bankBpd
+      bankBsi: bankAccounts[0] ? {
+        bankName: bankAccounts[0].bankName,
+        accountNumber: bankAccounts[0].accountNumber,
+        holderName: bankAccounts[0].holderName,
+        branch: bankAccounts[0].branch || ''
+      } : newSettings.bankBsi,
+      bankBpd: bankAccounts[1] ? {
+        bankName: bankAccounts[1].bankName,
+        accountNumber: bankAccounts[1].accountNumber,
+        holderName: bankAccounts[1].holderName,
+        branch: bankAccounts[1].branch || ''
+      } : newSettings.bankBpd
+    };
     this.save(STORAGE_KEYS.SETTINGS, this.settings);
   }
 
@@ -500,9 +597,9 @@ public cancelScheduledPush(): void {
   public addEvent(item: Omit<EventItem, 'id'>): EventItem {
     const newItem: EventItem = {
       ...item,
-      id: 'event-' + Date.now()
+      id: 'event-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)
     };
-    this.events.push(newItem);
+    this.events = dedupeById([...this.events, newItem]);
     this.save(STORAGE_KEYS.EVENTS, this.events);
     return newItem;
   }
@@ -613,27 +710,31 @@ public cancelScheduledPush(): void {
         this.save(STORAGE_KEYS.SETTINGS, this.settings);
       }
       if (Array.isArray(parsed.announcements)) {
-        this.announcements = parsed.announcements;
+        this.announcements = dedupeById(parsed.announcements);
         this.save(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
       }
       if (Array.isArray(parsed.news)) {
-        this.news = parsed.news;
+        this.news = dedupeById(parsed.news);
         this.save(STORAGE_KEYS.NEWS, this.news);
       }
       if (Array.isArray(parsed.events)) {
-        this.events = parsed.events;
+        this.events = dedupeById(parsed.events);
         this.save(STORAGE_KEYS.EVENTS, this.events);
       }
       if (Array.isArray(parsed.teachers)) {
-        this.teachers = parsed.teachers;
+        this.teachers = dedupeById(parsed.teachers);
         this.save(STORAGE_KEYS.TEACHERS, this.teachers);
       }
       if (Array.isArray(parsed.facilities)) {
-        this.facilities = parsed.facilities;
+        this.facilities = dedupeById(parsed.facilities);
         this.save(STORAGE_KEYS.FACILITIES, this.facilities);
       }
+      if (Array.isArray(parsed.gallery)) {
+        this.gallery = dedupeById(parsed.gallery);
+        this.save(STORAGE_KEYS.GALLERY, this.gallery);
+      }
       if (Array.isArray(parsed.infaqRecords)) {
-        this.infaqConfirmations = parsed.infaqRecords;
+        this.infaqConfirmations = dedupeById(parsed.infaqRecords);
         this.save(STORAGE_KEYS.INFAQ, this.infaqConfirmations);
       }
       this.notify();
@@ -1085,7 +1186,7 @@ if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Dat
             category: n.category || 'Kegiatan'
           }));
           if (validNews.length > 0) {
-            this.news = validNews;
+            this.news = dedupeById(validNews);
             this.saveLocalOnly(STORAGE_KEYS.NEWS, this.news);
             applied = true;
           }
@@ -1103,7 +1204,7 @@ if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Dat
             isActive: a.isActive === 'Tidak' || a.isActive === false ? false : true
           }));
           if (validAnn.length > 0) {
-            this.announcements = validAnn;
+            this.announcements = dedupeById(validAnn);
             this.saveLocalOnly(STORAGE_KEYS.ANNOUNCEMENTS, this.announcements);
             applied = true;
           }
@@ -1122,7 +1223,7 @@ if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Dat
             category: ev.category || 'Umum'
           }));
           if (validEv.length > 0) {
-            this.events = validEv;
+            this.events = dedupeById(validEv);
             this.saveLocalOnly(STORAGE_KEYS.EVENTS, this.events);
             applied = true;
           }
@@ -1139,7 +1240,7 @@ if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Dat
             date: g.date || ''
           }));
           if (validGal.length > 0) {
-            this.gallery = validGal;
+            this.gallery = dedupeById(validGal);
             this.saveLocalOnly(STORAGE_KEYS.GALLERY, this.gallery);
             applied = true;
           }
@@ -1223,9 +1324,15 @@ if (json.data.CMS_Data && Array.isArray(json.data.CMS_Data) && json.data.CMS_Dat
     if (!data) return;
 
     if (data.settings) {
+      const resolvedBankAccounts = migrateBankAccounts(
+        data.settings.bankAccounts,
+        data.settings.bankBsi,
+        data.settings.bankBpd
+      );
       this.settings = {
         ...INITIAL_SETTINGS,
         ...data.settings,
+        bankAccounts: resolvedBankAccounts,
         heroAlumniStat: data.settings.heroAlumniStat !== undefined ? data.settings.heroAlumniStat : INITIAL_SETTINGS.heroAlumniStat,
         heroCardBadge: data.settings.heroCardBadge || INITIAL_SETTINGS.heroCardBadge,
         heroCardRating: data.settings.heroCardRating || INITIAL_SETTINGS.heroCardRating,

@@ -60,6 +60,14 @@ export interface FacilityItem {
   imageUrl: string;
 }
 
+export interface BankAccountItem {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  holderName: string;
+  branch?: string;
+}
+
 export interface PPDBApplicant {
   id: string;
   registrationNumber: string;
@@ -254,13 +262,14 @@ export interface SchoolSettings {
   heroCardCurriculumTitle?: string;
   heroCardCurriculumSubtitle?: string;
   heroCardButtonText?: string;
-  bankBsi: {
+  bankAccounts?: BankAccountItem[];
+  bankBsi?: {
     bankName: string;
     accountNumber: string;
     holderName: string;
     branch: string;
   };
-  bankBpd: {
+  bankBpd?: {
     bankName: string;
     accountNumber: string;
     holderName: string;
@@ -341,6 +350,9 @@ export interface SchoolSettings {
   fasilitasBadge?: string;
   fasilitasTitle?: string;
   fasilitasSubtitle?: string;
+  fasilitasHeaderTagline?: string;
+  fasilitasHeaderTitle?: string;
+  fasilitasHeaderDesc?: string;
   fasilitasStat1Val?: string;
   fasilitasStat1Label?: string;
   fasilitasStat1Sub?: string;
@@ -350,7 +362,20 @@ export interface SchoolSettings {
   fasilitasEcoBadge?: string;
   fasilitasEcoTitle?: string;
   fasilitasEcoSubtitle?: string;
+  fasilitasEcoDesc?: string;
+  fasilitasEcoFeatures?: Array<{ id: string; title: string; description: string; iconName?: string }>;
   fasilitasEcoItems?: EcoFeatureItem[];
+
+  // 3 Kategori Pengantar Fasilitas
+  facilityCat1Title?: string;
+  facilityCat1Desc?: string;
+  facilityCat1Image?: string;
+  facilityCat2Title?: string;
+  facilityCat2Desc?: string;
+  facilityCat2Image?: string;
+  facilityCat3Title?: string;
+  facilityCat3Desc?: string;
+  facilityCat3Image?: string;
 
   // Infaq custom fields
   infaqBadge?: string;

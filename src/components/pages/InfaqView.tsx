@@ -29,8 +29,7 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
   settings,
   infaqRecords
 }) => {
-  const [copiedBsi, setCopiedBsi] = useState(false);
-  const [copiedMuamalat, setCopiedMuamalat] = useState(false);
+  const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
 
   // Form state
   const [donorName, setDonorName] = useState('');
@@ -41,16 +40,34 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const handleCopy = (text: string, type: 'bsi' | 'muamalat') => {
+  // Salin nomor rekening dengan feedback visual "Tersalin!"
+  const handleCopyAccount = (text: string, accountId: string) => {
     navigator.clipboard.writeText(text);
-    if (type === 'bsi') {
-      setCopiedBsi(true);
-      setTimeout(() => setCopiedBsi(false), 2000);
-    } else {
-      setCopiedMuamalat(true);
-      setTimeout(() => setCopiedMuamalat(false), 2000);
-    }
+    setCopiedAccountId(accountId);
+    setTimeout(() => {
+      setCopiedAccountId(null);
+    }, 2000);
   };
+
+  // Resolved list of bank accounts (mendukung array baru & fallback kompatibilitas data lama)
+  const bankAccounts = (settings.bankAccounts && settings.bankAccounts.length > 0)
+    ? settings.bankAccounts
+    : [
+        ...(settings.bankBsi ? [{
+          id: 'bank-bsi',
+          bankName: settings.bankBsi.bankName || 'Bank Syariah Indonesia (BSI)',
+          accountNumber: settings.bankBsi.accountNumber || '7211-9876-54',
+          holderName: settings.bankBsi.holderName || "YAYASAN AL I'TISHAM PLAYEN",
+          branch: settings.bankBsi.branch || 'Kantor Cabang Wonosari (Kode: 451)'
+        }] : []),
+        ...(settings.bankBpd ? [{
+          id: 'bank-bpd',
+          bankName: settings.bankBpd.bankName || 'Bank BPD DIY Syariah',
+          accountNumber: settings.bankBpd.accountNumber || '801-211-009876',
+          holderName: settings.bankBpd.holderName || "SDQ UNGGULAN AL I'TISHAM",
+          branch: settings.bankBpd.branch || 'Capem Gunungkidul (Kode: 112)'
+        }] : [])
+      ];
 
   const quickAmounts = [50000, 100000, 250000, 500000, 1000000];
 
@@ -84,36 +101,37 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
   };
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-12">
+    <div className="space-y-8 sm:space-y-12 pb-12">
       
-      {/* HEADER SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-        <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
+      {/* HEADER SECTION - Ringkas & Proporsional */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
+        <div className="max-w-3xl space-y-2 sm:space-y-3">
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
             <HeartHandshake className="w-3.5 h-3.5" />
             <span>{settings.infaqHeaderTagline || "INFAQ, WAKAF & SEDEKAH PENDIDIKAN"}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.2] font-['Plus_Jakarta_Sans',sans-serif]">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-snug font-['Plus_Jakarta_Sans',sans-serif]">
             {settings.infaqHeaderTitle || "Investasi Abadi untuk Generasi Penghafal Al-Qur'an"}
           </h1>
 
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            {settings.infaqHeaderDesc || "Salurkan infaq dan wakaf terbaik Anda guna mendukung operasional beasiswa santri dhuafa berprestasi, fasilitas halaqah tahfidz, dan pengembangan sarana dakwah di Playen, Gunungkidul."}
+          <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-2xl">
+            {settings.infaqHeaderDesc || "Salurkan infaq dan wakaf terbaik Anda guna mendukung operasional beasiswa santri dhuafa berprestasi, fasilitas halaqah tahfidz, dan sarana dakwah di Playen, Gunungkidul."}
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-semibold text-slate-600">
-            <div className="flex items-center gap-1.5 text-emerald-800">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          {/* 3 Badge Ringkas & Proporsional */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1 text-[11px] sm:text-xs font-semibold text-slate-600">
+            <div className="inline-flex items-center gap-1 bg-emerald-50/80 border border-emerald-200/60 px-2.5 py-1 rounded-lg text-emerald-800">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>100% Saluran Amanah</span>
             </div>
-            <div className="flex items-center gap-1.5 text-emerald-800">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Laporan Keuangan Berkala</span>
+            <div className="inline-flex items-center gap-1 bg-emerald-50/80 border border-emerald-200/60 px-2.5 py-1 rounded-lg text-emerald-800">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Laporan Transparan</span>
             </div>
-            <div className="flex items-center gap-1.5 text-emerald-800">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Terdaftar Kemenag DIY</span>
+            <div className="inline-flex items-center gap-1 bg-emerald-50/80 border border-emerald-200/60 px-2.5 py-1 rounded-lg text-emerald-800">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Doa Keberkahan Santri</span>
             </div>
           </div>
         </div>
@@ -121,7 +139,7 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
 
       {/* SECTION 1: 3 PROGRAM INFAQ UNGGULAN */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           {(settings.infaqPrograms && settings.infaqPrograms.length > 0 ? settings.infaqPrograms : [
             {
               id: "infaq-1",
@@ -158,20 +176,20 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
             const style = colors[idx % colors.length];
 
             return (
-              <div key={item.id || idx} className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs space-y-4">
-                <div className={`w-12 h-12 rounded-2xl ${style.bg} ${style.text} flex items-center justify-center`}>
+              <div key={item.id || idx} className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-3 sm:space-y-4">
+                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl ${style.bg} ${style.text} flex items-center justify-center`}>
                   {icons[idx % icons.length]}
                 </div>
                 <span className={`text-[10px] font-bold ${style.badgeText} uppercase tracking-wide ${style.badgeBg} px-2.5 py-1 rounded-md`}>
                   {item.badge}
                 </span>
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">
                   {item.title}
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {item.description}
                 </p>
-                <div className={`pt-2 text-xs font-bold ${style.text} flex items-center gap-1`}>
+                <div className={`pt-1 text-xs font-bold ${style.text} flex items-center gap-1`}>
                   <span>{item.target}</span>
                 </div>
               </div>
@@ -182,13 +200,13 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
 
       {/* SECTION 2: KANAL REKENING & QRIS (Dark Green Theme) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-emerald-800 space-y-10">
+        <div className="bg-emerald-950 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-2xl border border-emerald-800 space-y-8 sm:space-y-10">
           
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider bg-emerald-900/80 px-3 py-1 rounded-full border border-emerald-700">
+          <div className="text-center space-y-1.5 max-w-2xl mx-auto">
+            <span className="text-[11px] font-extrabold text-amber-400 uppercase tracking-wider bg-emerald-900/80 px-3 py-0.5 rounded-full border border-emerald-700">
               REKENING RESMI YAYASAN
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white">
               Kanal Penyaluran Infaq &amp; Wakaf
             </h2>
             <p className="text-xs sm:text-sm text-emerald-200/90">
@@ -196,87 +214,77 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             
-            {/* Bank Cards (7 cols) */}
-            <div className="lg:col-span-7 space-y-5">
-              
-              {/* BSI Card */}
-              <div className="bg-white text-slate-900 rounded-2xl p-5 sm:p-6 shadow-md space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-teal-800 text-white flex items-center justify-center font-black text-xs">
-                      BSI
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{settings.bankBsi?.bankName || 'Bank Syariah Indonesia (BSI)'}</div>
-                      <div className="text-[10px] text-slate-500">{settings.bankBsi?.branch || 'Kode Bank: 451'}</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-md">
-                    INFAQ &amp; WAKAF
-                  </span>
+            {/* Bank Cards (7 cols) - Render dinamis dari array bankAccounts */}
+            <div className="lg:col-span-7 space-y-3.5">
+              {bankAccounts.length === 0 ? (
+                <div className="bg-white/10 rounded-2xl p-6 text-center text-emerald-200 text-xs">
+                  Belum ada rekening bank yang dikonfigurasi di Admin CMS.
                 </div>
+              ) : (
+                bankAccounts.map((account, idx) => {
+                  const isCopied = copiedAccountId === account.id;
+                  const accents = [
+                    { bg: "bg-teal-800", badge: "text-teal-800 bg-teal-50", label: "INFAQ & WAKAF" },
+                    { bg: "bg-purple-900", badge: "text-purple-900 bg-purple-50", label: "OPERASIONAL" },
+                    { bg: "bg-emerald-800", badge: "text-emerald-800 bg-emerald-50", label: "PEMBANGUNAN" },
+                    { bg: "bg-amber-800", badge: "text-amber-800 bg-amber-50", label: "SOSIAL & DAKWAH" }
+                  ];
+                  const accent = accents[idx % accents.length];
+                  const cleanDigits = (account.accountNumber || '').replace(/[^0-9]/g, '');
 
-                <div className="bg-slate-50 p-3.5 rounded-xl flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-base sm:text-xl font-mono font-bold text-slate-900 tracking-wider truncate">
-                      {settings.bankBsi?.accountNumber || '712-345-6789'}
-                    </div>
-                    <div className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5 truncate">
-                      {settings.bankBsi?.holderName || "a.n. YAYASAN AL I'TISHAM PLAYEN"}
-                    </div>
-                  </div>
+                  return (
+                    <div key={account.id || idx} className="bg-white text-slate-900 rounded-2xl p-4 sm:p-5 shadow-md space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg ${accent.bg} text-white flex items-center justify-center font-black text-xs shrink-0`}>
+                            <CreditCard className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                              {account.bankName || 'Bank Rekening'}
+                            </div>
+                            {account.branch && (
+                              <div className="text-[10px] text-slate-500 truncate">
+                                {account.branch}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`text-[10px] font-bold ${accent.badge} px-2.5 py-0.5 rounded-md shrink-0`}>
+                          {accent.label}
+                        </span>
+                      </div>
 
-                  <button
-                    onClick={() => handleCopy((settings.bankBsi?.accountNumber || '7123456789').replace(/[^0-9]/g, ''), 'bsi')}
-                    className="p-2 sm:p-2.5 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
-                    title="Salin Nomor Rekening BSI"
-                  >
-                    {copiedBsi ? <Check className="w-4 h-4 text-amber-300" /> : <Copy className="w-4 h-4" />}
-                    <span className="hidden sm:inline">{copiedBsi ? 'Tersalin' : 'Salin'}</span>
-                  </button>
-                </div>
-              </div>
+                      <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-base sm:text-lg font-mono font-bold text-slate-900 tracking-wider truncate">
+                            {account.accountNumber}
+                          </div>
+                          <div className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5 truncate">
+                            a.n. {account.holderName}
+                          </div>
+                        </div>
 
-              {/* Second Bank Card (BPD DIY Syariah / Mitra) */}
-              <div className="bg-white text-slate-900 rounded-2xl p-5 sm:p-6 shadow-md space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-purple-900 text-white flex items-center justify-center font-black text-xs">
-                      BPD
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAccount(cleanDigits || account.accountNumber, account.id)}
+                          className={`p-2 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 ${
+                            isCopied
+                              ? 'bg-amber-500 text-emerald-950 font-bold'
+                              : 'bg-emerald-900 hover:bg-emerald-800 text-white'
+                          }`}
+                          title="Salin Nomor Rekening"
+                        >
+                          {isCopied ? <Check className="w-4 h-4 text-emerald-950" /> : <Copy className="w-4 h-4" />}
+                          <span className="text-[11px]">{isCopied ? 'Tersalin!' : 'Salin'}</span>
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{settings.bankBpd?.bankName || 'Bank BPD DIY Syariah'}</div>
-                      <div className="text-[10px] text-slate-500">{settings.bankBpd?.branch || 'Capem Gunungkidul'}</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-purple-900 bg-purple-50 px-2.5 py-1 rounded-md">
-                    OPERASIONAL
-                  </span>
-                </div>
-
-                <div className="bg-slate-50 p-3.5 rounded-xl flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-base sm:text-xl font-mono font-bold text-slate-900 tracking-wider truncate">
-                      {settings.bankBpd?.accountNumber || '801-211-009876'}
-                    </div>
-                    <div className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5 truncate">
-                      {settings.bankBpd?.holderName || "a.n. SDQ UNGGULAN AL I'TISHAM"}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleCopy((settings.bankBpd?.accountNumber || '801211009876').replace(/[^0-9]/g, ''), 'muamalat')}
-                    className="p-2 sm:p-2.5 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
-                    title="Salin Nomor Rekening"
-                  >
-                    {copiedMuamalat ? <Check className="w-4 h-4 text-amber-300" /> : <Copy className="w-4 h-4" />}
-                    <span className="hidden sm:inline">{copiedMuamalat ? 'Tersalin' : 'Salin'}</span>
-                  </button>
-                </div>
-              </div>
-
+                  );
+                })
+              )}
             </div>
 
             {/* QRIS Box (5 cols) - Supports Real Uploaded QRIS */}
