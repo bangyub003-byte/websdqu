@@ -28,6 +28,7 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   skAkreditasi: "Sertifikat Akreditasi BAN-PDM 2023",
   foundation: "Pondok Pesantren Al I'tishom (Kemenkumham AHU-001271.AH.01.12)",
   address: "Dusun Banaran, 010/003, Playen, Playen, Gunungkidul, DI Yogyakarta",
+  googleMapsEmbedUrl: "",
   email: "info@sdqu-alitisham.sch.id",
   phoneTu: "+62 812-3456-7890",
   phoneSpmb: "+62 878-9012-3456",

@@ -232,6 +232,7 @@ export interface SchoolSettings {
   foundation: string;
   skAkreditasi: string;
   address: string;
+  googleMapsEmbedUrl?: string;
   email: string;
   phoneTu: string;
   phoneSpmb: string;

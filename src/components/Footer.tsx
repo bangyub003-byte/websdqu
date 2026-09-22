@@ -202,7 +202,11 @@ export const Footer: React.FC<FooterProps> = ({ setActivePage, settings }) => {
             <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-slate-100">
               <iframe
                 title="Peta Lokasi SDQU Al I'tisham"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address || "SDQU Al I'tisham Playen Gunungkidul")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                src={
+                  settings.googleMapsEmbedUrl && settings.googleMapsEmbedUrl.trim().length > 0
+                    ? settings.googleMapsEmbedUrl.trim()
+                    : `https://maps.google.com/maps?q=${encodeURIComponent(settings.address || "SDQU Al I'tisham Playen Gunungkidul")}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+                }
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

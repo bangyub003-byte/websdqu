@@ -118,7 +118,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
                 alt={`Hero Slide ${idx + 1}`}
                 referrerPolicy="no-referrer"
                 className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-1000 ease-in-out ${
-                  isActive ? 'opacity-40' : 'opacity-0'
+                  isActive ? 'opacity-70 sm:opacity-65' : 'opacity-0'
                 }`}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
@@ -146,8 +146,8 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
             </div>
           )}
 
-          {/* Gradien Overlay Presisi (Foto tetap jelas di kanan, teks tajam kontras di kiri) */}
-          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/95 via-emerald-950/75 to-emerald-950/30 pointer-events-none" />
+          {/* Gradien Overlay Presisi (Foto tetap jelas di tengah dan kanan, teks tajam kontras terbaca di kiri) */}
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-emerald-950/80 via-emerald-950/50 to-emerald-950/15 pointer-events-none" />
 
           {/* Hero Content Grid */}
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center w-full">

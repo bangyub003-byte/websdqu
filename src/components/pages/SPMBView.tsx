@@ -40,28 +40,28 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
   };
 
   return (
-    <div className="space-y-12 sm:space-y-16 pb-16">
+    <div className="space-y-6 sm:space-y-8 pb-12">
       
-      {/* HEADER HERO */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-        <div className="bg-emerald-950 text-white rounded-3xl p-8 sm:p-12 lg:p-14 shadow-2xl relative overflow-hidden border border-emerald-800">
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 bg-emerald-900 border border-emerald-700 text-amber-300 text-xs font-bold px-3 py-1 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+      {/* HEADER HERO - Ringkas & Proporsional */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4">
+        <div className="bg-emerald-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 lg:p-8 shadow-xl relative overflow-hidden border border-emerald-800/80">
+          <div className="relative z-10 max-w-3xl space-y-2.5 sm:space-y-3">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-900 border border-emerald-700/80 text-amber-300 text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:py-1 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
               <span>PENERIMAAN SANTRI BARU (PSB) ONLINE</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.15] font-['Plus_Jakarta_Sans',sans-serif]">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug font-['Plus_Jakarta_Sans',sans-serif]">
               Pendaftaran Santri Baru {settings.schoolName}
             </h1>
 
-            <p className="text-xs sm:text-sm text-emerald-200/90 leading-relaxed">
-              Selamat datang di portal resmi Penerimaan Santri Baru (PSB). Silakan mengisi formulir pendaftaran online langsung di bawah ini. Tim panitia siap mendampingi ananda bertumbuh dalam keimanan kokoh, hafalan Al-Qur'an mutqin, serta budi pekerti mulia.
+            <p className="text-xs sm:text-xs text-emerald-200/90 leading-relaxed max-w-2xl">
+              Portal resmi pendaftaran santri baru. Silakan mengisi formulir online di bawah ini. Tim panitia siap mendampingi ananda bertumbuh dalam keimanan kokoh, hafalan Al-Qur'an mutqin, serta budi pekerti mulia.
             </p>
 
             {/* Quick Status Pill */}
-            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs">
-              <span className="bg-amber-500 text-emerald-950 font-extrabold px-3 py-1 rounded-full shadow-sm">
+            <div className="pt-1 flex flex-wrap items-center gap-2.5 text-[11px] sm:text-xs">
+              <span className="bg-amber-500 text-emerald-950 font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
                 KUOTA TERBATAS • MAKS. 28 SANTRI/KELAS
               </span>
               <span className="text-emerald-300 font-medium">
@@ -72,7 +72,7 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
         </div>
 
         {/* Tab Navigation Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-4 border-t border-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-200">
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTab('form')}

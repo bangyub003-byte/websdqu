@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { SchoolSettings } from '../../types';
 import { dataService } from '../../services/dataService';
-import { getAppsScriptCode } from '../../config/googleConfig';
 import {
   Database,
   KeyRound,
@@ -89,7 +88,7 @@ export const AdminPengaturanLanjutanTab: React.FC<AdminPengaturanLanjutanTabProp
   // Sub-tab inner navigation state
   const [publishSubTab, setPublishSubTab] = useState<'backup' | 'guide'>('backup');
   const [securitySubTab, setSecuritySubTab] = useState<'password' | 'tips'>('password');
-  const [googleSubTab, setGoogleSubTab] = useState<'config' | 'actions' | 'script_code'>('config');
+  const [googleSubTab, setGoogleSubTab] = useState<'config' | 'actions'>('config');
 
   // Password change local state
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
@@ -173,7 +172,7 @@ export const AdminPengaturanLanjutanTab: React.FC<AdminPengaturanLanjutanTabProp
               {
                 id: 'google',
                 label: '3. Integrasi Apps Script',
-                desc: 'ID Spreadsheet, Drive & kode backend',
+                desc: 'ID Spreadsheet & Google Drive',
                 icon: Sparkles
               }
             ].map(sub => {
@@ -579,18 +578,6 @@ export const AdminPengaturanLanjutanTab: React.FC<AdminPengaturanLanjutanTabProp
                     <Database className="w-3.5 h-3.5" />
                     <span>Panduan Format Sheet</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setGoogleSubTab('script_code')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      googleSubTab === 'script_code'
-                        ? 'bg-emerald-800 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Kode Code.gs Backend</span>
-                  </button>
                 </div>
 
                 {googleSubTab === 'config' && (
@@ -795,85 +782,6 @@ export const AdminPengaturanLanjutanTab: React.FC<AdminPengaturanLanjutanTabProp
                       >
                         {isFormattingSheets ? 'Memformat...' : 'Format Ulang Sheets'}
                       </button>
-                    </div>
-                  </div>
-                )}
-
-                {googleSubTab === 'script_code' && (
-                  <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
-                          KODE BACKEND GOOGLE DRIVE &amp; SPREADSHEET
-                        </span>
-                        <h4 className="text-lg font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-1">
-                          Sinkronisasi Gambar &amp; Pengaturan Lintas Perangkat
-                        </h4>
-                        <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
-                          Salin kode backend terbaru di bawah ini ke Google Apps Script Spreadsheet Anda agar setiap kali Anda mengganti logo atau foto di satu perangkat, gambarnya otomatis tersimpan di Google Drive sekolah dan langsung muncul di semua smartphone dan laptop pengunjung.
-                        </p>
-                      </div>
-
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const code = getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput);
-                            navigator.clipboard.writeText(code);
-                            setCopiedCode(true);
-                            setTimeout(() => setCopiedCode(false), 3000);
-                          }}
-                          className="bg-emerald-900 hover:bg-emerald-800 text-amber-300 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-xs transition-colors"
-                        >
-                          {copiedCode ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
-                          <span>{copiedCode ? '✓ Kode Tersalin!' : 'Salin Kode Apps Script'}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">1</div>
-                        <h5 className="text-xs font-bold text-slate-900">Buka Spreadsheet</h5>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">
-                          Buka Spreadsheet sekolah Anda, lalu klik menu atas <strong>Ekstensi &gt; Apps Script</strong>.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">2</div>
-                        <h5 className="text-xs font-bold text-slate-900">Tempel Kode Baru</h5>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">
-                          Hapus seluruh kode lama di file <code>Code.gs</code>, lalu <strong>Paste</strong> kode yang baru saja disalin. Klik tombol <strong>Simpan</strong> (ikon disket).
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">3</div>
-                        <h5 className="text-xs font-bold text-slate-900">Terapkan Versi Baru</h5>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">
-                          Klik tombol biru <strong>Terapkan (Deploy)</strong> di kanan atas &gt; <strong>Kelola penerapan</strong> &gt; Ikon pensil (Edit) &gt; Versi: <strong>Versi baru</strong> &gt; Klik <strong>Terapkan</strong>.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-                        <div className="w-6 h-6 rounded-lg bg-emerald-800 text-emerald-100 text-xs font-bold flex items-center justify-center">4</div>
-                        <h5 className="text-xs font-bold text-emerald-950">Selesai &amp; Otomatis!</h5>
-                        <p className="text-[11px] text-emerald-900/80 leading-relaxed">
-                          Sekarang setiap foto &amp; teks yang diubah admin langsung tersinkron dan tampil di semua smartphone pengunjung!
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Code Box Container */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span className="font-mono font-bold">Code.gs (Google Apps Script)</span>
-                        <span className="text-[11px]">JavaScript Google Workspace</span>
-                      </div>
-                      <div className="max-h-72 overflow-y-auto bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-200 leading-relaxed">
-                        <pre>{getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput)}</pre>
-                      </div>
                     </div>
                   </div>
                 )}

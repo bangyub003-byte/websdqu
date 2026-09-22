@@ -20,7 +20,7 @@ import {
   FAQItem
 } from '../../types';
 import { dataService } from '../../services/dataService';
-import { GOOGLE_CONFIG, APPS_SCRIPT_CODE, getAppsScriptCode } from '../../config/googleConfig';
+import { GOOGLE_CONFIG } from '../../config/googleConfig';
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
@@ -133,7 +133,7 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [announcementsSubTab, setAnnouncementsSubTab] = useState<'list' | 'add'>('list');
   const [newsSubTab, setNewsSubTab] = useState<'list' | 'add'>('list');
   const [eventsSubTab, setEventsSubTab] = useState<'list' | 'add'>('list');
-  const [infaqSubTab, setInfaqSubTab] = useState<'bank_qris' | 'records'>('bank_qris');
+  const [infaqSubTab, setInfaqSubTab] = useState<'bank_qris' | 'records' | 'programs'>('bank_qris');
   const [advancedSubTab, setAdvancedSubTab] = useState<'database' | 'security' | 'google'>('database');
   const [publishSubTab, setPublishSubTab] = useState<'backup' | 'guide'>('backup');
   const [securitySubTab, setSecuritySubTab] = useState<'password' | 'tips'>('password');
@@ -352,6 +352,126 @@ React.useEffect(() => {
             holderName: updatedList[1].holderName,
             branch: updatedList[1].branch || ''
           } : undefined
+        };
+        setEditSettings(updatedSettings);
+        dataService.updateSettings(updatedSettings);
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    );
+  };
+
+  // Dynamic Infaq Programs Management State
+  const [infaqProgramModalOpen, setInfaqProgramModalOpen] = useState(false);
+  const [editingInfaqProgramId, setEditingInfaqProgramId] = useState<string | null>(null);
+  const [infaqProgTag, setInfaqProgTag] = useState('');
+  const [infaqProgTitle, setInfaqProgTitle] = useState('');
+  const [infaqProgDesc, setInfaqProgDesc] = useState('');
+  const [infaqProgHighlight, setInfaqProgHighlight] = useState('');
+  const [infaqProgIconType, setInfaqProgIconType] = useState('scholarship');
+
+  const openAddInfaqProgramModal = () => {
+    setEditingInfaqProgramId(null);
+    setInfaqProgTag('');
+    setInfaqProgTitle('');
+    setInfaqProgDesc('');
+    setInfaqProgHighlight('');
+    setInfaqProgIconType('scholarship');
+    setInfaqProgramModalOpen(true);
+  };
+
+  const openEditInfaqProgramModal = (item: InfaqProgramItem) => {
+    setEditingInfaqProgramId(item.id);
+    setInfaqProgTag(item.tag || '');
+    setInfaqProgTitle(item.title || '');
+    setInfaqProgDesc(item.description || '');
+    setInfaqProgHighlight(item.highlight || '');
+    setInfaqProgIconType(item.iconType || 'scholarship');
+    setInfaqProgramModalOpen(true);
+  };
+
+  const handleSaveInfaqProgram = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!infaqProgTitle.trim()) {
+      alert('Mohon isi judul program infaq.');
+      return;
+    }
+
+    const currentList: InfaqProgramItem[] = (editSettings.infaqPrograms && editSettings.infaqPrograms.length > 0)
+      ? [...editSettings.infaqPrograms]
+      : [
+          {
+            id: 'inf-1',
+            tag: 'BEASISWA DHUAFA',
+            title: "Beasiswa Santri Qur'an",
+            description: "Bantuan biaya pendidikan, seragam, dan buku untuk santri yatim dan dhuafa berprestasi agar terus lancar menghafal Al-Qur'an.",
+            highlight: 'Mulai Rp 50.000 / paket',
+            iconType: 'scholarship'
+          },
+          {
+            id: 'inf-2',
+            tag: 'WAKAF JARIYAH',
+            title: 'Wakaf Sarana & Bangunan',
+            description: "Pembangunan dan perluasan ruang kelas baru, perluasan masjid jami' sekolah, serta pengadaan AC ramah lingkungan.",
+            highlight: 'Pahala Mengalir Abadi',
+            iconType: 'building'
+          },
+          {
+            id: 'inf-3',
+            tag: 'OPERASIONAL DAKWAH',
+            title: 'Operasional Dakwah & Al-Qur\'an',
+            description: 'Pengadaan mushaf Al-Qur\'an rasm Utsmani, media pembelajaran digital sains terpadu, dan pelatihan sanad asatidz berkala.',
+            highlight: 'Investasi Generasi Emas',
+            iconType: 'book'
+          }
+        ];
+
+    let updatedList: InfaqProgramItem[];
+    if (editingInfaqProgramId) {
+      updatedList = currentList.map(item => item.id === editingInfaqProgramId ? {
+        ...item,
+        tag: infaqProgTag.trim() || 'PROGRAM',
+        title: infaqProgTitle.trim(),
+        description: infaqProgDesc.trim(),
+        highlight: infaqProgHighlight.trim() || 'Salurkan Kebaikan',
+        iconType: infaqProgIconType
+      } : item);
+    } else {
+      const newProgram: InfaqProgramItem = {
+        id: 'inf-' + Date.now(),
+        tag: infaqProgTag.trim() || 'PROGRAM',
+        title: infaqProgTitle.trim(),
+        description: infaqProgDesc.trim(),
+        highlight: infaqProgHighlight.trim() || 'Salurkan Kebaikan',
+        iconType: infaqProgIconType
+      };
+      updatedList = [...currentList, newProgram];
+    }
+
+    const updatedSettings: SchoolSettings = {
+      ...editSettings,
+      infaqPrograms: updatedList
+    };
+
+    setEditSettings(updatedSettings);
+    dataService.updateSettings(updatedSettings);
+    setInfaqProgramModalOpen(false);
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 3000);
+  };
+
+  const handleDeleteInfaqProgram = (id: string, title: string) => {
+    requestDelete(
+      'Hapus Program Infaq',
+      `Apakah Anda yakin ingin menghapus program "${title}"? Program ini tidak akan ditampilkan lagi di halaman donasi publik.`,
+      () => {
+        const currentList: InfaqProgramItem[] = (editSettings.infaqPrograms && editSettings.infaqPrograms.length > 0)
+          ? editSettings.infaqPrograms
+          : [];
+        const updatedList = currentList.filter(item => item.id !== id);
+        const updatedSettings: SchoolSettings = {
+          ...editSettings,
+          infaqPrograms: updatedList
         };
         setEditSettings(updatedSettings);
         dataService.updateSettings(updatedSettings);
@@ -1645,6 +1765,20 @@ React.useEffect(() => {
                 onChange={e => setEditSettings({ ...editSettings, address: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Link Google Maps (Opsional / Custom Embed URL)</label>
+              <input
+                type="url"
+                value={editSettings.googleMapsEmbedUrl || ''}
+                onChange={e => setEditSettings({ ...editSettings, googleMapsEmbedUrl: e.target.value })}
+                placeholder="Contoh: https://maps.google.com/maps?q=SDQU+Al+I'tisham+Playen&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-mono"
+              />
+              <p className="text-[11px] text-slate-500">
+                Jika diisi, peta lokasi di footer website akan menggunakan URL embed ini. Jika dikosongkan, peta otomatis mengikuti teks Alamat Lengkap di atas.
+              </p>
             </div>
           </div>
 
@@ -3572,7 +3706,8 @@ React.useEffect(() => {
               </div>
               {[
                 { id: 'bank_qris', label: '1. Rekening Bank & QRIS', desc: 'Pengaturan QRIS & Nomor Rekening' },
-                { id: 'records', label: '2. Riwayat Infaq Masuk', desc: `${infaqRecords.length} konfirmasi donasi` }
+                { id: 'records', label: '2. Riwayat Infaq Masuk', desc: `${infaqRecords.length} konfirmasi donasi` },
+                { id: 'programs', label: '3. Program Infaq', desc: `${(editSettings.infaqPrograms?.length || 3)} program donasi` }
               ].map(sub => (
                 <button
                   key={sub.id}
@@ -3936,6 +4071,239 @@ React.useEffect(() => {
               </table>
             </div>
           </div>
+          )}
+
+          {/* SUB-BAB 3: PROGRAM INFAQ UNGGULAN (CRUD) */}
+          {infaqSubTab === 'programs' && (
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] flex items-center gap-2">
+                    <HeartHandshake className="w-5 h-5 text-emerald-800" />
+                    <span>Daftar Program Infaq &amp; Donasi</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Kelola kartu program infaq yang tampil di halaman donasi publik serta opsi pilihan form konfirmasi donatur.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openAddInfaqProgramModal}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors shrink-0 shadow-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Program Infaq</span>
+                </button>
+              </div>
+
+              {(() => {
+                const currentPrograms: InfaqProgramItem[] = (editSettings.infaqPrograms && editSettings.infaqPrograms.length > 0)
+                  ? editSettings.infaqPrograms
+                  : [
+                      {
+                        id: "inf-1",
+                        tag: "BEASISWA DHUAFA",
+                        title: "Beasiswa Santri Qur'an",
+                        description: "Bantuan biaya pendidikan, seragam, dan buku untuk santri yatim dan dhuafa berprestasi agar terus lancar menghafal Al-Qur'an.",
+                        highlight: "Mulai Rp 50.000 / paket",
+                        iconType: "scholarship"
+                      },
+                      {
+                        id: "inf-2",
+                        tag: "WAKAF JARIYAH",
+                        title: "Wakaf Sarana & Bangunan",
+                        description: "Pembangunan dan perluasan ruang kelas baru, perluasan masjid jami' sekolah, serta pengadaan AC ramah lingkungan.",
+                        highlight: "Pahala Mengalir Abadi",
+                        iconType: "building"
+                      },
+                      {
+                        id: "inf-3",
+                        tag: "OPERASIONAL DAKWAH",
+                        title: "Operasional Dakwah & Al-Qur'an",
+                        description: "Pengadaan mushaf Al-Qur'an rasm Utsmani, media pembelajaran digital sains terpadu, dan pelatihan sanad asatidz berkala.",
+                        highlight: "Investasi Generasi Emas",
+                        iconType: "book"
+                      }
+                    ];
+
+                if (currentPrograms.length === 0) {
+                  return (
+                    <div className="p-8 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-slate-500 space-y-2">
+                      <HeartHandshake className="w-8 h-8 text-slate-400 mx-auto" />
+                      <p className="text-xs font-semibold">Belum ada program infaq yang dikonfigurasi.</p>
+                      <p className="text-[11px] text-slate-400">Klik "Tambah Program Infaq" untuk menambahkan program donasi pertama.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {currentPrograms.map((prog, idx) => (
+                      <div
+                        key={prog.id || idx}
+                        className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 flex flex-col justify-between space-y-3"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-md">
+                              {prog.tag || 'PROGRAM'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-semibold">
+                              Icon: {prog.iconType === 'building' ? 'Gedung' : prog.iconType === 'book' ? 'Buku/Al-Qur\'an' : 'Beasiswa'}
+                            </span>
+                          </div>
+
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                            {prog.title}
+                          </h4>
+
+                          <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                            {prog.description}
+                          </p>
+
+                          <div className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                            {prog.highlight}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-slate-200/60">
+                          <button
+                            type="button"
+                            onClick={() => openEditInfaqProgramModal(prog)}
+                            className="px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-emerald-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg flex items-center gap-1 transition-colors"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteInfaqProgram(prog.id, prog.title)}
+                            className="px-2.5 py-1 text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* Modal Input/Edit Program Infaq */}
+              {infaqProgramModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-2 text-slate-900">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center">
+                          <HeartHandshake className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-base font-bold">
+                          {editingInfaqProgramId ? 'Edit Program Infaq' : 'Tambah Program Infaq Baru'}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setInfaqProgramModalOpen(false)}
+                        className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveInfaqProgram} className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Judul Program Donasi *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={infaqProgTitle}
+                          onChange={e => setInfaqProgTitle(e.target.value)}
+                          placeholder="Contoh: Beasiswa Santri Qur'an, Wakaf Gedung..."
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Label / Tag Badge
+                          </label>
+                          <input
+                            type="text"
+                            value={infaqProgTag}
+                            onChange={e => setInfaqProgTag(e.target.value)}
+                            placeholder="Contoh: BEASISWA DHUAFA, WAKAF JARIYAH"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Ikon Kartu
+                          </label>
+                          <select
+                            value={infaqProgIconType}
+                            onChange={e => setInfaqProgIconType(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-800 bg-white"
+                          >
+                            <option value="scholarship">Topi Toga (Beasiswa)</option>
+                            <option value="building">Gedung / Sarana</option>
+                            <option value="book">Buku / Mushaf Qur'an</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Highlight / Target Donasi
+                        </label>
+                        <input
+                          type="text"
+                          value={infaqProgHighlight}
+                          onChange={e => setInfaqProgHighlight(e.target.value)}
+                          placeholder="Contoh: Mulai Rp 50.000 / paket, Pahala Mengalir Abadi"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">
+                          Deskripsi Lengkap Program
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={infaqProgDesc}
+                          onChange={e => setInfaqProgDesc(e.target.value)}
+                          placeholder="Jelaskan tujuan program, sasaran santri, dan keutamaan penyaluran donasi ini..."
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => setInfaqProgramModalOpen(false)}
+                          className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold transition-colors"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-bold shadow-xs transition-colors flex items-center gap-1.5"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Simpan Program</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
             </div>
