@@ -905,51 +905,93 @@ React.useEffect(() => {
 
   // LOGGED IN DASHBOARD
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6">
       
-      {/* Top Bar Header */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-900 text-amber-400 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5" />
+      {/* Sticky Top Header & Navigation Tabs Bar */}
+      <div className="sticky top-0 z-40 bg-[#fdfdfb]/95 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 border-b border-slate-200/90 shadow-2xs space-y-3">
+        {/* Ringkas Header Bar: Judul Admin Ringkas + Tombol Aksi */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-900 text-amber-400 flex items-center justify-center shadow-xs shrink-0">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                  Dashboard Admin CMS
+                </h1>
+                <span className="hidden sm:inline text-xs text-slate-400 font-semibold">•</span>
+                <span className="hidden sm:inline text-xs font-semibold text-emerald-800 line-clamp-1">
+                  {editSettings.schoolName}
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-extrabold text-slate-900">
-              Panel Pengelola CMS • {editSettings.schoolName}
-            </h1>
-            <p className="text-xs text-slate-500">
-              Akses penuh mengedit seluruh halaman: logo, foto, teks visi misi, program, fasilitas, dan berita.
-            </p>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={handlePushToCloud}
+              disabled={isSyncing}
+              className="text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 px-3.5 py-1.5 sm:py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+              title="Kirim dan sinkronkan semua perubahan ke Google Cloud agar tampil di semua perangkat"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Lintas Perangkat'}</span>
+            </button>
+
+            <button
+              onClick={() => setActivePage('beranda')}
+              className="text-xs font-bold text-slate-600 hover:text-emerald-900 px-3 py-1.5 sm:py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1.5 shrink-0"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Lihat Website</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="text-xs font-bold text-rose-700 hover:text-rose-800 px-3 py-1.5 sm:py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-colors flex items-center gap-1.5 shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Keluar</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handlePushToCloud}
-            disabled={isSyncing}
-            className="text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 px-4 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5"
-            title="Kirim dan sinkronkan semua perubahan ke Google Cloud agar tampil di semua perangkat"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Lintas Perangkat'}</span>
-          </button>
-
-          <button
-            onClick={() => setActivePage('beranda')}
-            className="text-xs font-bold text-slate-600 hover:text-emerald-900 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Lihat Website</span>
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="text-xs font-bold text-rose-700 hover:text-rose-800 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Keluar</span>
-          </button>
+        {/* Navigation Tabs (Responsive horizontally scrollable on mobile) */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth pt-1">
+          {[
+            { id: 'overview', label: 'Ringkasan', icon: Database },
+            { id: 'general_branding', label: 'Pengaturan & Hero Beranda', icon: Settings },
+            { id: 'profil', label: `Profil Sekolah (${teachers.length})`, icon: BookOpen },
+            { id: 'kegiatan', label: 'Kegiatan & Ekskul', icon: Calendar },
+            { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
+            { id: 'info_publikasi', label: 'Info & Publikasi', icon: Megaphone },
+            { id: 'infaq', label: `Infaq & QRIS (${infaqRecords.length})`, icon: HeartHandshake },
+            { id: 'advanced_settings', label: 'Pengaturan Lanjutan', icon: Sliders }
+          ].map(item => {
+            const Icon = item.icon;
+            const isActive =
+              activeTab === item.id ||
+              (item.id === 'info_publikasi' &&
+                (activeTab === 'spmb' || activeTab === 'announcements' || activeTab === 'news' || activeTab === 'events')) ||
+              (item.id === 'advanced_settings' &&
+                (activeTab === 'publish_tutorial' || activeTab === 'security' || activeTab === 'google'));
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? 'bg-emerald-900 text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -979,42 +1021,6 @@ React.useEffect(() => {
           ) : null}
         </div>
       )}
-
-      {/* Navigation Tabs (Responsive horizontally scrollable on mobile) */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar scroll-smooth">
-        {[
-          { id: 'overview', label: 'Ringkasan', icon: Database },
-          { id: 'general_branding', label: 'Pengaturan & Hero Beranda', icon: Settings },
-          { id: 'profil', label: `Profil Sekolah (${teachers.length})`, icon: BookOpen },
-          { id: 'kegiatan', label: 'Kegiatan & Ekskul', icon: Calendar },
-          { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
-          { id: 'info_publikasi', label: 'Info & Publikasi', icon: Megaphone },
-          { id: 'infaq', label: `Infaq & QRIS (${infaqRecords.length})`, icon: HeartHandshake },
-          { id: 'advanced_settings', label: 'Pengaturan Lanjutan', icon: Sliders }
-        ].map(item => {
-          const Icon = item.icon;
-          const isActive =
-            activeTab === item.id ||
-            (item.id === 'info_publikasi' &&
-              (activeTab === 'spmb' || activeTab === 'announcements' || activeTab === 'news' || activeTab === 'events')) ||
-            (item.id === 'advanced_settings' &&
-              (activeTab === 'publish_tutorial' || activeTab === 'security' || activeTab === 'google'));
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
-                isActive
-                  ? 'bg-emerald-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* TAB CONTENT: OVERVIEW */}
       {activeTab === 'overview' && (

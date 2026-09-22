@@ -69,18 +69,22 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const isAdminDashboardActive = activePage === 'admin' && isAdminLoggedIn;
+
   return (
     <div className="min-h-screen flex flex-col bg-[#fdfdfb] text-slate-800 font-['Plus_Jakarta_Sans',sans-serif] selection:bg-emerald-200 selection:text-emerald-950">
       
-      {/* Header Navigation */}
-      <Navbar
-        activePage={activePage}
-        setActivePage={handlePageChange}
-        settings={data.settings}
-        isAdminLoggedIn={isAdminLoggedIn}
-        onSelectKegiatanTab={setKegiatanTab}
-        onSelectFasilitasCategory={setFasilitasCategory}
-      />
+      {/* Header Navigation: Ditampilkan di semua halaman publik, disembunyikan saat admin aktif di dashboard CMS */}
+      {!isAdminDashboardActive && (
+        <Navbar
+          activePage={activePage}
+          setActivePage={handlePageChange}
+          settings={data.settings}
+          isAdminLoggedIn={isAdminLoggedIn}
+          onSelectKegiatanTab={setKegiatanTab}
+          onSelectFasilitasCategory={setFasilitasCategory}
+        />
+      )}
 
       {/* Main Content Area with Dynamic Page View */}
       <main className="flex-grow">
