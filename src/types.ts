@@ -298,6 +298,15 @@ export interface SchoolSettings {
     title: string;
     description: string;
   }[];
+  // Mengapa Memilih Kami (Why Choose Us)
+  whyChooseUsImageUrl?: string;
+  whyChooseUsImageBadge?: string;
+  berandaWhyUsImageUrl?: string;
+  berandaWhyUsImageBadge?: string;
+  berandaWhyUsTagline?: string;
+  berandaWhyUsTitle?: string;
+  berandaWhyUsDesc?: string;
+  berandaWhyUsItems?: Array<{ title: string; desc: string; badge?: string }>;
   testimonialsTitle?: string;
   testimonialsSubtitle?: string;
   testimonials?: TestimonialItem[];

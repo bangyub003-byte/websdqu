@@ -172,11 +172,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Brand Logo */}
           <button
             onClick={() => handleNavClick('beranda')}
-            className="flex items-center gap-3 text-left group focus:outline-none"
+            className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none"
             aria-label={`Kembali ke Beranda ${settings.schoolName}`}
           >
             {settings.logoUrl ? (
@@ -184,7 +184,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 src={getOptimizedImageUrl(settings.logoUrl)}
                 alt={`Logo ${settings.schoolName}`}
                 referrerPolicy="no-referrer"
-                className="w-11 h-11 rounded-xl object-contain shadow-md bg-white border border-slate-100 p-1 group-hover:scale-105 transition-transform duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md bg-white border border-slate-100 p-1 group-hover:scale-105 transition-transform duration-200"
                 onError={(e) => {
                   // Fallback ke placeholder jika URL bermasalah
                   e.currentTarget.onerror = null;
@@ -192,15 +192,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
               />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-emerald-900 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform duration-200">
-                <BookOpen className="w-6 h-6" strokeWidth={2.2} />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-900 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform duration-200">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.2} />
               </div>
             )}
             <div>
-              <div className="font-extrabold text-base sm:text-lg tracking-tight text-emerald-950 font-['Plus_Jakarta_Sans',sans-serif] line-clamp-1">
+              <div className="font-extrabold text-sm sm:text-lg tracking-tight text-emerald-950 font-['Plus_Jakarta_Sans',sans-serif] line-clamp-1">
                 {settings.schoolName}
               </div>
-              <div className="text-[10px] sm:text-[11px] font-bold tracking-wider text-emerald-700 uppercase">
+              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-emerald-700 uppercase">
                 PLAYEN • GUNUNGKIDUL
               </div>
             </div>

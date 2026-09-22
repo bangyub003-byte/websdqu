@@ -66,9 +66,9 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
     <div className="space-y-6 sm:space-y-10 pb-10">
       {/* FITUR 2: Running Text (Marquee) Bar - Sticky di Bawah Navbar saat Scroll */}
       {isRunningTextVisible && (
-        <div className="sticky top-16 sm:top-20 z-40 bg-emerald-950/95 backdrop-blur-md text-emerald-100 py-2 sm:py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-md transition-all">
-          <div className="max-w-7xl mx-auto flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-amber-500 text-emerald-950 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] tracking-wide shrink-0 shadow-xs">
+        <div className="sticky top-16 sm:top-20 z-40 w-full bg-emerald-950/95 backdrop-blur-md text-emerald-100 py-2 sm:py-2.5 px-3 sm:px-4 text-xs font-medium border-b border-emerald-800/80 shadow-md transition-all will-change-transform transform-gpu">
+          <div className="max-w-7xl mx-auto flex items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center gap-1.5 bg-amber-500 text-emerald-950 font-extrabold px-2 py-0.5 sm:px-2.5 rounded-full text-[9px] sm:text-[10px] tracking-wide shrink-0 shadow-xs">
               <Megaphone className="w-3 h-3" />
               <span>INFO TERKINI</span>
             </div>
@@ -96,7 +96,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
 
             <button
               onClick={() => setActivePage('spmb')}
-              className="text-amber-400 hover:text-amber-300 font-bold shrink-0 flex items-center gap-1 text-xs pl-2 border-l border-emerald-800"
+              className="text-amber-400 hover:text-amber-300 font-bold shrink-0 flex items-center gap-1 text-[11px] sm:text-xs pl-2 border-l border-emerald-800"
             >
               <span>Pelajari</span>
               <ArrowRight className="w-3 h-3" />
@@ -375,7 +375,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
               <img
-                src={getOptimizedImageUrl(settings.berandaWhyUsImageUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80")}
+                src={getOptimizedImageUrl(settings.whyChooseUsImageUrl || settings.berandaWhyUsImageUrl, "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80")}
                 alt="Pendampingan Santri SDQU Al I'tisham"
                 referrerPolicy="no-referrer"
                 className="w-full h-[440px] sm:h-[480px] object-cover"
@@ -387,7 +387,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
               
               {/* Floating Top Badge */}
               <div className="absolute top-4 right-4 bg-amber-600 text-white text-[11px] font-extrabold px-3 py-1.5 rounded-xl shadow-md uppercase tracking-wider">
-                100% Pendampingan Personal
+                {settings.whyChooseUsImageBadge || settings.berandaWhyUsImageBadge || "100% Pendampingan Personal"}
               </div>
 
               {/* Floating Bottom Pill */}

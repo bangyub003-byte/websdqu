@@ -25,6 +25,7 @@ import { ThumbnailUploader } from '../common/ThumbnailUploader';
 import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
 import { AdminProfilTab } from '../admin/AdminProfilTab';
+import { AdminPengaturanLanjutanTab } from '../admin/AdminPengaturanLanjutanTab';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import {
   ShieldCheck,
@@ -62,6 +63,7 @@ import {
   ArrowUp,
   ArrowDown,
   CreditCard,
+  Sliders,
   X
 } from 'lucide-react';
 
@@ -105,11 +107,13 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
     | 'facilities'
     | 'teachers'
     | 'kegiatan'
+    | 'info_publikasi'
     | 'spmb'
     | 'announcements'
     | 'news'
     | 'events'
     | 'infaq'
+    | 'advanced_settings'
     | 'security'
     | 'google'
     | 'publish_tutorial'
@@ -125,10 +129,12 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
   const [programsSubTab, setProgramsSubTab] = useState<'featured' | 'extracurriculars' | 'achievements'>('featured');
   const [facilitiesSubTab, setFacilitiesSubTab] = useState<'list' | 'add' | 'categories'>('list');
   const [teachersSubTab, setTeachersSubTab] = useState<'list' | 'add' | 'header'>('list');
+  const [infoSubTab, setInfoSubTab] = useState<'spmb' | 'announcements' | 'news' | 'events'>('spmb');
   const [announcementsSubTab, setAnnouncementsSubTab] = useState<'list' | 'add'>('list');
   const [newsSubTab, setNewsSubTab] = useState<'list' | 'add'>('list');
   const [eventsSubTab, setEventsSubTab] = useState<'list' | 'add'>('list');
   const [infaqSubTab, setInfaqSubTab] = useState<'bank_qris' | 'records'>('bank_qris');
+  const [advancedSubTab, setAdvancedSubTab] = useState<'database' | 'security' | 'google'>('database');
   const [publishSubTab, setPublishSubTab] = useState<'backup' | 'guide'>('backup');
   const [securitySubTab, setSecuritySubTab] = useState<'password' | 'tips'>('password');
   const [googleSubTab, setGoogleSubTab] = useState<'config' | 'actions' | 'script_code'>('config');
@@ -362,6 +368,7 @@ React.useEffect(() => {
   const [appsScriptSaved, setAppsScriptSaved] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [testConnectionFeedback, setTestConnectionFeedback] = useState<{ success: boolean; message: string; details?: any } | null>(null);
   const [syncFeedback, setSyncFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   // Status unggah gambar ke Google Drive & sinkronisasi cloud
@@ -465,18 +472,18 @@ React.useEffect(() => {
 
   const handleTestConnection = async () => {
     setIsTestingConnection(true);
-    setSyncFeedback(null);
+    setTestConnectionFeedback(null);
     try {
       dataService.setAppsScriptUrl(appsScriptUrlInput);
       dataService.setSpreadsheetId(spreadsheetIdInput);
       dataService.setDriveFolderId(driveFolderIdInput);
       const res = await dataService.testAppsScriptConnection();
-      setSyncFeedback(res);
+      setTestConnectionFeedback(res);
     } catch (e: any) {
-      setSyncFeedback({ success: false, message: 'Gagal menguji koneksi: ' + (e.message || 'Periksa koneksi internet') });
+      setTestConnectionFeedback({ success: false, message: 'Gagal menguji koneksi: ' + (e.message || 'Periksa koneksi internet') });
     } finally {
       setIsTestingConnection(false);
-      setTimeout(() => setSyncFeedback(null), 8000);
+      setTimeout(() => setTestConnectionFeedback(null), 8000);
     }
   };
 
@@ -861,17 +868,17 @@ React.useEffect(() => {
           { id: 'profil', label: `Profil Sekolah (${teachers.length})`, icon: BookOpen },
           { id: 'kegiatan', label: 'Kegiatan & Ekskul', icon: Calendar },
           { id: 'facilities', label: `Fasilitas (${facilities.length})`, icon: Building },
-          { id: 'spmb', label: 'Alur & SPMB', icon: CheckCircle2 },
-          { id: 'announcements', label: `Pengumuman (${announcements.length})`, icon: Megaphone },
-          { id: 'news', label: `Berita (${news.length})`, icon: Newspaper },
-          { id: 'events', label: `Agenda (${events.length})`, icon: Calendar },
+          { id: 'info_publikasi', label: 'Info & Publikasi', icon: Megaphone },
           { id: 'infaq', label: `Infaq & QRIS (${infaqRecords.length})`, icon: HeartHandshake },
-          { id: 'publish_tutorial', label: 'Publikasi Web & Database', icon: Sparkles },
-          { id: 'security', label: 'Keamanan Sandi', icon: KeyRound },
-          { id: 'google', label: 'Integrasi Google Apps Script', icon: Database }
+          { id: 'advanced_settings', label: 'Pengaturan Lanjutan', icon: Sliders }
         ].map(item => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive =
+            activeTab === item.id ||
+            (item.id === 'info_publikasi' &&
+              (activeTab === 'spmb' || activeTab === 'announcements' || activeTab === 'news' || activeTab === 'events')) ||
+            (item.id === 'advanced_settings' &&
+              (activeTab === 'publish_tutorial' || activeTab === 'security' || activeTab === 'google'));
           return (
             <button
               key={item.id}
@@ -2033,6 +2040,54 @@ React.useEffect(() => {
               />
             </div>
 
+            {/* Foto Samping Kiri & Badge Mengapa Memilih Kami */}
+            <div className="p-4 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+              <div className="border-b border-slate-200 pb-2">
+                <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-800" />
+                  <span>Foto Samping Kiri &amp; Badge Gambar</span>
+                </h5>
+                <p className="text-[11px] text-slate-500">
+                  Ubah foto santri/kegiatan di samping kiri dan teks badge floating di atas foto.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Teks Badge di Atas Foto</label>
+                <input
+                  type="text"
+                  value={editSettings.whyChooseUsImageBadge || editSettings.berandaWhyUsImageBadge || ''}
+                  onChange={e => setEditSettings({
+                    ...editSettings,
+                    whyChooseUsImageBadge: e.target.value,
+                    berandaWhyUsImageBadge: e.target.value
+                  })}
+                  placeholder="Contoh: 100% Pendampingan Personal atau UNGGUL & BERAKHLAK"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold"
+                />
+              </div>
+
+              <ThumbnailUploader
+                label="Foto Samping Kiri (Pendampingan Santri)"
+                value={editSettings.whyChooseUsImageUrl || editSettings.berandaWhyUsImageUrl || ''}
+                onChange={url => setEditSettings({
+                  ...editSettings,
+                  whyChooseUsImageUrl: url,
+                  berandaWhyUsImageUrl: url
+                })}
+                onUploadFile={(file, label) =>
+                  handleFileUpload(file, url => setEditSettings({
+                    ...editSettings,
+                    whyChooseUsImageUrl: url,
+                    berandaWhyUsImageUrl: url
+                  }), label)
+                }
+                aspectRatio="portrait"
+                fit="cover"
+                helperText="Upload foto pendampingan santri atau pilih dari galeri komputer/HP"
+              />
+            </div>
+
             {/* Cards Why Choose Us with Full CRUD */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -3001,542 +3056,506 @@ React.useEffect(() => {
         />
       )}
 
-      {/* TAB CONTENT: ALUR & SPMB */}
-      {activeTab === 'spmb' && (
-        <AdminSpmbTab
-          settings={editSettings}
-          onUpdateSettings={setEditSettings}
-          requestDelete={requestDelete}
-          onSave={handleSaveSettings}
-          settingsSaved={settingsSaved}
-        />
-      )}
-
-      {/* TAB CONTENT: PENGUMUMAN */}
-      {activeTab === 'announcements' && (
+      {/* TAB CONTENT: INFO & PUBLIKASI (GABUNGAN ALUR & SPMB, PENGUMUMAN, BERITA, AGENDA) */}
+      {(activeTab === 'info_publikasi' || activeTab === 'spmb' || activeTab === 'announcements' || activeTab === 'news' || activeTab === 'events') && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Kelola Pengumuman Sekolah
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
+                  PORTAL INFORMASI TERPADU
+                </span>
+                <span className="text-xs text-slate-400 font-semibold">• 4 Modul Terintegrasi</span>
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-1.5">
+                Kelola Informasi &amp; Publikasi Madrasah
               </h3>
-              <p className="text-xs text-slate-500">
-                Pengumuman aktif akan muncul di pita informasi atas website.
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pusat kendali Alur &amp; SPMB, Pengumuman pita informasi, Berita &amp; artikel madrasah, serta Agenda kegiatan sekolah.
               </p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setAnnouncementsSubTab(announcementsSubTab === 'list' ? 'add' : 'list')}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{announcementsSubTab === 'list' ? 'Tambah Pengumuman' : 'Lihat Daftar Pengumuman'}</span>
-            </button>
           </div>
 
           <div className="flex flex-col md:flex-row gap-6 items-start">
             {/* Sidebar Sub-Bab Kiri */}
             <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
               <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Pengumuman
+                Sub-Bab Publikasi
               </div>
               {[
-                { id: 'list', label: '1. Daftar Pengumuman', desc: `${announcements.length} pengumuman terdata` },
-                { id: 'add', label: '2. Tambah Pengumuman', desc: 'Formulir pengumuman baru' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setAnnouncementsSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    announcementsSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${announcementsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Form Tambah */}
-          {announcementsSubTab === 'add' && (
-            <form onSubmit={handleCreateAnnouncement} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <div className="text-xs font-bold text-slate-900">Buat Pengumuman Baru:</div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Judul Pengumuman *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newAnnTitle}
-                    onChange={e => setNewAnnTitle(e.target.value)}
-                    placeholder="Contoh: Jadwal Observasi Calon Santri Baru"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Kategori</label>
-                  <select
-                    value={newAnnCategory}
-                    onChange={e => setNewAnnCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  >
-                    <option value="PSB">PSB</option>
-                    <option value="Akademik">Akademik</option>
-                    <option value="Umum">Umum</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">Isi Pengumuman</label>
-                <textarea
-                  rows={2}
-                  value={newAnnContent}
-                  onChange={e => setNewAnnContent(e.target.value)}
-                  placeholder="Keterangan rincian pengumuman..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setAnnouncementsSubTab('list')}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
-                >
-                  Simpan &amp; Publikasikan
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* List Pengumuman */}
-          {announcementsSubTab === 'list' && (
-          <div className="space-y-3">
-            {announcements.map(ann => (
-              <div
-                key={ann.id}
-                className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded">
-                      {ann.category}
-                    </span>
-                    <span className="text-xs text-slate-400">{ann.date}</span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                        ann.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {ann.isActive ? 'Aktif di Beranda' : 'Nonaktif'}
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-900">{ann.title}</h4>
-                  <p className="text-xs text-slate-600">{ann.content}</p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
+                { id: 'spmb', label: '1. Alur & SPMB', desc: 'Alur PSB, kuota & integrasi portal', icon: CheckCircle2 },
+                { id: 'announcements', label: '2. Pengumuman', desc: `${announcements.length} pengumuman terdata`, icon: Megaphone },
+                { id: 'news', label: '3. Berita & Artikel', desc: `${news.length} artikel terbit`, icon: Newspaper },
+                { id: 'events', label: '4. Agenda Sekolah', desc: `${events.length} agenda terdaftar`, icon: Calendar }
+              ].map(sub => {
+                const SubIcon = sub.icon;
+                const isSubActive = (activeTab === 'info_publikasi' && infoSubTab === sub.id) || activeTab === sub.id;
+                return (
                   <button
-                    onClick={() => handleToggleAnnouncement(ann.id, ann.isActive)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                      ann.isActive
-                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                        : 'bg-emerald-900 hover:bg-emerald-800 text-white'
+                    key={sub.id}
+                    type="button"
+                    onClick={() => {
+                      setInfoSubTab(sub.id as any);
+                      setActiveTab('info_publikasi');
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
+                      isSubActive
+                        ? 'bg-emerald-900 text-white shadow-xs'
+                        : 'text-slate-700 hover:bg-slate-200/60'
                     }`}
                   >
-                    {ann.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                    <div className="flex items-center gap-2">
+                      <SubIcon className={`w-3.5 h-3.5 ${isSubActive ? 'text-amber-300' : 'text-slate-500'}`} />
+                      <span>{sub.label}</span>
+                    </div>
+                    <span className={`text-[10px] font-normal mt-0.5 ml-5.5 ${isSubActive ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {sub.desc}
+                    </span>
                   </button>
-
-                  <button
-                    onClick={() => handleDeleteAnnouncement(ann.id)}
-                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                    title="Hapus Pengumuman"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB CONTENT: BERITA */}
-      {activeTab === 'news' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Berita &amp; Artikel Sekolah ({news.length})
-              </h3>
-              <p className="text-xs text-slate-500">
-                Artikel informasi yang tampil di halaman Berita / Beranda.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setNewsSubTab(newsSubTab === 'list' ? 'add' : 'list')}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{newsSubTab === 'list' ? 'Tambah Berita Baru' : 'Lihat Daftar Berita'}</span>
-            </button>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Berita
-              </div>
-              {[
-                { id: 'list', label: '1. Daftar Berita & Artikel', desc: `${news.length} artikel terbit` },
-                { id: 'add', label: '2. Tulis Berita Baru', desc: 'Formulir posting artikel' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setNewsSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    newsSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${newsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
+                );
+              })}
             </div>
 
             {/* Panel Konten Kanan */}
             <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Form Tambah Berita Baru */}
-          {newsSubTab === 'add' && (
-            <form onSubmit={handleCreateNews} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <div className="text-xs font-bold text-slate-900">Tulis Berita Baru:</div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Judul Berita *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newNewsTitle}
-                    onChange={e => setNewNewsTitle(e.target.value)}
-                    placeholder="Contoh: Santri SDQU Al I'tisham Raih Juara 1 MTQ Tingkat DIY"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Kategori</label>
-                  <select
-                    value={newNewsCategory}
-                    onChange={e => setNewNewsCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  >
-                    <option value="Prestasi">Prestasi</option>
-                    <option value="Kegiatan">Kegiatan</option>
-                    <option value="Kajian">Kajian</option>
-                    <option value="Akademik">Akademik</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">Ringkasan Berita (Excerpt)</label>
-                <input
-                  type="text"
-                  value={newNewsExcerpt}
-                  onChange={e => setNewNewsExcerpt(e.target.value)}
-                  placeholder="Ringkasan singkat yang menarik untuk kartu berita..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+              {/* SUB 1: ALUR & SPMB */}
+              {((infoSubTab === 'spmb' && activeTab === 'info_publikasi') || activeTab === 'spmb') && (
+                <AdminSpmbTab
+                  settings={editSettings}
+                  onUpdateSettings={setEditSettings}
+                  requestDelete={requestDelete}
+                  onSave={handleSaveSettings}
+                  settingsSaved={settingsSaved}
                 />
-              </div>
+              )}
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">Isi Berita Lengkap</label>
-                <textarea
-                  rows={3}
-                  value={newNewsContent}
-                  onChange={e => setNewNewsContent(e.target.value)}
-                  placeholder="Ketik konten berita atau rincian kegiatan di sini..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                />
-              </div>
+              {/* SUB 2: PENGUMUMAN */}
+              {((infoSubTab === 'announcements' && activeTab === 'info_publikasi') || activeTab === 'announcements') && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Kelola Pengumuman Sekolah ({announcements.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Pengumuman aktif akan muncul di pita informasi atas website.
+                      </p>
+                    </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <ThumbnailUploader
-                    label="Foto Dokumentasi Berita (Thumbnail)"
-                    value={newNewsImage}
-                    onChange={setNewNewsImage}
-                    onUploadFile={(file, label) => handleFileUpload(file, setNewNewsImage, label)}
-                    aspectRatio="video"
-                    fit="cover"
-                    helperText="Pilih foto kegiatan atau berita dari galeri HP atau komputer"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Penulis / Humas</label>
-                  <input
-                    type="text"
-                    value={newNewsAuthor}
-                    onChange={e => setNewNewsAuthor(e.target.value)}
-                    placeholder="Humas SDQU Al I'tisham"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setNewsSubTab('list')}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
-                >
-                  Simpan &amp; Terbitkan Berita
-                </button>
-              </div>
-            </form>
-          )}
-
-          {newsSubTab === 'list' && (
-          <div className="space-y-3">
-            {news.map(item => (
-              <div key={item.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-16 h-16 rounded-xl object-cover shrink-0"
-                  />
-                  <div>
-                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
-                      {item.category}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900 mt-1">{item.title}</h4>
-                    <p className="text-xs text-slate-500 line-clamp-1">{item.excerpt}</p>
+                    <button
+                      type="button"
+                      onClick={() => setAnnouncementsSubTab(announcementsSubTab === 'list' ? 'add' : 'list')}
+                      className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{announcementsSubTab === 'list' ? 'Tambah Pengumuman' : 'Lihat Daftar Pengumuman'}</span>
+                    </button>
                   </div>
+
+                  {/* Form Tambah */}
+                  {announcementsSubTab === 'add' && (
+                    <form onSubmit={handleCreateAnnouncement} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="text-xs font-bold text-slate-900">Buat Pengumuman Baru:</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Judul Pengumuman *</label>
+                          <input
+                            type="text"
+                            required
+                            value={newAnnTitle}
+                            onChange={e => setNewAnnTitle(e.target.value)}
+                            placeholder="Contoh: Jadwal Observasi Calon Santri Baru"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Kategori</label>
+                          <select
+                            value={newAnnCategory}
+                            onChange={e => setNewAnnCategory(e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          >
+                            <option value="PSB">PSB</option>
+                            <option value="Akademik">Akademik</option>
+                            <option value="Umum">Umum</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-600">Isi Pengumuman</label>
+                        <textarea
+                          rows={2}
+                          value={newAnnContent}
+                          onChange={e => setNewAnnContent(e.target.value)}
+                          placeholder="Keterangan rincian pengumuman..."
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setAnnouncementsSubTab('list')}
+                          className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
+                        >
+                          Simpan &amp; Publikasikan
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* List Pengumuman */}
+                  {announcementsSubTab === 'list' && (
+                    <div className="space-y-3">
+                      {announcements.map(ann => (
+                        <div
+                          key={ann.id}
+                          className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4 bg-slate-50/50"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded">
+                                {ann.category}
+                              </span>
+                              <span className="text-xs text-slate-400">{ann.date}</span>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                  ann.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'
+                                }`}
+                              >
+                                {ann.isActive ? 'Aktif di Beranda' : 'Nonaktif'}
+                              </span>
+                            </div>
+                            <h4 className="text-sm font-bold text-slate-900">{ann.title}</h4>
+                            <p className="text-xs text-slate-600">{ann.content}</p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => handleToggleAnnouncement(ann.id, ann.isActive)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                ann.isActive
+                                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                  : 'bg-emerald-900 hover:bg-emerald-800 text-white'
+                              }`}
+                            >
+                              {ann.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteAnnouncement(ann.id)}
+                              className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Hapus Pengumuman"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <button
-                  onClick={() => {
-                    requestDelete('Hapus Berita', `Apakah Anda yakin ingin menghapus berita "${item.title}"?`, () => {
-                      dataService.deleteNews(item.id);
-                    });
-                  }}
-                  className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0"
-                  title="Hapus Berita"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          )}
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB CONTENT: AGENDA */}
-      {activeTab === 'events' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Agenda Kegiatan Sekolah ({events.length})
-              </h3>
-              <p className="text-xs text-slate-500">
-                Kalender jadwal akademik dan kegiatan madrasah.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEventsSubTab(eventsSubTab === 'list' ? 'add' : 'list')}
-              className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{eventsSubTab === 'list' ? 'Tambah Agenda Baru' : 'Lihat Jadwal Agenda'}</span>
-            </button>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Agenda
-              </div>
-              {[
-                { id: 'list', label: '1. Jadwal Agenda', desc: `${events.length} agenda terdaftar` },
-                { id: 'add', label: '2. Tambah Agenda Baru', desc: 'Formulir kalender baru' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setEventsSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    eventsSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${eventsSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Form Tambah Agenda Baru */}
-          {eventsSubTab === 'add' && (
-            <form onSubmit={handleCreateEvent} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <div className="text-xs font-bold text-slate-900">Tambah Agenda Baru:</div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Nama Agenda *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newEventTitle}
-                    onChange={e => setNewEventTitle(e.target.value)}
-                    placeholder="Contoh: Dauroh Tahfidz Al-Qur'an &amp; Mabit Santri"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Kategori</label>
-                  <select
-                    value={newEventCategory}
-                    onChange={e => setNewEventCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  >
-                    <option value="Tahfidz">Tahfidz</option>
-                    <option value="Akademik">Akademik</option>
-                    <option value="Parenting">Parenting</option>
-                    <option value="Sosial">Sosial</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Tanggal &amp; Waktu Pelaksanaan</label>
-                  <input
-                    type="text"
-                    value={newEventDateRange}
-                    onChange={e => setNewEventDateRange(e.target.value)}
-                    placeholder="Contoh: 15-17 Ramadhan 1446 H / 08.00 - 15.00 WIB"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-600">Lokasi Kegiatan</label>
-                  <input
-                    type="text"
-                    value={newEventLocation}
-                    onChange={e => setNewEventLocation(e.target.value)}
-                    placeholder="Kompleks SDQU Al I'tisham Playen"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">Deskripsi / Catatan Agenda</label>
-                <textarea
-                  rows={2}
-                  value={newEventDesc}
-                  onChange={e => setNewEventDesc(e.target.value)}
-                  placeholder="Keterangan singkat agenda kegiatan..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEventsSubTab('list')}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
-                >
-                  Simpan Agenda
-                </button>
-              </div>
-            </form>
-          )}
-
-          {eventsSubTab === 'list' && (
-          <div className="space-y-3">
-            {events.map((ev, idx) => (
-              <div key={`${ev.id}-${idx}`} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
-                      {ev.category}
-                    </span>
-                    <span className="text-xs text-slate-500 font-semibold">{ev.dateRange} • {ev.location}</span>
+              {/* SUB 3: BERITA */}
+              {((infoSubTab === 'news' && activeTab === 'info_publikasi') || activeTab === 'news') && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Berita &amp; Artikel Sekolah ({news.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Artikel informasi yang tampil di halaman Berita / Beranda.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNewsSubTab(newsSubTab === 'list' ? 'add' : 'list')}
+                      className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{newsSubTab === 'list' ? 'Tambah Berita Baru' : 'Lihat Daftar Berita'}</span>
+                    </button>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 mt-1">{ev.title}</h4>
-                  <p className="text-xs text-slate-600">{ev.description}</p>
+
+                  {/* Form Tambah Berita Baru */}
+                  {newsSubTab === 'add' && (
+                    <form onSubmit={handleCreateNews} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="text-xs font-bold text-slate-900">Tulis Berita Baru:</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Judul Berita *</label>
+                          <input
+                            type="text"
+                            required
+                            value={newNewsTitle}
+                            onChange={e => setNewNewsTitle(e.target.value)}
+                            placeholder="Contoh: Santri SDQU Al I'tisham Raih Juara 1 MTQ Tingkat DIY"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Kategori</label>
+                          <select
+                            value={newNewsCategory}
+                            onChange={e => setNewNewsCategory(e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          >
+                            <option value="Prestasi">Prestasi</option>
+                            <option value="Kegiatan">Kegiatan</option>
+                            <option value="Kajian">Kajian</option>
+                            <option value="Akademik">Akademik</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-600">Ringkasan Berita (Excerpt)</label>
+                        <input
+                          type="text"
+                          value={newNewsExcerpt}
+                          onChange={e => setNewNewsExcerpt(e.target.value)}
+                          placeholder="Ringkasan singkat yang menarik untuk kartu berita..."
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-600">Isi Berita Lengkap</label>
+                        <textarea
+                          rows={3}
+                          value={newNewsContent}
+                          onChange={e => setNewNewsContent(e.target.value)}
+                          placeholder="Ketik konten berita atau rincian kegiatan di sini..."
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="sm:col-span-2">
+                          <ThumbnailUploader
+                            label="Foto Dokumentasi Berita (Thumbnail)"
+                            value={newNewsImage}
+                            onChange={setNewNewsImage}
+                            onUploadFile={(file, label) => handleFileUpload(file, setNewNewsImage, label)}
+                            aspectRatio="video"
+                            fit="cover"
+                            helperText="Pilih foto kegiatan atau berita dari galeri HP atau komputer"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Penulis / Humas</label>
+                          <input
+                            type="text"
+                            value={newNewsAuthor}
+                            onChange={e => setNewNewsAuthor(e.target.value)}
+                            placeholder="Humas SDQU Al I'tisham"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewsSubTab('list')}
+                          className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
+                        >
+                          Simpan &amp; Terbitkan Berita
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {newsSubTab === 'list' && (
+                    <div className="space-y-3">
+                      {news.map(item => (
+                        <div key={item.id} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4 bg-slate-50/50">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-16 h-16 rounded-xl object-cover shrink-0"
+                            />
+                            <div>
+                              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+                                {item.category}
+                              </span>
+                              <h4 className="text-sm font-bold text-slate-900 mt-1">{item.title}</h4>
+                              <p className="text-xs text-slate-500 line-clamp-1">{item.excerpt}</p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              requestDelete('Hapus Berita', `Apakah Anda yakin ingin menghapus berita "${item.title}"?`, () => {
+                                dataService.deleteNews(item.id);
+                              });
+                            }}
+                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0"
+                            title="Hapus Berita"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <button
-                  onClick={() => {
-                    requestDelete('Hapus Agenda Kegiatan', `Apakah Anda yakin ingin menghapus agenda "${ev.title}"?`, () => {
-                      dataService.deleteEvent(ev.id);
-                    });
-                  }}
-                  className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0"
-                  title="Hapus Agenda"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          )}
+              {/* SUB 4: AGENDA */}
+              {((infoSubTab === 'events' && activeTab === 'info_publikasi') || activeTab === 'events') && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Agenda Kegiatan Sekolah ({events.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Kalender jadwal akademik dan kegiatan madrasah.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEventsSubTab(eventsSubTab === 'list' ? 'add' : 'list')}
+                      className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{eventsSubTab === 'list' ? 'Tambah Agenda Baru' : 'Lihat Jadwal Agenda'}</span>
+                    </button>
+                  </div>
 
+                  {/* Form Tambah Agenda Baru */}
+                  {eventsSubTab === 'add' && (
+                    <form onSubmit={handleCreateEvent} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="text-xs font-bold text-slate-900">Tambah Agenda Baru:</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Nama Agenda *</label>
+                          <input
+                            type="text"
+                            required
+                            value={newEventTitle}
+                            onChange={e => setNewEventTitle(e.target.value)}
+                            placeholder="Contoh: Dauroh Tahfidz Al-Qur'an &amp; Mabit Santri"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Kategori</label>
+                          <select
+                            value={newEventCategory}
+                            onChange={e => setNewEventCategory(e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          >
+                            <option value="Tahfidz">Tahfidz</option>
+                            <option value="Akademik">Akademik</option>
+                            <option value="Parenting">Parenting</option>
+                            <option value="Sosial">Sosial</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Tanggal &amp; Waktu Pelaksanaan</label>
+                          <input
+                            type="text"
+                            value={newEventDateRange}
+                            onChange={e => setNewEventDateRange(e.target.value)}
+                            placeholder="Contoh: 15-17 Ramadhan 1446 H / 08.00 - 15.00 WIB"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-600">Lokasi Kegiatan</label>
+                          <input
+                            type="text"
+                            value={newEventLocation}
+                            onChange={e => setNewEventLocation(e.target.value)}
+                            placeholder="Kompleks SDQU Al I'tisham Playen"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-600">Deskripsi / Catatan Agenda</label>
+                        <textarea
+                          rows={2}
+                          value={newEventDesc}
+                          onChange={e => setNewEventDesc(e.target.value)}
+                          placeholder="Keterangan singkat agenda kegiatan..."
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setEventsSubTab('list')}
+                          className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 text-xs bg-emerald-900 text-white font-bold rounded-lg hover:bg-emerald-800"
+                        >
+                          Simpan Agenda
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {eventsSubTab === 'list' && (
+                    <div className="space-y-3">
+                      {events.map((ev, idx) => (
+                        <div key={`${ev.id}-${idx}`} className="p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-4 bg-slate-50/50">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                                {ev.category}
+                              </span>
+                              <span className="text-xs text-slate-500 font-semibold">{ev.dateRange} • {ev.location}</span>
+                            </div>
+                            <h4 className="text-sm font-bold text-slate-900 mt-1">{ev.title}</h4>
+                            <p className="text-xs text-slate-600">{ev.description}</p>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              requestDelete('Hapus Agenda Kegiatan', `Apakah Anda yakin ingin menghapus agenda "${ev.title}"?`, () => {
+                                dataService.deleteEvent(ev.id);
+                              });
+                            }}
+                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0"
+                            title="Hapus Agenda"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -3924,372 +3943,39 @@ React.useEffect(() => {
         </div>
       )}
 
-      {/* TAB CONTENT: KEAMANAN SANDI ADMIN */}
-      {activeTab === 'security' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="border-b border-slate-100 pb-4">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-emerald-800" />
-              <span>Keamanan &amp; Hak Akses Panel Admin</span>
-            </h3>
-            <p className="text-xs text-slate-500">
-              Kelola keamanan akun staf TU dan kata sandi login panel CMS.
-            </p>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Keamanan
-              </div>
-              {[
-                { id: 'password', label: '1. Kata Sandi Admin', desc: 'Perbarui sandi login panel' },
-                { id: 'tips', label: '2. Tips Keamanan TU', desc: 'Panduan perlindungan data' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setSecuritySubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    securitySubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${securitySubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-              {securitySubTab === 'password' && (
-                <form onSubmit={handleChangePassword} className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-6 max-w-xl">
-                  <div className="space-y-1 border-b border-slate-200 pb-3">
-                    <h4 className="text-sm font-bold text-slate-900">Perbarui Kata Sandi Admin</h4>
-                    <p className="text-xs text-slate-500">
-                      Sandi tersimpan secara aman di peramban Anda dan tidak pernah diperlihatkan kepada pengunjung website.
-                    </p>
-                  </div>
-
-                  {pwdFeedback && (
-                    <div className={`p-3 rounded-xl text-xs flex items-center gap-2 font-semibold ${
-                      pwdFeedback.success
-                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-800 border border-rose-200'
-                    }`}>
-                      {pwdFeedback.success ? <Check className="w-4 h-4 text-emerald-700 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
-                      <span>{pwdFeedback.message}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700">Kata Sandi Saat Ini</label>
-                      <input
-                        type="password"
-                        required
-                        value={currentPasswordInput}
-                        onChange={e => setCurrentPasswordInput(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700">Kata Sandi Baru (Minimal 6 karakter)</label>
-                      <input
-                        type="password"
-                        required
-                        value={newPasswordInput}
-                        onChange={e => setNewPasswordInput(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-700">Konfirmasi Kata Sandi Baru</label>
-                      <input
-                        type="password"
-                        required
-                        value={confirmPasswordInput}
-                        onChange={e => setConfirmPasswordInput(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-800"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>Simpan Kata Sandi Baru</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {securitySubTab === 'tips' && (
-                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4 max-w-xl">
-                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-800" />
-                    <span>Panduan Keamanan Akun Staf TU</span>
-                  </h4>
-                  <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
-                    <p>
-                      <strong>1. Rahasiakan Kata Sandi:</strong> Jangan pernah membagikan kata sandi admin ke pihak di luar pengurus yayasan atau staf tata usaha sekolah.
-                    </p>
-                    <p>
-                      <strong>2. Buat Cadangan Berkala:</strong> Unduh file cadangan database JSON secara rutin di menu <em>Publikasi Web & Database</em> untuk mengantisipasi insiden peramban atau pergantian laptop staf.
-                    </p>
-                    <p>
-                      <strong>3. Gunakan Sandi Kuat:</strong> Kombinasikan huruf besar, huruf kecil, dan angka dengan panjang minimal 8 karakter.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* TAB CONTENT: PENGATURAN LANJUTAN (CADANGAN & DATABASE, KEAMANAN SANDI, INTEGRASI GOOGLE) */}
+      {(activeTab === 'advanced_settings' || activeTab === 'publish_tutorial' || activeTab === 'security' || activeTab === 'google') && (
+        <AdminPengaturanLanjutanTab
+          settings={settings}
+          dataService={dataService}
+          spreadsheetIdInput={spreadsheetIdInput}
+          setSpreadsheetIdInput={setSpreadsheetIdInput}
+          driveFolderIdInput={driveFolderIdInput}
+          setDriveFolderIdInput={setDriveFolderIdInput}
+          appsScriptUrlInput={appsScriptUrlInput}
+          setAppsScriptUrlInput={setAppsScriptUrlInput}
+          handleSaveGoogleSettings={handleSaveGoogleSettings}
+          appsScriptSaved={appsScriptSaved}
+          handleSyncGoogle={handleSyncGoogle}
+          isSyncing={isSyncing}
+          syncFeedback={syncFeedback}
+          handleFormatSheets={handleFormatSheets}
+          isFormattingSheets={isFormattingSheets}
+          handleTestConnection={handleTestConnection}
+          isTestingConnection={isTestingConnection}
+          testConnectionFeedback={testConnectionFeedback}
+          copiedCode={copiedCode}
+          setCopiedCode={setCopiedCode}
+          handleExportDatabase={handleExportDatabase}
+          handleImportDatabase={handleImportDatabase}
+          backupFeedback={backupFeedback}
+          setBackupFeedback={setBackupFeedback}
+          requestDelete={requestDelete}
+          activeSubTab={advancedSubTab}
+          onChangeSubTab={setAdvancedSubTab}
+        />
       )}
 
-      {/* TAB CONTENT: PUBLIKASI WEB & DATABASE REALTIME */}
-      {activeTab === 'publish_tutorial' && (
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Publikasi &amp; Database
-              </div>
-              {[
-                { id: 'backup', label: '1. Cadangan & Pemulihan', desc: 'Unduh & pulihkan data JSON' },
-                { id: 'guide', label: '2. Panduan Go-Live / Hosting', desc: 'Deploy Netlify & Domain .sch.id' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setPublishSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    publishSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${publishSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Realtime Database & Backup/Restore Panel */}
-          {publishSubTab === 'backup' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                    Sinkronisasi Realtime Aktif
-                  </span>
-                  <span className="text-xs text-slate-400">• Cross-tab &amp; Instant State</span>
-                </div>
-                <h3 className="text-xl font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif]">
-                  Pusat Kendali Database &amp; Cadangan Realtime
-                </h3>
-                <p className="text-xs text-slate-600 max-w-2xl">
-                  Setiap perubahan teks, foto, guru, fasilitas, dan berita yang Anda simpan di panel admin ini langsung muncul seketika secara <strong>realtime</strong> di seluruh tab peramban tanpa perlu memuat ulang halaman.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleExportDatabase}
-                  className="bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Unduh Cadangan (.JSON)</span>
-                </button>
-              </div>
-            </div>
-
-            {backupFeedback && (
-              <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${
-                backupFeedback.success
-                  ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                  : 'bg-rose-50 text-rose-900 border border-rose-200'
-              }`}>
-                {backupFeedback.success ? <Check className="w-4 h-4 text-emerald-700 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
-                <span>{backupFeedback.message}</span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Database className="w-3.5 h-3.5 text-emerald-800" />
-                  <span>Pulihkan / Impor Database Sekolah</span>
-                </h4>
-                <p className="text-xs text-slate-600">
-                  Unggah berkas cadangan JSON yang pernah Anda unduh untuk mengembalikan seluruh konten, berita, fasilitas, dan pengaturan secara instan.
-                </p>
-                <label className="cursor-pointer bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-xs transition-colors">
-                  <Upload className="w-3.5 h-3.5 text-emerald-800" />
-                  <span>Pilih File Backup (.json)</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={e => {
-                      if (e.target.files?.[0]) {
-                        handleImportDatabase(e.target.files[0]);
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-3">
-                <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 text-amber-800" />
-                  <span>Reset Data ke Standar Pabrik</span>
-                </h4>
-                <p className="text-xs text-amber-900/80">
-                  Kembalikan seluruh teks, statistik, dan struktur halaman ke data resmi awal SDQU Al I'tisham Playen.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    requestDelete(
-                      'Kembalikan ke Pengaturan Awal',
-                      'Apakah Anda yakin ingin mereset seluruh data website ke pengaturan bawaan resmi? Data kustom Anda akan digantikan dengan data baku.',
-                      () => {
-                        dataService.resetToDefaults();
-                        setBackupFeedback({ success: true, message: 'Data berhasil dikembalikan ke standar awal!' });
-                        setTimeout(() => setBackupFeedback(null), 4000);
-                      }
-                    );
-                  }}
-                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2 transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Reset Konten Default</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* Panduan Resmi Mempublish Web ke Internet */}
-          {publishSubTab === 'guide' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
-                PANDUAN LENGKAP GO-LIVE
-              </span>
-              <h3 className="text-xl font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-2">
-                Panduan Mempublish Website Resmi SDQU Al I'tisham
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Ikuti langkah-langkah praktis di bawah ini untuk menghubungkan website ke domain resmi madrasah (.sch.id) dan hosting berkinerja tinggi.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {/* Langkah 1 */}
-              <div className="flex gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="w-8 h-8 rounded-xl bg-emerald-900 text-amber-300 font-extrabold text-sm flex items-center justify-center shrink-0">
-                  1
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Ekspor Kode Sumber (Export to ZIP / GitHub)
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Pada menu Google AI Studio di pojok kanan atas, klik tombol <strong>Settings / Export</strong>, lalu pilih <strong>Export to GitHub</strong> atau <strong>Download ZIP</strong>. Seluruh kode aplikasi React Vite &amp; Tailwind CSS siap digunakan secara mandiri.
-                  </p>
-                </div>
-              </div>
-
-              {/* Langkah 2 */}
-              <div className="flex gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="w-8 h-8 rounded-xl bg-emerald-900 text-amber-300 font-extrabold text-sm flex items-center justify-center shrink-0">
-                  2
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Deploy Cepat Gratis di Netlify atau Vercel
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Website ini dibuat menggunakan standar modern Vite SPA, sehingga dapat di-hosting gratis dan sangat cepat di Netlify (sama seperti portal PSB Anda) atau Vercel:
-                  </p>
-                  <ol className="text-xs text-slate-600 list-decimal list-inside space-y-1 bg-white p-3 rounded-xl border border-slate-200">
-                    <li>Buka <a href="https://netlify.com" target="_blank" rel="noreferrer" className="text-emerald-800 font-bold underline">Netlify.com</a> atau <a href="https://vercel.com" target="_blank" rel="noreferrer" className="text-emerald-800 font-bold underline">Vercel.com</a>.</li>
-                    <li>Pilih <strong>"Add new site"</strong> &gt; <strong>"Import an existing project"</strong> dari akun GitHub Anda.</li>
-                    <li>Pengaturan Build: <code>Build command: npm run build</code> dan <code>Publish directory: dist</code>.</li>
-                    <li>Klik <strong>Deploy</strong>. Dalam waktu 1 menit website Anda sudah aktif di internet!</li>
-                  </ol>
-                </div>
-              </div>
-
-              {/* Langkah 3 */}
-              <div className="flex gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="w-8 h-8 rounded-xl bg-emerald-900 text-amber-300 font-extrabold text-sm flex items-center justify-center shrink-0">
-                  3
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Menghubungkan Domain Resmi Madrasah (.sch.id)
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Untuk menjadikannya website resmi madrasah dengan kredibilitas tinggi, gunakan domain berakhiran <strong>.sch.id</strong> (contoh: <code>sdqu-alitisham.sch.id</code>):
-                  </p>
-                  <ul className="text-xs text-slate-600 list-disc list-inside space-y-1 bg-white p-3 rounded-xl border border-slate-200">
-                    <li>Daftarkan domain di registrar resmi (seperti Niagahoster, Idwebhost, Rumahweb, atau DomaiNesia).</li>
-                    <li>Pada dashboard registrar, buka menu <strong>DNS Management</strong>.</li>
-                    <li>Tambahkan <strong>CNAME Record</strong>: Host <code>www</code> mengarah ke alamat Netlify/Vercel Anda.</li>
-                    <li>Tambahkan <strong>A Record</strong> atau Apex Alias mengarah ke IP Server hosting.</li>
-                    <li>Sertifikat keamanan <strong>SSL (HTTPS Hijau)</strong> terbit otomatis dalam 10 menit tanpa biaya tambahan.</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Langkah 4 */}
-              <div className="flex gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="w-8 h-8 rounded-xl bg-emerald-900 text-amber-300 font-extrabold text-sm flex items-center justify-center shrink-0">
-                  4
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Integrasi Sempurna dengan Portal PSB Netlify
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Website ini telah dikonfigurasi langsung menampilkan formulir pendaftaran interaktif dari <code>https://psb-sdqu-alitisham.netlify.app</code> melalui iframe responsif pada halaman <strong>PSB Online</strong>. Wali santri dapat mendaftar langsung tanpa kendala tampilan di smartphone maupun laptop.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          )}
-
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* MODAL KONFIRMASI HAPUS NON-BLOCKING (Mencegah kendala confirm() di iframe) */}
       {deleteModal && deleteModal.isOpen && (
@@ -4335,490 +4021,6 @@ React.useEffect(() => {
         </div>
       )}
 
-      {/* TAB CONTENT: GOOGLE APPS SCRIPT DEPLOY GUIDE */}
-      {activeTab === 'google' && (
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Sidebar Sub-Bab Kiri */}
-            <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">
-                Sub-Bab Integrasi Google
-              </div>
-              {[
-                { id: 'config', label: '1. Parameter & Koneksi', desc: 'ID Spreadsheet, Drive & URL Web App' },
-                { id: 'actions', label: '2. Panduan Isi Spreadsheet', desc: 'Format & struktur 6 lembar sheet' },
-                { id: 'script_code', label: '3. Kode Code.gs Backend', desc: 'Salin kode Apps Script & deploy' }
-              ].map(sub => (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => setGoogleSubTab(sub.id as any)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col ${
-                    googleSubTab === sub.id
-                      ? 'bg-emerald-900 text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <span>{sub.label}</span>
-                  <span className={`text-[10px] font-normal mt-0.5 ${googleSubTab === sub.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                    {sub.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Konten Kanan */}
-            <div className="flex-1 min-w-0 w-full space-y-6">
-
-          {/* Main Google Integration Control Panel */}
-          {googleSubTab === 'config' && (
-          <div className="bg-emerald-950 text-white rounded-3xl p-6 sm:p-8 border border-emerald-800/60 shadow-lg space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-800 text-emerald-100 border border-emerald-600">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Integrasi Cloud Google Aktif
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold font-['Plus_Jakarta_Sans',sans-serif] text-white">
-                  Koneksi Google Spreadsheet &amp; Google Drive
-                </h3>
-                <p className="text-xs text-emerald-200/80 leading-relaxed max-w-2xl">
-                  Kelola ID Spreadsheet, ID Folder Drive, dan URL Web App Apps Script agar seluruh perubahan data &amp; unggahan foto otomatis tersinkron ke semua perangkat.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleFormatSheets}
-                  disabled={isFormattingSheets || isSyncing || isTestingConnection}
-                  className="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow transition-colors disabled:opacity-50 border border-emerald-600"
-                  title="Format dan isi lembar Spreadsheet agar mudah dibaca manusia"
-                >
-                  <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isFormattingSheets ? 'animate-spin' : ''}`} />
-                  <span>{isFormattingSheets ? 'Memformat Lembar...' : 'Format & Isi Lembar Spreadsheet'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSyncGoogle}
-                  disabled={isSyncing || isFormattingSheets || isTestingConnection}
-                  className="bg-amber-400 hover:bg-amber-300 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow transition-colors disabled:opacity-50"
-                  title="Tarik data terbaru yang diedit di Spreadsheet"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>{isSyncing ? 'Menyinkronkan...' : 'Tarik Data dari Spreadsheet'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Sync Feedback Message */}
-            {syncFeedback && (
-              <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${syncFeedback.success ? 'bg-emerald-900/90 text-emerald-100 border border-emerald-700' : 'bg-rose-900/80 text-rose-100 border border-rose-700'}`}>
-                {syncFeedback.success ? <Check className="w-4 h-4 text-emerald-300 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />}
-                <span className="leading-relaxed">{syncFeedback.message}</span>
-              </div>
-            )}
-
-            {/* Form Input ID Spreadsheet, ID Drive, & URL Web App */}
-            <form onSubmit={handleSaveGoogleSettings} className="space-y-4 bg-emerald-900/40 p-5 rounded-2xl border border-emerald-800/60">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-800/50 pb-3">
-                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                  Parameter Integrasi Google (Spreadsheet, Drive &amp; Apps Script)
-                </span>
-                {appsScriptSaved && (
-                  <span className="text-[11px] font-bold text-emerald-300 flex items-center gap-1 bg-emerald-800/80 px-2.5 py-1 rounded-lg">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Semua ID &amp; URL Berhasil Disimpan!</span>
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 1. ID Spreadsheet */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
-                      <span>📊 ID Google Spreadsheet:</span>
-                    </label>
-                    <a
-                      href={`https://docs.google.com/spreadsheets/d/${spreadsheetIdInput || GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
-                    >
-                      <span>Buka File</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                  <input
-                    type="text"
-                    value={spreadsheetIdInput}
-                    onChange={e => setSpreadsheetIdInput(e.target.value)}
-                    placeholder="Contoh: 1JHMBdolxzEDbDEzjwsFDktXKjvEuYSImxEeOFYayOxk"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                  />
-                  <p className="text-[10px] text-emerald-300/70">
-                    ID terdapat di URL browser Spreadsheet Anda (antara <code>/d/</code> dan <code>/edit</code>).
-                  </p>
-                </div>
-
-                {/* 2. ID Folder Google Drive */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
-                      <span>📁 ID Folder Google Drive:</span>
-                    </label>
-                    <a
-                      href={`https://drive.google.com/drive/folders/${driveFolderIdInput || GOOGLE_CONFIG.DRIVE_FOLDER_ID}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
-                    >
-                      <span>Buka Folder</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                  <input
-                    type="text"
-                    value={driveFolderIdInput}
-                    onChange={e => setDriveFolderIdInput(e.target.value)}
-                    placeholder="Contoh: 1e73r9W_Vj7s-0f3r4qg8zM9aBCDeFghI"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                  />
-                  <p className="text-[10px] text-emerald-300/70">
-                    Folder tempat menyimpan foto upload. Jika kosong, script otomatis membuat folder "SDQU_Berkas_Upload".
-                  </p>
-                </div>
-              </div>
-
-              {/* 3. URL Web App Google Apps Script */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-emerald-200">
-                    🌐 URL Web App Google Apps Script (/exec):
-                  </label>
-                  {appsScriptUrlInput && (
-                    <a
-                      href={`${appsScriptUrlInput}?action=getAll`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-0.5"
-                    >
-                      <span>Tes di Tab Baru</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  )}
-                </div>
-                <input
-                  type="url"
-                  value={appsScriptUrlInput}
-                  onChange={e => setAppsScriptUrlInput(e.target.value)}
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-700/80 text-xs font-mono text-emerald-100 focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                />
-                <p className="text-[10px] text-emerald-300/70">
-                  Didapat setelah klik Deploy &gt; Penerapan Baru (Web App) di Apps Script dengan akses: "Siapa saja (Anyone)".
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                <button
-                  type="submit"
-                  className="bg-emerald-700 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm transition-colors"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Simpan Pengaturan ID &amp; URL</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleTestConnection}
-                  disabled={isTestingConnection || !appsScriptUrlInput}
-                  className="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-emerald-700/80 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isTestingConnection ? 'animate-spin' : ''}`} />
-                  <span>{isTestingConnection ? 'Menguji Koneksi...' : 'Uji Koneksi Langsung'}</span>
-                </button>
-              </div>
-            </form>
-
-            {/* Quick Links */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <a
-                href={`https://docs.google.com/spreadsheets/d/${spreadsheetIdInput || GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
-              >
-                <span className="truncate">📊 Buka Spreadsheet Sekolah</span>
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
-              </a>
-
-              <a
-                href={`https://drive.google.com/drive/folders/${driveFolderIdInput || GOOGLE_CONFIG.DRIVE_FOLDER_ID}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
-              >
-                <span className="truncate">📁 Buka Google Drive Berkas</span>
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
-              </a>
-
-              <a
-                href={`${appsScriptUrlInput || GOOGLE_CONFIG.APPS_SCRIPT_DEFAULT_URL}?action=getAll`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-900/30 hover:bg-emerald-900/60 border border-emerald-800/50 text-emerald-100 text-xs font-semibold transition-colors"
-              >
-                <span className="truncate">🌐 Cek Endpoint API Web App</span>
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
-              </a>
-            </div>
-          </div>
-          )}
-
-          {/* Panduan Lengkap & Praktis: Cara Mengedit Isi Web Langsung di Google Spreadsheet */}
-          {googleSubTab === 'actions' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                PANDUAN LENGKAP &amp; OTOMATIS
-              </span>
-              <h3 className="text-lg font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-2">
-                Cara Mengedit Seluruh Isi Website di Google Spreadsheet
-              </h3>
-              <p className="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">
-                Anda memiliki 2 cara mudah untuk mengubah konten website. Keduanya saling terhubung secara otomatis ke Google Spreadsheet sekolah dan langsung tampil di semua perangkat (HP, tablet, dan laptop pengunjung).
-              </p>
-            </div>
-
-            {/* 2 Pilihan Alur Kerja */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Opsi 1: Lewat Panel Admin */}
-              <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-3">
-                <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
-                  <span className="w-5 h-5 rounded-full bg-emerald-900 text-amber-300 flex items-center justify-center text-[10px]">A</span>
-                  <span>Cara 1: Lewat Menu Admin Ini (Paling Praktis &amp; Ada Thumbnail)</span>
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  Pilih menu di samping (misal: <strong>Pengaturan &amp; Hero</strong>, <strong>Guru &amp; Asatidz</strong>, atau <strong>Fasilitas</strong>). 
-                  Klik tombol <strong>Unggah Foto</strong> untuk memilih foto langsung dari galeri HP atau laptop. Foto otomatis disimpan ke Google Drive dan tampil sebagai <strong>thumbnail foto</strong>!
-                </p>
-                <div className="text-[11px] font-bold text-emerald-800 bg-white p-2.5 rounded-xl border border-emerald-200 flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Otomatis mengirim data ke Google Spreadsheet &amp; aktif di semua HP.</span>
-                </div>
-              </div>
-
-              {/* Opsi 2: Langsung di Google Spreadsheet */}
-              <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
-                <div className="flex items-center gap-2 text-amber-950 font-bold text-xs">
-                  <span className="w-5 h-5 rounded-full bg-amber-800 text-white flex items-center justify-center text-[10px]">B</span>
-                  <span>Cara 2: Langsung Buka &amp; Ketik di Google Spreadsheet</span>
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  Buka Google Spreadsheet sekolah Anda, lalu pilih lembar kerja di bagian bawah sesuai bagian yang ingin Anda edit (misal lembar <strong>Settings</strong>, <strong>Teachers</strong>, atau <strong>News</strong>). Ketik perubahan teks pada kolom yang tersedia.
-                </p>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`https://docs.google.com/spreadsheets/d/${GOOGLE_CONFIG.SPREADSHEET_ID}/edit`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors shadow-xs"
-                  >
-                    <span>Buka Spreadsheet Sekolah</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleFormatSheets}
-                    disabled={isFormattingSheets}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-colors"
-                  >
-                    <Sparkles className="w-3 h-3 text-amber-600" />
-                    <span>Format Lembar Baru</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Peta Kolom Setiap Lembar Spreadsheet */}
-            <div className="space-y-3 pt-2">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-emerald-800" />
-                <span>Struktur Lembar Kerja (Sheet) di Google Spreadsheet:</span>
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                {/* Sheet Settings */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>1. Lembar "Settings"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Kolom C</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Edit kolom <strong>Value</strong> untuk mengubah Nama Sekolah, Tagline, Nomor WhatsApp, Email, Alamat, Link Foto Logo, dan Banner Beranda.
-                  </p>
-                </div>
-
-                {/* Sheet Teachers */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>2. Lembar "Teachers"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Guru &amp; Asatidz</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Setiap baris mewakili 1 guru: kolom <strong>name</strong> (nama guru), <strong>role</strong> (jabatan), <strong>specialty</strong> (keahlian), dan <strong>imageUrl</strong> (foto).
-                  </p>
-                </div>
-
-                {/* Sheet Facilities */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>3. Lembar "Facilities"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Fasilitas</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Kolom <strong>name</strong> (nama ruang/gedung), <strong>category</strong>, <strong>imageUrl</strong> (foto fasilitas), dan <strong>description</strong>.
-                  </p>
-                </div>
-
-                {/* Sheet News */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>4. Lembar "News"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Berita &amp; Artikel</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Kolom <strong>title</strong> (judul), <strong>summary</strong>, <strong>content</strong> (isi berita lengkap), <strong>date</strong>, <strong>author</strong>, dan <strong>imageUrl</strong>.
-                  </p>
-                </div>
-
-                {/* Sheet Announcements */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>5. Lembar "Announcements"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Pengumuman</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Kolom <strong>title</strong>, <strong>content</strong>, <strong>category</strong>, dan <strong>isActive</strong> (isi "Ya" atau "Tidak" untuk mengaktifkan).
-                  </p>
-                </div>
-
-                {/* Sheet Events */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5">
-                  <div className="font-bold text-emerald-900 flex items-center justify-between">
-                    <span>6. Lembar "Events"</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">Agenda Kegiatan</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Kolom <strong>title</strong>, <strong>date</strong> (tanggal), <strong>time</strong> (jam), <strong>location</strong> (tempat), dan <strong>description</strong>.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Kunci: Mengapa Otomatis Berubah di Semua HP */}
-            <div className="p-4 rounded-2xl bg-slate-900 text-slate-200 text-xs space-y-2">
-              <div className="flex items-center gap-2 text-amber-300 font-bold">
-                <Sparkles className="w-4 h-4" />
-                <span>Bagaimana Website Otomatis Berubah di Semua HP Pengunjung?</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-slate-300">
-                Website ini dirancang secara <strong>real-time dinamis</strong>. Setiap kali wali santri atau pengunjung membuka website dari smartphone atau laptop, sistem langsung memanggil data terbaru dari Google Spreadsheet Anda melalui endpoint Web App Apps Script. Anda tidak perlu menyentuh Vercel atau melakukan deploy ulang setiap kali ada pergantian teks atau foto!
-              </p>
-            </div>
-          </div>
-          )}
-
-          {/* Kode Backend Google Apps Script */}
-          {googleSubTab === 'script_code' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
-                  KODE BACKEND GOOGLE DRIVE &amp; SPREADSHEET
-                </span>
-                <h3 className="text-lg font-extrabold text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] mt-1">
-                  Sinkronisasi Gambar &amp; Pengaturan Lintas Perangkat
-                </h3>
-                <p className="text-xs text-slate-600 max-w-2xl">
-                  Salin kode backend terbaru di bawah ini ke Google Apps Script Spreadsheet Anda agar setiap kali Anda mengganti logo atau foto di satu perangkat, gambarnya otomatis tersimpan di Google Drive sekolah dan langsung muncul di semua smartphone dan laptop pengunjung.
-                </p>
-              </div>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const code = getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput);
-                    navigator.clipboard.writeText(code);
-                    setCopiedCode(true);
-                    setTimeout(() => setCopiedCode(false), 3000);
-                  }}
-                  className="bg-emerald-900 hover:bg-emerald-800 text-amber-300 px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-xs transition-colors"
-                >
-                  {copiedCode ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedCode ? '✓ Kode Tersalin!' : 'Salin Kode Apps Script'}</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">1</div>
-                <h5 className="text-xs font-bold text-slate-900">Buka Spreadsheet</h5>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Buka Spreadsheet sekolah Anda, lalu klik menu atas <strong>Ekstensi &gt; Apps Script</strong>.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">2</div>
-                <h5 className="text-xs font-bold text-slate-900">Tempel Kode Baru</h5>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Hapus seluruh kode lama di file <code>Code.gs</code>, lalu <strong>Paste</strong> kode yang baru saja disalin. Klik tombol <strong>Simpan</strong> (ikon disket).
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-900 text-amber-300 text-xs font-bold flex items-center justify-center">3</div>
-                <h5 className="text-xs font-bold text-slate-900">Terapkan Versi Baru</h5>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Klik tombol biru <strong>Terapkan (Deploy)</strong> di kanan atas &gt; <strong>Kelola penerapan</strong> &gt; Ikon pensil (Edit) &gt; Versi: <strong>Versi baru</strong> &gt; Klik <strong>Terapkan</strong>.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-800 text-emerald-100 text-xs font-bold flex items-center justify-center">4</div>
-                <h5 className="text-xs font-bold text-emerald-950">Selesai &amp; Otomatis!</h5>
-                <p className="text-[11px] text-emerald-900/80 leading-relaxed">
-                  Sekarang setiap foto &amp; teks yang diubah admin langsung tersinkron dan tampil di semua smartphone pengunjung!
-                </p>
-              </div>
-            </div>
-
-            {/* Code Box Container */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span className="font-mono font-bold">Code.gs (Google Apps Script)</span>
-                <span className="text-[11px]">JavaScript Google Workspace</span>
-              </div>
-              <div className="max-h-72 overflow-y-auto bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-200 leading-relaxed">
-                <pre>{getAppsScriptCode(spreadsheetIdInput, driveFolderIdInput)}</pre>
-              </div>
-            </div>
-          </div>
-          )}
-
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
