@@ -191,7 +191,15 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
           <div className="p-4 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl flex items-start gap-3 text-xs text-emerald-950">
             <Info className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
             <p>
-              Jika formulir di atas tidak tampil sempurna di perangkat Anda, silakan klik tombol <strong>"Buka Layar Penuh"</strong> atau hubungi panitia pendaftaran melalui nomor WhatsApp resmi: <strong>{settings.phoneSpmb}</strong>.
+              Jika formulir di atas tidak tampil sempurna di perangkat Anda, silakan klik tombol <strong>"Buka Layar Penuh"</strong> atau hubungi panitia pendaftaran melalui nomor WhatsApp resmi:{' '}
+              <a
+                href={`https://wa.me/${(settings.whatsappSpmb || '').replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-bold underline text-emerald-900 hover:text-emerald-700"
+              >
+                {settings.phoneSpmb || settings.whatsappSpmb}
+              </a>.
             </p>
           </div>
         </section>
@@ -294,7 +302,7 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
               {
                 id: "faq-3",
                 question: "3. Bagaimana jika saya mengalami kendala saat mengisi formulir online?",
-                answer: `Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor ${settings.phoneSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).`
+                answer: `Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor ${settings.phoneSpmb || settings.whatsappSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).`
               }
             ]).map((faqItem, idx) => (
               <div key={faqItem.id || idx} className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">

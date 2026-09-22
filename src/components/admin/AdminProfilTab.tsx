@@ -255,6 +255,51 @@ export const AdminProfilTab: React.FC<AdminProfilTabProps> = ({
                 />
               </div>
 
+              {/* 2 Foto Sejarah (Tampil berdampingan di sisi kiri teks sejarah halaman Profil) */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div>
+                  <h5 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>2 Foto Dokumentasi Latar Belakang &amp; Sejarah</span>
+                  </h5>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Kedua foto ini tampil berdampingan di sisi kiri seksi "Latar Belakang &amp; Sejarah" pada halaman Profil publik.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <ThumbnailUploader
+                      label="Foto Sejarah 1 (Atas / Kiri)"
+                      value={settings.historyImageUrl1 || ''}
+                      onChange={url => onUpdateSettings({ ...settings, historyImageUrl1: url })}
+                      onUploadFile={(file, label) =>
+                        handleFileUpload(file, url => onUpdateSettings({ ...settings, historyImageUrl1: url }), label)
+                      }
+                      aspectRatio="video"
+                      fit="cover"
+                      defaultFallback="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80"
+                      helperText="Dokumentasi awal pendirian, kelas, atau kegiatan santri masa lampau"
+                    />
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <ThumbnailUploader
+                      label="Foto Sejarah 2 (Bawah / Kanan)"
+                      value={settings.historyImageUrl2 || ''}
+                      onChange={url => onUpdateSettings({ ...settings, historyImageUrl2: url })}
+                      onUploadFile={(file, label) =>
+                        handleFileUpload(file, url => onUpdateSettings({ ...settings, historyImageUrl2: url }), label)
+                      }
+                      aspectRatio="video"
+                      fit="cover"
+                      defaultFallback="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"
+                      helperText="Dokumentasi halaqah Al-Qur'an, asatidz, atau santri berprestasi"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Paragraf 1 */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700">Sejarah Paragraf 1 (Awal Mula &amp; Pendirian)</label>

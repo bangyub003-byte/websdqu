@@ -97,7 +97,8 @@ export const InfaqView: React.FC<InfaqViewProps> = ({
     const waText = `Assalamu'alaikum Warahmatullahi Wabarakatuh.%0A%0ASaya telah melakukan infaq/donasi untuk *SDQU Al I'tisham Playen*:%0A- Nama: *${donorName}*%0A- Program: *${program}*%0A- Nominal: *Rp ${amount.toLocaleString('id-ID')}*%0A- Pesan/Doa: _${prayer || 'Semoga bermanfaat'}_%0A%0AMohon berkenan dicatat. Jazaakumullahu khairan.`;
     
     // Prompt WhatsApp redirect
-    window.open(`https://wa.me/${settings.whatsappSpmb}?text=${waText}`, '_blank');
+    const cleanWa = (settings.whatsappSpmb || '628123456789').replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanWa}?text=${waText}`, '_blank');
   };
 
   return (

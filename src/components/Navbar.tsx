@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ActivePage, SchoolSettings } from '../types';
-import { BookOpen, Menu, X, ArrowRight, ShieldCheck, Phone, MapPin, ChevronDown } from 'lucide-react';
+import { BookOpen, Menu, X, ArrowRight, Phone, MapPin, ChevronDown } from 'lucide-react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 interface NavbarProps {
@@ -400,19 +400,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Daftar SPMB Online</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-
-            {/* Admin CMS Access Icon */}
-            <button
-              onClick={() => handleNavClick('admin')}
-              title={isAdminLoggedIn ? 'Dashboard Admin (Aktif)' : 'Login Admin CMS'}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                activePage === 'admin'
-                  ? 'bg-emerald-900 text-white'
-                  : 'bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border border-slate-200'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-            </button>
           </div>
 
           {/* Mobile Right Controls */}
@@ -617,14 +604,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>Daftar SPMB Online 2025/2026</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => handleNavClick('admin')}
-              className="w-full bg-slate-100 text-slate-800 hover:bg-slate-200 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-800" />
-              <span>Portal Admin CMS Pengelola</span>
             </button>
           </div>
 

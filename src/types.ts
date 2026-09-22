@@ -217,6 +217,14 @@ export interface LegalitasItem {
   themeColor?: 'emerald' | 'amber' | 'teal';
 }
 
+export interface ContactItem {
+  id: string;
+  label: string;
+  number: string;
+  waNumber?: string;
+  category?: 'spmb' | 'tu' | 'yayasan' | 'kepsek' | 'lainnya';
+}
+
 export interface SchoolSettings {
   schoolName: string;
   tagline: string;
@@ -237,6 +245,7 @@ export interface SchoolSettings {
   phoneTu: string;
   phoneSpmb: string;
   whatsappSpmb: string;
+  additionalContacts?: ContactItem[];
   heroBadge: string;
   heroHeadline: string;
   heroSubtitle: string;
@@ -247,6 +256,8 @@ export interface SchoolSettings {
   historyPart1: string;
   historyPart2: string;
   historyPart3: string;
+  historyImageUrl1?: string;
+  historyImageUrl2?: string;
   featuredPrograms: string[];
   extracurriculars: ExtracurricularItem[];
   achievements: AchievementItem[];
@@ -285,12 +296,16 @@ export interface SchoolSettings {
   heroStatsRibbon?: {
     stat1Val: string;
     stat1Label: string;
+    stat1Icon?: string;
     stat2Val: string;
     stat2Label: string;
+    stat2Icon?: string;
     stat3Val: string;
     stat3Label: string;
+    stat3Icon?: string;
     stat4Val: string;
     stat4Label: string;
+    stat4Icon?: string;
   };
   berandaFeaturesTitle?: string;
   berandaFeaturesSubtitle?: string;
@@ -342,12 +357,16 @@ export interface SchoolSettings {
   kegiatanStatsRibbon?: {
     stat1Val: string;
     stat1Label: string;
+    stat1Icon?: string;
     stat2Val: string;
     stat2Label: string;
+    stat2Icon?: string;
     stat3Val: string;
     stat3Label: string;
+    stat3Icon?: string;
     stat4Val: string;
     stat4Label: string;
+    stat4Icon?: string;
   };
   dailyActivitiesTitle?: string;
   dailyActivitiesSubtitle?: string;

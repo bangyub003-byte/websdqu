@@ -163,10 +163,21 @@ export const Footer: React.FC<FooterProps> = ({ setActivePage, settings }) => {
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
-                <a href={`https://wa.me/${settings.whatsappSpmb}`} target="_blank" rel="noreferrer" className="hover:text-emerald-800 font-medium">
+                <a href={`https://wa.me/${(settings.whatsappSpmb || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="hover:text-emerald-800 font-medium">
                   WA: {settings.phoneSpmb || settings.whatsappSpmb}
                 </a>
               </div>
+              {settings.additionalContacts && settings.additionalContacts.length > 0 && settings.additionalContacts.map(c => {
+                const cleanPhone = (c.phone || '').replace(/[^0-9]/g, '');
+                return (
+                  <div key={c.id} className="flex items-center gap-2">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+                    <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="hover:text-emerald-800 font-medium">
+                      {c.name ? `${c.name}: ` : 'WA: '}{c.phone}
+                    </a>
+                  </div>
+                );
+              })}
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
                 <a href={`mailto:${settings.email}`} className="hover:text-emerald-800">
@@ -219,19 +230,19 @@ export const Footer: React.FC<FooterProps> = ({ setActivePage, settings }) => {
 
         </div>
 
-        {/* Bagian Bawah: Copyright tipis satu baris + Link Admin CMS di pojok kanan */}
-        <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[11px] text-slate-500">
+        {/* Bagian Bawah: Copyright tipis satu baris + Link Admin CMS di pojok kanan (diberi safe margin agar tidak tertutup floating WA button) */}
+        <div className="pt-4 pb-6 sm:pb-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500 border-t border-slate-200/80 mt-2">
           <div>
             © {currentYear} {settings.schoolName || "SD Qur'an Unggulan Al I'tisham Playen"}. All rights reserved.
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 sm:pr-24 lg:pr-28">
             <button
               onClick={() => handleNav('admin')}
-              className="text-slate-400 hover:text-emerald-900 transition-colors flex items-center gap-1 text-[11px]"
-              title="Panel Kelola Konten Sekolah"
+              className="text-slate-400 hover:text-emerald-900 transition-colors flex items-center gap-1.5 text-xs font-semibold py-1.5 px-2.5 rounded-lg hover:bg-slate-200/60 border border-transparent hover:border-slate-300"
+              title="Akses Portal Pengelola Website (Admin CMS)"
             >
-              <ShieldCheck className="w-3 h-3" />
-              <span>Login Admin</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-900" />
+              <span>Admin CMS Log In</span>
             </button>
           </div>
         </div>

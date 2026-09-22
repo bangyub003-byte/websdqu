@@ -6,17 +6,17 @@ import {
   MapPin,
   Download,
   ArrowRight,
-  Sparkles,
+  Compass,
   BookOpen,
   Award,
   Users,
-  Compass,
   HeartHandshake,
   CheckCircle2,
   ChevronRight,
   MessageCircle
 } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
+import { getIconComponent } from '../common/IconPicker';
 
 interface KegiatanViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -78,7 +78,7 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-4 max-w-2xl">
             <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Compass className="w-3.5 h-3.5" />
               <span>{settings.kegiatanHeaderTagline || "KURIKULUM BERKARAKTER & DINAMIS"}</span>
             </div>
 
@@ -160,67 +160,69 @@ export const KegiatanView: React.FC<KegiatanViewProps> = ({
       </section>
 
       {/* QUICK STATS RIBBON */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-emerald-950 rounded-2xl sm:rounded-3xl text-white p-6 sm:p-8 shadow-xl">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/80">
-            <div className="flex items-center gap-4 pt-4 first:pt-0 lg:pt-0 lg:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0">
-                <Clock className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStatsRibbon?.stat1Val || (settings as any).kegiatanStats?.stat1Val || "07.00"}
-                </div>
-                <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStatsRibbon?.stat1Label || (settings as any).kegiatanStats?.stat1Label || "Mulai Halaqah Pagi"}
-                </div>
-              </div>
-            </div>
+      {(() => {
+        const Icon1 = getIconComponent(settings.kegiatanStatsRibbon?.stat1Icon, 'clock');
+        const Icon2 = getIconComponent(settings.kegiatanStatsRibbon?.stat2Icon, 'book-open');
+        const Icon3 = getIconComponent(settings.kegiatanStatsRibbon?.stat3Icon, 'heart-handshake');
+        const Icon4 = getIconComponent(settings.kegiatanStatsRibbon?.stat4Icon, 'shield-check');
 
-            <div className="flex items-center gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStatsRibbon?.stat2Val || (settings as any).kegiatanStats?.stat2Val || "30 Juz"}
-                </div>
-                <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStatsRibbon?.stat2Label || (settings as any).kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad"}
-                </div>
-              </div>
-            </div>
+        const stats = [
+          {
+            icon: <Icon1 className="w-6 h-6" />,
+            val: settings.kegiatanStatsRibbon?.stat1Val || (settings as any).kegiatanStats?.stat1Val || "07.00",
+            label: settings.kegiatanStatsRibbon?.stat1Label || (settings as any).kegiatanStats?.stat1Label || "Mulai Halaqah Pagi"
+          },
+          {
+            icon: <Icon2 className="w-6 h-6" />,
+            val: settings.kegiatanStatsRibbon?.stat2Val || (settings as any).kegiatanStats?.stat2Val || "30 Juz",
+            label: settings.kegiatanStatsRibbon?.stat2Label || (settings as any).kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad"
+          },
+          {
+            icon: <Icon3 className="w-6 h-6" />,
+            val: settings.kegiatanStatsRibbon?.stat3Val || (settings as any).kegiatanStats?.stat3Val || "100%",
+            label: settings.kegiatanStatsRibbon?.stat3Label || (settings as any).kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah"
+          },
+          {
+            icon: <Icon4 className="w-6 h-6" />,
+            val: settings.kegiatanStatsRibbon?.stat4Val || (settings as any).kegiatanStats?.stat4Val || "24/7",
+            label: settings.kegiatanStatsRibbon?.stat4Label || (settings as any).kegiatanStats?.stat4Label || "Pendampingan Karakter"
+          }
+        ].filter(s => (s.val || '').trim() !== '' || (s.label || '').trim() !== '');
 
-            <div className="flex items-center gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0">
-                <Award className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStatsRibbon?.stat3Val || (settings as any).kegiatanStats?.stat3Val || "100%"}
-                </div>
-                <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStatsRibbon?.stat3Label || (settings as any).kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah"}
-                </div>
-              </div>
-            </div>
+        if (stats.length === 0) return null;
 
-            <div className="flex items-center gap-4 pt-4 lg:pt-0 lg:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0">
-                <HeartHandshake className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {settings.kegiatanStatsRibbon?.stat4Val || (settings as any).kegiatanStats?.stat4Val || "24/7"}
-                </div>
-                <div className="text-xs text-emerald-300">
-                  {settings.kegiatanStatsRibbon?.stat4Label || (settings as any).kegiatanStats?.stat4Label || "Pendampingan Karakter"}
-                </div>
+        const gridCols = stats.length === 1 
+          ? 'grid-cols-1' 
+          : stats.length === 2 
+            ? 'grid-cols-2' 
+            : stats.length === 3 
+              ? 'grid-cols-1 sm:grid-cols-3' 
+              : 'grid-cols-2 lg:grid-cols-4';
+
+        return (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-emerald-950 rounded-2xl sm:rounded-3xl text-white p-6 sm:p-8 shadow-xl">
+              <div className={`grid ${gridCols} gap-6 sm:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-emerald-900/80`}>
+                {stats.map((s, idx) => (
+                  <div key={idx} className="flex items-center gap-4 pt-4 first:pt-0 lg:pt-0 lg:px-4">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-900/90 text-emerald-300 flex items-center justify-center shrink-0">
+                      {s.icon}
+                    </div>
+                    <div>
+                      <div className="text-2xl sm:text-3xl font-extrabold text-white">
+                        {s.val}
+                      </div>
+                      <div className="text-xs text-emerald-300">
+                        {s.label}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* SECTION 1: KEGIATAN HARIAN & MINGGUAN */}
       {(activeTab === 'semua' || activeTab === 'harian') && (

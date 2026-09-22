@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SchoolSettings, ActivityItem, ExtracurricularItem, EventItem } from '../../types';
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
+import { IconPicker } from '../common/IconPicker';
 import {
   Calendar,
   Clock,
@@ -248,12 +249,16 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
               const currentRibbon = {
                 stat1Val: settings.kegiatanStatsRibbon?.stat1Val || (settings as any).kegiatanStats?.stat1Val || "07.00",
                 stat1Label: settings.kegiatanStatsRibbon?.stat1Label || (settings as any).kegiatanStats?.stat1Label || "Mulai Halaqah Pagi",
+                stat1Icon: settings.kegiatanStatsRibbon?.stat1Icon || "clock",
                 stat2Val: settings.kegiatanStatsRibbon?.stat2Val || (settings as any).kegiatanStats?.stat2Val || "30 Juz",
                 stat2Label: settings.kegiatanStatsRibbon?.stat2Label || (settings as any).kegiatanStats?.stat2Label || "Bimbingan Tajwid Sanad",
+                stat2Icon: settings.kegiatanStatsRibbon?.stat2Icon || "book-open",
                 stat3Val: settings.kegiatanStatsRibbon?.stat3Val || (settings as any).kegiatanStats?.stat3Val || "100%",
                 stat3Label: settings.kegiatanStatsRibbon?.stat3Label || (settings as any).kegiatanStats?.stat3Label || "Praktik Lapangan Sunnah",
+                stat3Icon: settings.kegiatanStatsRibbon?.stat3Icon || "heart-handshake",
                 stat4Val: settings.kegiatanStatsRibbon?.stat4Val || (settings as any).kegiatanStats?.stat4Val || "24/7",
                 stat4Label: settings.kegiatanStatsRibbon?.stat4Label || (settings as any).kegiatanStats?.stat4Label || "Pendampingan Karakter",
+                stat4Icon: settings.kegiatanStatsRibbon?.stat4Icon || "shield-check",
               };
 
               const updateSlot = (field: string, val: string) => {
@@ -273,8 +278,11 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
                   num: 1,
                   valKey: 'stat1Val',
                   labelKey: 'stat1Label',
+                  iconKey: 'stat1Icon',
                   val: currentRibbon.stat1Val,
                   label: currentRibbon.stat1Label,
+                  icon: currentRibbon.stat1Icon,
+                  defaultIcon: 'clock',
                   placeholderVal: '07.00',
                   placeholderLabel: 'Mulai Halaqah Pagi',
                   desc: 'Slot 1: Waktu Mulai Halaqah'
@@ -283,8 +291,11 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
                   num: 2,
                   valKey: 'stat2Val',
                   labelKey: 'stat2Label',
+                  iconKey: 'stat2Icon',
                   val: currentRibbon.stat2Val,
                   label: currentRibbon.stat2Label,
+                  icon: currentRibbon.stat2Icon,
+                  defaultIcon: 'book-open',
                   placeholderVal: '30 Juz',
                   placeholderLabel: 'Bimbingan Tajwid Sanad',
                   desc: 'Slot 2: Target Bimbingan Tajwid'
@@ -293,8 +304,11 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
                   num: 3,
                   valKey: 'stat3Val',
                   labelKey: 'stat3Label',
+                  iconKey: 'stat3Icon',
                   val: currentRibbon.stat3Val,
                   label: currentRibbon.stat3Label,
+                  icon: currentRibbon.stat3Icon,
+                  defaultIcon: 'heart-handshake',
                   placeholderVal: '100%',
                   placeholderLabel: 'Praktik Lapangan Sunnah',
                   desc: 'Slot 3: Praktik Lapangan Sunnah'
@@ -303,8 +317,11 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
                   num: 4,
                   valKey: 'stat4Val',
                   labelKey: 'stat4Label',
+                  iconKey: 'stat4Icon',
                   val: currentRibbon.stat4Val,
                   label: currentRibbon.stat4Label,
+                  icon: currentRibbon.stat4Icon,
+                  defaultIcon: 'shield-check',
                   placeholderVal: '24/7',
                   placeholderLabel: 'Pendampingan Karakter',
                   desc: 'Slot 4: Pembiasaan Karakter'
@@ -347,6 +364,16 @@ export const AdminKegiatanTab: React.FC<AdminKegiatanTabProps> = ({
                           onChange={e => updateSlot(s.labelKey, e.target.value)}
                           placeholder={s.placeholderLabel}
                           className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:ring-2 focus:ring-emerald-800"
+                        />
+                      </div>
+
+                      <div className="pt-0.5">
+                        <IconPicker
+                          label="Pilihan Ikon Kartu"
+                          value={s.icon}
+                          onChange={newIcon => updateSlot(s.iconKey, newIcon)}
+                          fallbackId={s.defaultIcon}
+                          compact
                         />
                       </div>
 

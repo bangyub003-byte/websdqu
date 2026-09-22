@@ -134,18 +134,28 @@ export const ProfilView: React.FC<ProfilViewProps> = ({
           
           {/* Photos Grid (5 cols) */}
           <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-slate-200">
+            <div className="rounded-3xl overflow-hidden shadow-lg border border-slate-200 bg-slate-100">
               <img
-                src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80"
-                alt="Kegiatan Pembelajaran"
+                src={getOptimizedImageUrl(settings.historyImageUrl1 || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80')}
+                alt="Foto Sejarah Sekolah 1"
+                referrerPolicy="no-referrer"
                 className="w-full h-56 object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80';
+                }}
               />
             </div>
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-slate-200 mt-6">
+            <div className="rounded-3xl overflow-hidden shadow-lg border border-slate-200 mt-6 bg-slate-100">
               <img
-                src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"
-                alt="Halaqah Al-Qur'an"
+                src={getOptimizedImageUrl(settings.historyImageUrl2 || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80')}
+                alt="Foto Sejarah Sekolah 2"
+                referrerPolicy="no-referrer"
                 className="w-full h-56 object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80';
+                }}
               />
             </div>
           </div>

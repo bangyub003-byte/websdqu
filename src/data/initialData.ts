@@ -47,6 +47,8 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   historyPart1: "SD Quran Unggulan Al-Itisham Playen awal berdiri bernama PPS Ula Al I’tishom sebagai lembaga pendidikan kesetaraan Pondok Pesantren Salafiyah Ula (setingkat SD) yang merupakan Program dari Kementerian Agama. Didirikan pada tahun 2009 yang merupakan salah satu amal usaha dari Pondok Pesantren Al I’tishom. Pendirian PPS Ula Al I’tishom dilatarbelakangi rasa keprihatinan terhadap pergaulan hidup anak-anak yang semakin jauh dari nilai-nilai dan norma agama, oleh karena itu dengan dorongan berbagai pihak khususnya masyarakat yang mengkhawatirkan agama putra-putrinya, mendorong pondok pesantren al I’tishom untuk menyelenggarakan pendidikan dasar untuk membekali dan membentengi putra-putrinya sejak dini dengan ilmu agama dan pembiasan ibadah serta akhlaq islami.",
   historyPart2: "Kemudian karena pandangan warga masyarakat Gunungkidul yang masih khawatir bila anaknya disekolahkan di lembaga pendidikan kesetaraan karena dianggap sama dengan kejar paket, maka PPS Ula Al I’tishom pada tahun 2022 menyesuaikan diri dan bermigrasi menjadi SD Quran Unggulan Al-Itisham Playen yang disusul dengan diberikanya Ijin Operasional oleh Dinas Pendidikan Kabupaten Gunungkidul di tahun yang sama.",
   historyPart3: "Pada tahun 2023 keberadaan SD Quran Unggulan Al-Itisham semakin kuat dengan diberikanya Sertifikat Akreditasi oleh Badan Akreditasi Nasional Pendidikan Anak Usia Dini, Pendidikan Dasar dan Pendidikan Menengah (BAN-PDM).",
+  historyImageUrl1: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80",
+  historyImageUrl2: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80",
   featuredPrograms: [
     "Berfokus pada Pendidikan Akhlak Agama Islam",
     "Program Tahfidzul Qur’an dan Pembiasaan Ibadah",
@@ -202,12 +204,16 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   heroStatsRibbon: {
     stat1Val: "1.200+",
     stat1Label: "Santri Aktif & Alumni",
+    stat1Icon: "users",
     stat2Val: "100%",
     stat2Label: "Target Tahfidz Mutqin",
+    stat2Icon: "target",
     stat3Val: "45+",
     stat3Label: "Asatidz Bersanad",
+    stat3Icon: "graduation-cap",
     stat4Val: "25+",
-    stat4Label: "Prestasi Tingkat DIY & Nas"
+    stat4Label: "Prestasi Tingkat DIY & Nas",
+    stat4Icon: "award"
   },
   berandaFeaturesTitle: "Mengapa Memilih SDQU Al I'tisham Playen?",
   berandaFeaturesSubtitle: "Kombinasi kurikulum berkarakter islami, tahfidzul Qur'an mutqin, serta bimbingan penuh kasih sayang untuk tumbuh kembang ananda.",
@@ -342,12 +348,16 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   kegiatanStatsRibbon: {
     stat1Val: "07.00",
     stat1Label: "Mulai Halaqah Pagi",
+    stat1Icon: "clock",
     stat2Val: "30 Juz",
     stat2Label: "Bimbingan Tajwid Sanad",
+    stat2Icon: "book-open",
     stat3Val: "100%",
     stat3Label: "Praktik Lapangan Sunnah",
+    stat3Icon: "heart-handshake",
     stat4Val: "24/7",
-    stat4Label: "Pendampingan Karakter"
+    stat4Label: "Pendampingan Karakter",
+    stat4Icon: "shield-check"
   },
   dailyActivitiesTitle: "Kegiatan Harian & Mingguan Santri",
   dailyActivitiesSubtitle: "Rutinitas pembentukan kedisiplinan, ibadah wajib & sunnah, dan tahfidz berkelanjutan.",

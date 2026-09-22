@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   BookOpen,
   GraduationCap,
-  Sparkles,
   MessageCircle,
   Star,
   Quote,
@@ -18,6 +17,7 @@ import {
   X
 } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
+import { getIconComponent } from '../common/IconPicker';
 
 interface BerandaViewProps {
   setActivePage: (page: ActivePage) => void;
@@ -309,24 +309,29 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
 
       {/* STATS RIBBON (Dark Forest Green #064e3b) */}
       {(() => {
+        const Icon1 = getIconComponent(settings.heroStatsRibbon?.stat1Icon, 'users');
+        const Icon2 = getIconComponent(settings.heroStatsRibbon?.stat2Icon, 'target');
+        const Icon3 = getIconComponent(settings.heroStatsRibbon?.stat3Icon, 'graduation-cap');
+        const Icon4 = getIconComponent(settings.heroStatsRibbon?.stat4Icon, 'award');
+
         const stats = [
           {
-            icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />,
+            icon: <Icon1 className="w-5 h-5 sm:w-6 sm:h-6" />,
             val: settings.heroStatsRibbon?.stat1Val !== undefined ? settings.heroStatsRibbon.stat1Val : "1.200+",
             label: settings.heroStatsRibbon?.stat1Label !== undefined ? settings.heroStatsRibbon.stat1Label : "Santri Aktif & Alumni"
           },
           {
-            icon: <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
+            icon: <Icon2 className="w-5 h-5 sm:w-6 sm:h-6" />,
             val: settings.heroStatsRibbon?.stat2Val !== undefined ? settings.heroStatsRibbon.stat2Val : "100%",
             label: settings.heroStatsRibbon?.stat2Label !== undefined ? settings.heroStatsRibbon.stat2Label : "Target Tahfidz Mutqin"
           },
           {
-            icon: <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />,
+            icon: <Icon3 className="w-5 h-5 sm:w-6 sm:h-6" />,
             val: settings.heroStatsRibbon?.stat3Val !== undefined ? settings.heroStatsRibbon.stat3Val : "45+",
             label: settings.heroStatsRibbon?.stat3Label !== undefined ? settings.heroStatsRibbon.stat3Label : "Asatidz Bersanad"
           },
           {
-            icon: <Award className="w-5 h-5 sm:w-6 sm:h-6" />,
+            icon: <Icon4 className="w-5 h-5 sm:w-6 sm:h-6" />,
             val: settings.heroStatsRibbon?.stat4Val !== undefined ? settings.heroStatsRibbon.stat4Val : "25+",
             label: settings.heroStatsRibbon?.stat4Label !== undefined ? settings.heroStatsRibbon.stat4Label : "Prestasi Tingkat DIY & Nas"
           }

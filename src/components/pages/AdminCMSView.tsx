@@ -22,6 +22,7 @@ import {
 import { dataService } from '../../services/dataService';
 import { GOOGLE_CONFIG } from '../../config/googleConfig';
 import { ThumbnailUploader } from '../common/ThumbnailUploader';
+import { IconPicker } from '../common/IconPicker';
 import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
 import { AdminProfilTab } from '../admin/AdminProfilTab';
@@ -1786,6 +1787,90 @@ React.useEffect(() => {
                 Jika diisi, peta lokasi di footer website akan menggunakan URL embed ini. Jika dikosongkan, peta otomatis mengikuti teks Alamat Lengkap di atas.
               </p>
             </div>
+
+            {/* Nomor WhatsApp Tambahan (Multi-Kontak) */}
+            <div className="pt-3 border-t border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h5 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                    Nomor WhatsApp / Kontak Tambahan
+                  </h5>
+                  <p className="text-[11px] text-slate-500">
+                    Tambahkan kontak layanan lain (misal: Humas, Bendahara Infaq, Layanan Santri) agar muncul di kontak footer.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newContact = {
+                      id: `contact-${Date.now()}`,
+                      name: '',
+                      phone: ''
+                    };
+                    const updated = [...(editSettings.additionalContacts || []), newContact];
+                    setEditSettings({ ...editSettings, additionalContacts: updated });
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Kontak</span>
+                </button>
+              </div>
+
+              {(!editSettings.additionalContacts || editSettings.additionalContacts.length === 0) ? (
+                <div className="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-500 text-xs text-center">
+                  Belum ada kontak tambahan. Klik tombol di atas untuk menambahkan.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {editSettings.additionalContacts.map((contact, idx) => (
+                    <div key={contact.id || idx} className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600 block">Nama / Divisi Layanan</label>
+                        <input
+                          type="text"
+                          value={contact.name}
+                          onChange={e => {
+                            const updated = [...(editSettings.additionalContacts || [])];
+                            updated[idx] = { ...updated[idx], name: e.target.value };
+                            setEditSettings({ ...editSettings, additionalContacts: updated });
+                          }}
+                          placeholder="Contoh: Humas &amp; Kerjasama, Bendahara Infaq"
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div className="w-full sm:w-56 space-y-1">
+                        <label className="text-[10px] font-bold text-slate-600 block">Nomor WhatsApp</label>
+                        <input
+                          type="text"
+                          value={contact.phone}
+                          onChange={e => {
+                            const updated = [...(editSettings.additionalContacts || [])];
+                            updated[idx] = { ...updated[idx], phone: e.target.value };
+                            setEditSettings({ ...editSettings, additionalContacts: updated });
+                          }}
+                          placeholder="628123456789"
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                        />
+                      </div>
+                      <div className="self-end sm:self-center pt-2 sm:pt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = (editSettings.additionalContacts || []).filter((_, i) => i !== idx);
+                            setEditSettings({ ...editSettings, additionalContacts: updated });
+                          }}
+                          className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Hapus kontak ini"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Section: Legalitas */}
@@ -1952,19 +2037,23 @@ React.useEffect(() => {
               const currentRibbon = {
                 stat1Val: editSettings.heroStatsRibbon?.stat1Val !== undefined ? editSettings.heroStatsRibbon.stat1Val : '1.200+',
                 stat1Label: editSettings.heroStatsRibbon?.stat1Label !== undefined ? editSettings.heroStatsRibbon.stat1Label : 'Santri Aktif & Alumni',
+                stat1Icon: editSettings.heroStatsRibbon?.stat1Icon || 'users',
                 stat2Val: editSettings.heroStatsRibbon?.stat2Val !== undefined ? editSettings.heroStatsRibbon.stat2Val : '100%',
                 stat2Label: editSettings.heroStatsRibbon?.stat2Label !== undefined ? editSettings.heroStatsRibbon.stat2Label : 'Target Tahfidz Mutqin',
+                stat2Icon: editSettings.heroStatsRibbon?.stat2Icon || 'target',
                 stat3Val: editSettings.heroStatsRibbon?.stat3Val !== undefined ? editSettings.heroStatsRibbon.stat3Val : '45+',
                 stat3Label: editSettings.heroStatsRibbon?.stat3Label !== undefined ? editSettings.heroStatsRibbon.stat3Label : 'Asatidz Bersanad',
+                stat3Icon: editSettings.heroStatsRibbon?.stat3Icon || 'graduation-cap',
                 stat4Val: editSettings.heroStatsRibbon?.stat4Val !== undefined ? editSettings.heroStatsRibbon.stat4Val : '25+',
                 stat4Label: editSettings.heroStatsRibbon?.stat4Label !== undefined ? editSettings.heroStatsRibbon.stat4Label : 'Prestasi Tingkat DIY & Nas',
+                stat4Icon: editSettings.heroStatsRibbon?.stat4Icon || 'award',
               };
 
               const defaultSlots = [
-                { num: 1, val: '1.200+', label: 'Santri Aktif & Alumni', valKey: 'stat1Val', labelKey: 'stat1Label', desc: 'Slot 1: Total Santri & Alumni' },
-                { num: 2, val: '100%', label: 'Target Tahfidz Mutqin', valKey: 'stat2Val', labelKey: 'stat2Label', desc: 'Slot 2: Target Mutqin Tahfidz' },
-                { num: 3, val: '45+', label: 'Asatidz Bersanad', valKey: 'stat3Val', labelKey: 'stat3Label', desc: 'Slot 3: Dewan Asatidz / Pengajar' },
-                { num: 4, val: '25+', label: 'Prestasi Tingkat DIY & Nas', valKey: 'stat4Val', labelKey: 'stat4Label', desc: 'Slot 4: Capaian Prestasi' }
+                { num: 1, val: '1.200+', label: 'Santri Aktif & Alumni', valKey: 'stat1Val', labelKey: 'stat1Label', iconKey: 'stat1Icon', defaultIcon: 'users', desc: 'Slot 1: Total Santri & Alumni' },
+                { num: 2, val: '100%', label: 'Target Tahfidz Mutqin', valKey: 'stat2Val', labelKey: 'stat2Label', iconKey: 'stat2Icon', defaultIcon: 'target', desc: 'Slot 2: Target Mutqin Tahfidz' },
+                { num: 3, val: '45+', label: 'Asatidz Bersanad', valKey: 'stat3Val', labelKey: 'stat3Label', iconKey: 'stat3Icon', defaultIcon: 'graduation-cap', desc: 'Slot 3: Dewan Asatidz / Pengajar' },
+                { num: 4, val: '25+', label: 'Prestasi Tingkat DIY & Nas', valKey: 'stat4Val', labelKey: 'stat4Label', iconKey: 'stat4Icon', defaultIcon: 'award', desc: 'Slot 4: Capaian Prestasi' }
               ];
 
               const updateSlot = (field: string, val: string) => {
@@ -1989,13 +2078,14 @@ React.useEffect(() => {
                 });
               };
 
-              const resetSlot = (valKey: string, labelKey: string, defVal: string, defLabel: string) => {
+              const resetSlot = (valKey: string, labelKey: string, defVal: string, defLabel: string, iconKey: string, defIcon: string) => {
                 setEditSettings({
                   ...editSettings,
                   heroStatsRibbon: {
                     ...currentRibbon,
                     [valKey]: defVal,
-                    [labelKey]: defLabel
+                    [labelKey]: defLabel,
+                    [iconKey]: defIcon
                   }
                 });
               };
@@ -2004,6 +2094,7 @@ React.useEffect(() => {
                 ...s,
                 currentVal: (currentRibbon as any)[s.valKey] || '',
                 currentLabel: (currentRibbon as any)[s.labelKey] || '',
+                currentIcon: (currentRibbon as any)[s.iconKey] || s.defaultIcon,
                 isEmpty: !((currentRibbon as any)[s.valKey] || '').trim() && !((currentRibbon as any)[s.labelKey] || '').trim()
               }));
 
@@ -2065,6 +2156,17 @@ React.useEffect(() => {
                           />
                         </div>
 
+                        {/* Pilihan Ikon Admin */}
+                        <div className="pt-1">
+                          <IconPicker
+                            label="Pilihan Ikon Kartu"
+                            value={s.currentIcon}
+                            onChange={newIcon => updateSlot(s.iconKey, newIcon)}
+                            fallbackId={s.defaultIcon}
+                            compact
+                          />
+                        </div>
+
                         <div className="text-[10px] text-slate-400 font-medium">
                           {s.desc}
                         </div>
@@ -2088,7 +2190,7 @@ React.useEffect(() => {
 
                           <button
                             type="button"
-                            onClick={() => resetSlot(s.valKey, s.labelKey, s.val, s.label)}
+                            onClick={() => resetSlot(s.valKey, s.labelKey, s.val, s.label, s.iconKey, s.defaultIcon)}
                             className="text-[11px] font-bold text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
                             title="Kembalikan nilai awal bawaan slot ini"
                           >

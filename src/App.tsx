@@ -176,7 +176,7 @@ export default function App() {
         )}
 
         <a
-          href={`https://wa.me/${data.settings.whatsappSpmb}?text=Assalamu'alaikum%20Warahmatullahi%20Wabarakatuh,%20saya%20ingin%20konsultasi%20mengenai%20SDQU%20Al%20I'tisham%20Playen.`}
+          href={`https://wa.me/${(data.settings.whatsappSpmb || '628123456789').replace(/[^0-9]/g, '')}?text=Assalamu'alaikum%20Warahmatullahi%20Wabarakatuh,%20saya%20ingin%20konsultasi%20mengenai%20SDQU%20Al%20I'tisham%20Playen.`}
           target="_blank"
           rel="noreferrer"
           className="bg-emerald-600 hover:bg-emerald-700 text-white pl-4 pr-5 py-3 rounded-full shadow-xl flex items-center gap-2.5 transition-all duration-200 hover:scale-105 pointer-events-auto group border-2 border-white"
