@@ -27,6 +27,7 @@ import { AdminKegiatanTab } from '../admin/AdminKegiatanTab';
 import { AdminSpmbTab } from '../admin/AdminSpmbTab';
 import { AdminProfilTab } from '../admin/AdminProfilTab';
 import { AdminPengaturanLanjutanTab } from '../admin/AdminPengaturanLanjutanTab';
+import { VisitorAnalyticsCard } from '../admin/VisitorAnalyticsCard';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import {
   ShieldCheck,
@@ -1066,6 +1067,9 @@ React.useEffect(() => {
             </div>
           </div>
 
+          {/* Panel Grafik Statistik Kunjungan Website (Hanya Tampil di Admin CMS) */}
+          <VisitorAnalyticsCard />
+
           <div className="bg-emerald-50 rounded-3xl p-6 border border-emerald-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
@@ -1700,7 +1704,7 @@ React.useEffect(() => {
               Kontak, Jam Kerja &amp; Alamat
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700">WhatsApp Panitia PSB</label>
                 <input
@@ -1708,17 +1712,11 @@ React.useEffect(() => {
                   value={editSettings.whatsappSpmb}
                   onChange={e => setEditSettings({ ...editSettings, whatsappSpmb: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-mono"
+                  placeholder="Contoh: 087890123456 atau 6287890123456"
                 />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Telepon Tata Usaha</label>
-                <input
-                  type="text"
-                  value={editSettings.phoneTu}
-                  onChange={e => setEditSettings({ ...editSettings, phoneTu: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs"
-                />
+                <p className="text-[11px] text-slate-500">
+                  Nomor ini digunakan di seluruh tombol, teks &amp; link chat WhatsApp panitia di website.
+                </p>
               </div>
 
               <div className="space-y-1">

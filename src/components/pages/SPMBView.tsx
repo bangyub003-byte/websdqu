@@ -198,7 +198,7 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
                 rel="noreferrer"
                 className="font-bold underline text-emerald-900 hover:text-emerald-700"
               >
-                {settings.phoneSpmb || settings.whatsappSpmb}
+                {settings.whatsappSpmb}
               </a>.
             </p>
           </div>
@@ -302,7 +302,7 @@ export const SPMBView: React.FC<SPMBViewProps> = ({ setActivePage, settings }) =
               {
                 id: "faq-3",
                 question: "3. Bagaimana jika saya mengalami kendala saat mengisi formulir online?",
-                answer: `Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor ${settings.phoneSpmb || settings.whatsappSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).`
+                answer: `Ayah/Bunda dapat langsung menghubungi panitia SPMB via WhatsApp di nomor ${settings.whatsappSpmb} atau datang langsung ke kantor tata usaha sekolah pada jam kerja (Senin - Kamis pukul 07.15 - 15.30 WIB, Jumat pukul 07.15 - 11.30 WIB).`
               }
             ]).map((faqItem, idx) => (
               <div key={faqItem.id || idx} className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">

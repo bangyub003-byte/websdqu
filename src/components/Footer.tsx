@@ -164,7 +164,7 @@ export const Footer: React.FC<FooterProps> = ({ setActivePage, settings }) => {
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
                 <a href={`https://wa.me/${(settings.whatsappSpmb || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="hover:text-emerald-800 font-medium">
-                  WA: {settings.phoneSpmb || settings.whatsappSpmb}
+                  WA: {settings.whatsappSpmb}
                 </a>
               </div>
               {settings.additionalContacts && settings.additionalContacts.length > 0 && settings.additionalContacts.map(c => {

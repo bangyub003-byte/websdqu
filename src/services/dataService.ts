@@ -870,6 +870,49 @@ public cancelScheduledPush(): void {
     };
   }
 
+  // --- WEBSITE VISITOR ANALYTICS ---
+  /**
+   * Catat kunjungan publik (fire-and-forget) ke Apps Script backend
+   */
+  public async logVisit(): Promise<void> {
+    if (!this.appsScriptUrl) return;
+    try {
+      await fetch(this.appsScriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'log_visit', timestamp: new Date().toISOString() })
+      });
+    } catch (err) {
+      // Fire-and-forget: abaikan error di sisi pengunjung
+    }
+  }
+
+  /**
+   * Ambil data analitik statistik kunjungan website dari Apps Script backend
+   */
+  public async getAnalytics(): Promise<{ date: string; count: number }[]> {
+    if (!this.appsScriptUrl) return [];
+    try {
+      const resp = await fetch(`${this.appsScriptUrl}?action=get_analytics`, { method: 'GET' });
+      const text = await resp.text();
+      try {
+        const json = JSON.parse(text);
+        if (json && json.success && Array.isArray(json.data)) {
+          return json.data;
+        }
+        if (Array.isArray(json)) {
+          return json;
+        }
+      } catch {
+        // parsing failed
+      }
+      return [];
+    } catch (err) {
+      console.warn('Gagal mengambil data analitik:', err);
+      return [];
+    }
+  }
+
   // --- GOOGLE DRIVE IMAGE UPLOADER ---
   /**
    * Mengunggah gambar/logo langsung ke Google Drive sekolah via Apps Script.

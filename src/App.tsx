@@ -52,6 +52,21 @@ export default function App() {
     window.location.hash = page;
   };
 
+  // Catat kunjungan website secara otomatis (hanya halaman PUBLIK, SEKALI per sesi browser)
+  useEffect(() => {
+    if (activePage !== 'admin') {
+      try {
+        const hasLoggedThisSession = sessionStorage.getItem('sdqu_session_visited_v1');
+        if (!hasLoggedThisSession) {
+          sessionStorage.setItem('sdqu_session_visited_v1', 'true');
+          dataService.logVisit();
+        }
+      } catch (e) {
+        // Abaikan jika sessionStorage dinonaktifkan di browser
+      }
+    }
+  }, [activePage]);
+
   // Scroll to top button visibility
   useEffect(() => {
     const handleScroll = () => {
