@@ -143,9 +143,19 @@ export const AdminCMSView: React.FC<AdminCMSViewProps> = ({
 
   // Sync settings whenever updated from dataService
   // eslint-disable-next-line react-hooks/exhaustive-deps
-React.useEffect(() => {
-  setEditSettings({ ...settings });
-}, []); // hanya sinkron sekali saat panel admin pertama dibuka, bukan tiap polling
+  React.useEffect(() => {
+    const s = { ...settings };
+    if (!s.berandaWhyUsItems || s.berandaWhyUsItems.length === 0) {
+      if (s.berandaFeatures && s.berandaFeatures.length > 0) {
+        s.berandaWhyUsItems = s.berandaFeatures.map((f, i) => ({
+          title: f.title,
+          desc: f.description,
+          badge: `PILAR ${i + 1}`
+        }));
+      }
+    }
+    setEditSettings(s);
+  }, []); // hanya sinkron sekali saat panel admin pertama dibuka, bukan tiap polling
 
   // Safe In-App Delete Confirmation Modal (never blocked by iframe security)
   const [deleteModal, setDeleteModal] = useState<{

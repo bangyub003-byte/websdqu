@@ -217,6 +217,31 @@ export const INITIAL_SETTINGS: SchoolSettings = {
   },
   berandaFeaturesTitle: "Mengapa Memilih SDQU Al I'tisham Playen?",
   berandaFeaturesSubtitle: "Kombinasi kurikulum berkarakter islami, tahfidzul Qur'an mutqin, serta bimbingan penuh kasih sayang untuk tumbuh kembang ananda.",
+  berandaWhyUsTagline: "NILAI OTENTIK PENDIDIKAN KAMI",
+  berandaWhyUsTitle: "Mengapa Memilih SDQU Al I'tisham Playen?",
+  berandaWhyUsDesc: "Kombinasi kurikulum berkarakter islami, tahfidzul Qur'an mutqin, serta bimbingan penuh kasih sayang untuk tumbuh kembang ananda.",
+  berandaWhyUsItems: [
+    {
+      title: "Guru Tahfidz Bersanad & Berpengalaman",
+      desc: "Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar.",
+      badge: "BERSANAD"
+    },
+    {
+      title: "Mutaba'ah Digital Santri Terkoneksi Real–time",
+      desc: "Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali.",
+      badge: "DIGITAL"
+    },
+    {
+      title: "Rasio Ideal 1:12 untuk Perhatian Optimal",
+      desc: "Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif.",
+      badge: "RASIO 1:12"
+    },
+    {
+      title: "Lingkungan Ramah Anak, Nyaman & Sehat",
+      desc: "Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur.",
+      badge: "ASRI & NYAMAN"
+    }
+  ],
   berandaFeatures: [
     {
       id: "feat-1",

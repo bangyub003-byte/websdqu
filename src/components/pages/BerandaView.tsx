@@ -416,54 +416,67 @@ export const BerandaView: React.FC<BerandaViewProps> = ({
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-2">
               <div className="text-xs font-bold text-amber-700 tracking-wider uppercase">
-                NILAI OTENTIK PENDIDIKAN KAMI
+                {settings.berandaWhyUsTagline || "NILAI OTENTIK PENDIDIKAN KAMI"}
               </div>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-['Plus_Jakarta_Sans',sans-serif]">
-                {settings.berandaFeaturesTitle || "Mengapa Ayah & Bunda Mempercayakan Putra–Putrinya di SDQU Al I'tisham?"}
+                {settings.berandaWhyUsTitle || settings.berandaFeaturesTitle || "Mengapa Ayah & Bunda Mempercayakan Putra–Putrinya di SDQU Al I'tisham?"}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-                {settings.berandaFeaturesSubtitle || "Kami memandang setiap anak sebagai amanah mulia yang memiliki keunikan fitrah. Lingkungan belajar dirancang agar ananda merasa aman, disayangi, dan bersemangat menuntut ilmu."}
+                {settings.berandaWhyUsDesc || settings.berandaFeaturesSubtitle || "Kami memandang setiap anak sebagai amanah mulia yang memiliki keunikan fitrah. Lingkungan belajar dirancang agar ananda merasa aman, disayangi, dan bersemangat menuntut ilmu."}
               </p>
             </div>
 
-            {/* Feature Points - Editable by Admin */}
+            {/* Feature Points - Editable by Admin via Sub-bab 5 Mengapa Memilih Kami */}
             <div className="space-y-3.5 pt-2">
-              {(settings.berandaFeatures && settings.berandaFeatures.length > 0 ? settings.berandaFeatures : [
-                {
-                  id: "feat-1",
-                  title: "Guru Tahfidz Bersanad & Berpengalaman",
-                  description: "Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar."
-                },
-                {
-                  id: "feat-2",
-                  title: "Mutaba'ah Digital Santri Terkoneksi Real–time",
-                  description: "Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali."
-                },
-                {
-                  id: "feat-3",
-                  title: "Rasio Ideal 1:12 untuk Perhatian Optimal",
-                  description: "Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif."
-                },
-                {
-                  id: "feat-4",
-                  title: "Lingkungan Ramah Anak, Nyaman & Sehat",
-                  description: "Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur."
-                }
-              ]).map((feat) => (
-                <div key={feat.id} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-4 h-4" />
+              {(() => {
+                // Prioritize settings.berandaWhyUsItems (managed in CMS sub-bab 5)
+                const items = (settings.berandaWhyUsItems && settings.berandaWhyUsItems.length > 0)
+                  ? settings.berandaWhyUsItems.map((item, i) => ({
+                      id: `whyus-${i}`,
+                      title: item.title,
+                      description: item.desc
+                    }))
+                  : (settings.berandaFeatures && settings.berandaFeatures.length > 0)
+                  ? settings.berandaFeatures
+                  : [
+                      {
+                        id: "feat-1",
+                        title: "Guru Tahfidz Bersanad & Berpengalaman",
+                        description: "Asatidz telah melalui sertifikasi talaqqi sanad Al-Qur'an dan pelatihan pedagogik anak usia sekolah dasar."
+                      },
+                      {
+                        id: "feat-2",
+                        title: "Mutaba'ah Digital Santri Terkoneksi Real–time",
+                        description: "Orang tua dapat memantau capaian hafalan harian, adab, kehadiran, dan kesehatan santri secara transparan via aplikasi wali."
+                      },
+                      {
+                        id: "feat-3",
+                        title: "Rasio Ideal 1:12 untuk Perhatian Optimal",
+                        description: "Setiap halaqah tahfidz dan kelas tematik memiliki kuota terbatas agar perkembangan akademis dan karakter terpantau intensif."
+                      },
+                      {
+                        id: "feat-4",
+                        title: "Lingkungan Ramah Anak, Nyaman & Sehat",
+                        description: "Terletak di kawasan Playen yang sejuk, jauh dari polusi bising kota, dengan fasilitas lapangan terbuka hijau dan masjid makmur."
+                      }
+                    ];
+
+                return items.map((feat) => (
+                  <div key={feat.id} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">
+                        {feat.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        {feat.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900">
-                      {feat.title}
-                    </h4>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      {feat.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
 

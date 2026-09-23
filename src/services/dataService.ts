@@ -220,6 +220,7 @@ class DataService {
       heroCardButtonText: loadedSettings?.heroCardButtonText || INITIAL_SETTINGS.heroCardButtonText,
       heroSecondaryBtnText: loadedSettings?.heroSecondaryBtnText || INITIAL_SETTINGS.heroSecondaryBtnText,
       heroStatsRibbon: loadedSettings?.heroStatsRibbon || INITIAL_SETTINGS.heroStatsRibbon,
+      berandaWhyUsItems: loadedSettings?.berandaWhyUsItems?.length ? loadedSettings.berandaWhyUsItems : INITIAL_SETTINGS.berandaWhyUsItems,
       berandaFeatures: loadedSettings?.berandaFeatures?.length ? loadedSettings.berandaFeatures : INITIAL_SETTINGS.berandaFeatures,
       testimonials: loadedSettings?.testimonials?.length ? loadedSettings.testimonials : INITIAL_SETTINGS.testimonials,
       profilCoreValues: loadedSettings?.profilCoreValues?.length ? loadedSettings.profilCoreValues : INITIAL_SETTINGS.profilCoreValues,
